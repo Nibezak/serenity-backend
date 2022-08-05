@@ -129,9 +129,11 @@
             </div>
         </div>  --}}
 
+<center>
+        <h1> Set of APIs are under development, Please wait !!! Do not rush  hhhhhhhhh  !!!!!! </h1>
+<br>
 
-        <h1> set of APIs is under development, Please wait !!! Do not rush  hhhhh </h1>
-
-
+<h3>EMR For Mental Health ---<a href="https://letsreason.co" target=”_blank”>Letsreason.co</a></h3>
+</center>
     </body>
 </html>
