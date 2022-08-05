@@ -109,7 +109,7 @@ class AuthController extends Controller
 
         $message = "Hello  " . $request['FirstName'] . '- Your ' . $request['PracticeName'] . '\'s Account credentials are email ' . $request['email'] . ' and Password is ' . $defaultManagerPswd;
         $sms = new TransferSms();
-        //$sms->sendSMS($request['telephone'],$message);
+        $sms->sendSMS($request['telephone'],$message);
 
         return response()->json([
             'message' => 'User successfully registered',

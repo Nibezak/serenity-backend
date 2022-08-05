@@ -140,7 +140,7 @@ class AdminController extends Controller
 
         return response()->json(
             [
-                'data' => User::select('FirstName', 'LastName', 'telephone')
+                'data' => User::select('id','FirstName', 'LastName', 'telephone')
                     ->where('Hospital_Id', '=', Auth::user()->Hospital_Id)
                     ->with(['Role', 'hospital'])
                     ->get(),
