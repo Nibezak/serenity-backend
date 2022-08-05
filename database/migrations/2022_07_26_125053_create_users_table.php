@@ -39,7 +39,7 @@ class CreateUsersTable extends Migration
             $table->timestamps();
 
 
-            // $table->foreign('Role_id')->references('id')->on('roles')->onDelete('cascade');
+            $table->foreign('Role_id')->references('id')->on('roles')->onDelete('cascade');
             $table->foreign('Hospital_Id')->references('id')->on('hospital')->onDelete('cascade');
         });
     }

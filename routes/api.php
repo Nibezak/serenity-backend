@@ -5,6 +5,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Super\SuperDashboardController;
+
+use App\Http\Controllers\Note\NoteController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -51,9 +53,45 @@ Route::group([
     Route::get('/our-staff', [AdminController::class, 'fetchourstaff']);
 
 
+    Route::post('/patient/register', [AdminController::class, 'createnewpatient']);
+
+    Route::get('/patient/our-patient', [AdminController::class, 'fetchourActivepatients']);
+    Route::post('/patient/Assign-Doctor', [AdminController::class, 'assigndocotortopatient']);
+    Route::post('/patient/Activate-Patient-Account', [AdminController::class, 'activatepatient']);
+
+    Route::get('/Hospital/View/our-doctor', [AdminController::class, 'viewourhospitaldoctor']);
+
+
+    Route::post('/Hospital/Add-Hospital-Service', [AdminController::class, 'addhospitalservice']);
+    Route::get('/Hospital/View/Hospital-Service', [AdminController::class, 'viewhospitalservice']);
+
+
+    Route::post('/Hospital/create-appointment', [AdminController::class, 'createappointment']);
+    Route::post('/Hospital/view/doctor-appointment', [AdminController::class, 'viewmyappointments']);
+
+
+    Route::post('/Hospital/view/doctor-appointment', [AdminController::class, 'viewmyappointments']);
+
 
 });
 
+
+
+
+//Routes for hospital Notes
+Route::group([
+    'middleware' => 'api',
+    'prefix' => 'Note'
+], function ($router) {
+
+    Route::post('/Manager/create-treatment-strategy', [NoteController::class, 'createtreatmentstrategy']);
+    Route::get('/Manager/view-treatment-strategy', [NoteController::class, 'fetchreatmentstrategy']);
+
+    Route::post('/Manager/create-treatment-strategy', [NoteController::class, 'createtreatmentstrategy']);
+
+    
+
+});
 
 
 
