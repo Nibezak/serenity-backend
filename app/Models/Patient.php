@@ -15,25 +15,53 @@ class Patient extends Model
      * @var array
      */
 
-    // protected $table = '';
+     protected $table = 'patients';
     protected $fillable = [
         'FirstName',
         'LastName',
+        'email',
         'MobilePhone',
         'HomePhone',
         'WorkPhone',
         'Dob',
-        'Gender',
+        'GenderIdentity',
         'AccountNumber',
         'Address',
         'BloodType',
         'Height',
         'Weight',
         'MartialStatus',
-        'GenderIdentity',
+        'AdministrativeSex',
         'SexualOrientation',
         'Employment',
-        'Language',
+        'Languages',
+        'Createdby_Id',
+        'Hospital_Id',
+        'Nationality',
+        'SSN',
+        'Province',
+        'District',
+        'Sector',
+        'Cell',
+        'Village',
+        'StreetCode',
+        'Status',
+        'AssignedDoctor_Id',
+
     ];
+
+    public function hospital()
+    {
+        return $this->belongsTo('App\Models\Hospital','Hospital_Id');
+    }
+    public function doctor()
+    {
+        return $this->belongsTo('App\Models\User','AssignedDoctor_Id');
+    }
+    public function doneby()
+    {
+        return $this->belongsTo('App\Models\User','Createdby_Id');
+    }
+
 
 }

@@ -193,14 +193,12 @@ class AuthController extends Controller
             return response()->json($validator->errors(), 401);
         }
 
-
         $token =  Str::random(64);
 
-        DB::table('password_resets')->insert(
-            ['email' => $request->email, 'token' => $token, 'created_at' => Carbon::now()]
-        );
+        DB::table('password_resets')->insert(['email' => $request->email, 'token' => $token, 'created_at' => Carbon::now()]);
 
-        return response()->json(['message' => 'We have E-mailed your password reset link! '.$token], 200);
+
+    return response()->json(['message' => 'We have E-mailed your password reset link! '.$token.','.$request['email']], 200);
     }
 
 
