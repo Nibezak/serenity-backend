@@ -10,7 +10,11 @@ class SuperDashboardController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('jwt.verify');
+        $this->middleware('jwt.verify', [
+            'except' => [
+                'gettypesOrg',
+            ],
+        ]);
     }
     //
 //fecth types of organizations
