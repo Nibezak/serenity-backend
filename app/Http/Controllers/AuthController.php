@@ -65,7 +65,7 @@ class AuthController extends Controller
             implode($validator->errors()->all())
 
             ], 422);
-            
+
         }
         //Generate default Password
         $defaultManagerPswd = Str::random(10);
@@ -122,7 +122,7 @@ class AuthController extends Controller
             ' and Password is ' .
             $defaultManagerPswd;
         $sms = new TransferSms();
-        $sms->sendSMS($request['telephone'], $message);
+        $sms->sendSMS($request['Telephone'], $message);
 
         return response()->json(
             [
@@ -385,18 +385,18 @@ class AuthController extends Controller
      */
     public function userProfile()
     {
-        // return response()->json(auth()->user());
-        return response()->json(
-            [
-                'data' => auth()
-                    ->user()
-                    ->ignore(Auth::id()),
-                'Acount_Created_At' => auth()
-                    ->user()
-                    ->created_at->diffForHumans(),
-            ],
-            200
-        );
+        return response()->json(auth()->user());
+        // return response()->json(
+        //     [
+        //         'data' => auth()
+        //             ->user()
+        //             ->ignore(Auth::id()),
+        //         'Acount_Created_At' => auth()
+        //             ->user()
+        //             ->created_at->diffForHumans(),
+        //     ],
+        //     200
+        // );
     }
     /**
      * Get the token array structure.
