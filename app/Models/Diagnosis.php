@@ -6,12 +6,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 
-class Treatmentstrategy extends Model
+class Diagnosis extends Model
 {
     use HasFactory, Notifiable;
 
-    protected $table = 'treatmentstrategy';
-    protected $fillable = ['name', 'Hospital_Id', 'CreatedBy_Id', 'Status'];
+
+    protected $table = 'diagnosis';
+    protected $fillable = ['name','code', 'Hospital_Id', 'CreatedBy_Id', 'Status'];
 
     public function hospital()
     {
@@ -22,4 +23,6 @@ class Treatmentstrategy extends Model
     {
         return $this->belongsTo('App\Models\User', 'CreatedBy_Id');
     }
+
+
 }
