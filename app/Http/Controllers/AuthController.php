@@ -413,7 +413,7 @@ class AuthController extends Controller
             'expires_in' =>
                 auth()
                     ->factory()
-                    ->getTTL() * 10000,
+                    ->getTTL() * 60000,
             'user' => auth()->user(),
         ]);
     }

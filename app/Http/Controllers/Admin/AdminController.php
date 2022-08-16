@@ -10,6 +10,7 @@ use App\Models\TypeAppointment;
 use App\Models\Appointment;
 use App\Models\Role;
 use App\Models\Patient;
+use App\Models\Diagnosis;
 use Illuminate\Support\Facades\DB;
 use Validator;
 use Illuminate\Support\Str;
@@ -135,33 +136,42 @@ class AdminController extends Controller
     public function fetchourstaff()
     {
         if (!Auth::user()->roles->first()->name == 'Admin') {
-            return true;
+            return response()->json(
+                [
+                    'message' => 'Unauthorized User',
+                ],
+                200
+            );
         }
 
         return response()->json(
             [
-                'data' => User::select('id','FirstName', 'LastName', 'telephone')
-                    ->where('Hospital_Id', '=', Auth::user()->Hospital_Id)
-                    ->with(['Role', 'hospital'])
-                    ->get(),
+                'data' => User::join('roles', 'users.Role_id', '=', 'roles.id')
+                    ->where(
+                        'users.Hospital_Id',
+                        '=',
+                        auth()->user()->Hospital_Id
+                    )
+
+                    ->get(['users.FirstName','users.LastName','users.telephone','users.email', 'roles.display_name']),
             ],
             200
         );
+
+        return 'okay';
     }
 
     //Fetch hospitall staff roles
     public function retrieveRoles()
     {
         if (Auth::user()->roles->first()->name == 'Admin') {
-            $myRoleId = json_decode(Auth::user()->roles->first()['id'], true);
+            // $myRoleId = json_decode(Auth::user()->roles->first()['Clinician'], true);
 
             return response()->json(
                 [
                     'data' => Role::select('id', 'display_name')
                         ->get()
-                        // ->except($myRoleId)
-
-                        ,
+                        ->except('110'),
                 ],
                 200
             );
@@ -223,16 +233,58 @@ class AdminController extends Controller
     public function fetchourActivepatients()
     {
         if (Auth::check()) {
-            return Patient::select(
-                'id',
-                'FirstName',
-                'LastName',
-                'MobilePhone',
-                'email'
-            )
-                ->with(['doctor'])
-                ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
-                ->get();
+            return response()->json(
+                [
+                    'data' => Patient::select(
+                        'id',
+                        'FirstName',
+                        'LastName',
+                        'MobilePhone',
+                        'email',
+                        'Dob',
+                        'AssignedDoctor_Id'
+                    )
+                        ->with(['doctor:id,Title,FirstName,LastName'])
+                        ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
+                        ->get(),
+                ],
+                200
+            );
+        }
+        return response()->json(['errors' => 'Unauthorized'], 401);
+    }
+
+    public function fetchonepatient($id)
+    {
+        if (Auth::check()) {
+            //Validate User Inputs
+            $user = Patient::where('id', '=', $id)->first();
+            if ($user === null) {
+                // user doesn't exist
+                return response()->json(
+                    ['message' => 'This patient does not exists'],
+                    201
+                );
+            }
+
+            return response()->json(
+                [
+                    'data' => Patient::select(
+                        'id',
+                        'FirstName',
+                        'LastName',
+                        'MobilePhone',
+                        'email',
+                        'Dob',
+                        'AssignedDoctor_Id'
+                    )
+                        ->with(['doctor:id,Title,FirstName,LastName,telephone'])
+                        ->where('id', '=', $id)
+                        ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
+                        ->get(),
+                ],
+                200
+            );
         }
         return response()->json(['message' => 'Unauthorized'], 401);
     }
@@ -292,7 +344,8 @@ class AdminController extends Controller
                             'AssignedDoctor_Id' => $request['Doctor_Id'],
                         ]);
                     return $result = [
-                        'msg' => 'Patient is updated successfully !! ',
+                        'msg' =>
+                            'Patient is assigned to Doctor successfully !! ',
                         'success' => true,
                     ];
                 } else {
@@ -413,7 +466,7 @@ class AdminController extends Controller
             $appointment->Duration = $request['Duration'];
             $appointment->Frequency = $request['Frequency'];
             $appointment->CreatedBy_Id = auth()->user()->id;
-            $appointment->Status='Active';
+            $appointment->Status = 'Active';
             $appointment->AppointmentAlert = $request['AppointmentAlert'];
             $appointment->Hospital_Id = $request['Hospital_Id'];
             $appointment->save();
@@ -451,8 +504,8 @@ class AdminController extends Controller
                             '=',
                             $request['Doctor_Id']
                         )
-                        ->with(['patient','doctor','DoneBy'])
-                        ->get(),
+                            ->with(['patient', 'doctor', 'DoneBy'])
+                            ->get(),
                     ],
                     200
                 );
@@ -460,6 +513,57 @@ class AdminController extends Controller
             return response()->json(
                 ['message' => 'Sorry this user does not exists '],
                 201
+            );
+        }
+        return response()->json(['message' => 'Unauthorized'], 401);
+    }
+
+    public function creatediagnosis(Request $request)
+    {
+        if (Auth::check()) {
+            //Validate User Inputs
+            $validator = Validator::make($request->all(), [
+                'name' => 'required|unique:diagnosis',
+            ]);
+            if ($validator->fails()) {
+                // return response()->json($validator->errors()->toJson(), 400);
+
+                return response()->json(
+                    ['errors' => implode($validator->errors()->all())],
+                    422
+                );
+            }
+
+            $diagnsosis = new Diagnosis();
+            $diagnsosis->name = $request['name'];
+            $diagnsosis->code = 'F' . trim(strtoupper(Str::random(6)));
+            $diagnsosis->Hospital_Id = auth()->user()->Hospital_Id;
+            $diagnsosis->CreatedBy_Id = auth()->user()->id;
+            $diagnsosis->Status = 'Active';
+            $diagnsosis->save();
+
+            return response()->json(
+                ['message' => 'Successfully Created new Diagnsosis '],
+                200
+            );
+        }
+        return response()->json(['errors' => 'Unauthorized'], 401);
+    }
+
+    public function fetchdiagnosis()
+    {
+        if (Auth::check()) {
+            return response()->json(
+                [
+                    'data' => Diagnosis::where(
+                        'Hospital_Id',
+                        '=',
+                        auth()->user()->Hospital_Id
+                    )
+                        ->with(['createdby:id,FirstName,LastName'])
+                        ->get(),
+                ],
+                200
             );
         }
         return response()->json(['message' => 'Unauthorized'], 401);
