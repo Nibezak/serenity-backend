@@ -47,12 +47,13 @@ class Patient extends Model
         'StreetCode',
         'Status',
         'AssignedDoctor_Id',
+        
 
     ];
 
     public function hospital()
     {
-        return $this->belongsTo('App\Models\Hospital','Hospital_Id');
+        return  $this->belongsTo('App\Models\Hospital','Hospital_Id');
     }
     public function doctor()
     {

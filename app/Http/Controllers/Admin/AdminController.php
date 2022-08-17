@@ -63,7 +63,12 @@ class AdminController extends Controller
             'Title' => 'required',
         ]);
         if ($validator->fails()) {
-            return response()->json($validator->errors(), 422);
+            // return response()->json($validator->errors()->toJson(), 400);
+
+            return response()->json(
+                ['errors' => implode($validator->errors()->all())],
+                422
+            );
         }
 
         $defaultManagerPswd = Str::random(10);
@@ -78,7 +83,7 @@ class AdminController extends Controller
             $user->Email = $request['email'];
             $user->Telephone = $request['telephone'];
             $user->gender = $request['gender'];
-            $user->ProfileImageUrl = null;
+            $user->ProfileImageUrl = 'https://i.imgur.com/BKB2EQi.png';
             $user->Address = null;
             $user->LicenseNumber = null;
             $user->Title = $request['Title'];
@@ -153,7 +158,13 @@ class AdminController extends Controller
                         auth()->user()->Hospital_Id
                     )
 
-                    ->get(['users.FirstName','users.LastName','users.telephone','users.email', 'roles.display_name']),
+                    ->get([
+                        'users.FirstName',
+                        'users.LastName',
+                        'users.telephone',
+                        'users.email',
+                        'roles.display_name',
+                    ]),
             ],
             200
         );
@@ -195,9 +206,16 @@ class AdminController extends Controller
                 'MobilePhone' => 'required|between:9,14',
                 'Email' => 'required|string|unique:patients',
                 'Marital_Status' => 'required',
+                'Employment' => 'required',
+                'Languages' => 'required',
             ]);
             if ($validator->fails()) {
-                return response()->json($validator->errors()->toJson(), 400);
+                // return response()->json($validator->errors()->toJson(), 400);
+
+                return response()->json(
+                    ['errors' => implode($validator->errors()->all())],
+                    422
+                );
             }
 
             $patient = new Patient();
@@ -213,6 +231,8 @@ class AdminController extends Controller
             $patient->Email = $request['Email'];
             $patient->MartialStatus = $request['Marital_Status'];
             $patient->Hospital_Id = auth()->user()->Hospital_Id;
+            $patient->Languages=$request['Languages'];
+            $patient->Employment=$request['Employment'];
             $patient->Createdby_Id = auth()->user()->id;
             $patient->save();
 
@@ -245,6 +265,7 @@ class AdminController extends Controller
                         'AssignedDoctor_Id'
                     )
                         ->with(['doctor:id,Title,FirstName,LastName'])
+
                         ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
                         ->get(),
                 ],
@@ -287,7 +308,10 @@ class AdminController extends Controller
             );
         }
         return response()->json(['message' => 'Unauthorized'], 401);
+
+
     }
+
 
     public function viewourhospitaldoctor()
     {
@@ -323,7 +347,12 @@ class AdminController extends Controller
                 'PatientId' => 'required',
             ]);
             if ($validator->fails()) {
-                return response()->json($validator->errors()->toJson(), 400);
+                // return response()->json($validator->errors()->toJson(), 400);
+
+                return response()->json(
+                    ['errors' => implode($validator->errors()->all())],
+                    422
+                );
             }
 
             if (
@@ -371,7 +400,12 @@ class AdminController extends Controller
                 'Status' => 'required',
             ]);
             if ($validator->fails()) {
-                return response()->json($validator->errors()->toJson(), 400);
+                // return response()->json($validator->errors()->toJson(), 400);
+
+                return response()->json(
+                    ['errors' => implode($validator->errors()->all())],
+                    422
+                );
             }
 
             $check = Patient::where('id', '=', $request['PatientId'])->first();
@@ -568,4 +602,45 @@ class AdminController extends Controller
         }
         return response()->json(['message' => 'Unauthorized'], 401);
     }
+
+    public function fetchonedoctor($id){
+
+        if (Auth::check()) {
+            //Validate User Inputs
+            $user = User::where('id', '=', $id)->first();
+            if ($user === null) {
+                // user doesn't exist
+                return response()->json(
+                    ['message' => 'This Doctor does not exists'],
+                    201
+                );
+            }
+
+            return response()->json(
+                [
+                    'data' => User::select(
+                        'id',
+                        'FirstName',
+                        'LastName',
+                        'telePhone',
+                        'email',
+                        'Title',
+                        'Hospital_Id',
+
+                    )
+                        ->with('hospital:id,PracticeName,TypeOrganization,BusinessPhone,BusinessEmail,TypeOrganization')
+                        ->where('id', '=', $id)
+                        ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
+                        ->get(),
+                ],
+                200
+            );
+        }
+        return response()->json(['message' => 'Unauthorized'], 401);
+
+
+    }
+
+
+
 }
