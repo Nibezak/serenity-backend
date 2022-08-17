@@ -120,11 +120,11 @@ class AuthController extends Controller
             ' and Password is ' .
             $defaultManagerPswd;
         $sms = new TransferSms();
-        $sms->sendSMS($request['Telephone'], $message);
+        //$sms->sendSMS($request['Telephone'], $message);
 
         return response()->json(
             [
-                'message' => 'User successfully registered',
+                'message' => $request['PracticeName'].' Hospital Account successfully created, Please Check your Admin email '.$request['email'].' or Your Phone number ' .$request['Telephone'].' For login credentials of your Hospital',
                 // 'user' => $user,
                 'pswd-dvt-purpose-only' => $defaultManagerPswd,
             ],
@@ -436,12 +436,12 @@ class AuthController extends Controller
         $from = Carbon::parse($DateDb);
         $diff_in_minutes = $to->diffInMinutes($from);
 
-        if ($diff_in_minutes > 5) {
-            return response()->json(
-                ['message' => 'Your OTP Code has expired,Please Retry again'],
-                201
-            );
-        }
+        // if ($diff_in_minutes > 5) {
+        //     return response()->json(
+        //         ['message' => 'Your OTP Code has expired,Please Retry again'],
+        //         201
+        //     );
+        // }
         if (strcasecmp($CodeDb, $request['code']) == 0) {
             DB::Table('users')
                 ->where('email', '=', $request['email'])
@@ -495,9 +495,9 @@ class AuthController extends Controller
                 //Generate Random OTP CODE & send it to the user
 
                 $otp_code = mt_rand(100000, 999999);
-                $message = 'Your LetsReason Login OTP is ';
+                $message = 'Your LetsReason Login OTP is '.$otp_code;
                 $sms = new TransferSms();
-                $sms->sendSMS($receiverPhone,$message);
+              //  $sms->sendSMS($receiverPhone,$message);
 
                 // save Otp
                 $record = OTP::where(['email' => $request['email']]);
