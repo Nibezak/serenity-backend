@@ -60,12 +60,10 @@ class AuthController extends Controller
         if ($validator->fails()) {
             // return response()->json($validator->errors()->toJson(), 400);
 
-            return response()->json(['errors'=>
-
-            implode($validator->errors()->all())
-
-            ], 422);
-
+            return response()->json(
+                ['errors' => implode($validator->errors()->all())],
+                422
+            );
         }
         //Generate default Password
         $defaultManagerPswd = Str::random(10);
@@ -95,7 +93,7 @@ class AuthController extends Controller
             $user->Email = $request['email'];
             $user->Telephone = $request['Telephone'];
             $user->gender = $request['gender'];
-            $user->ProfileImageUrl = null;
+            $user->ProfileImageUrl = 'https://i.imgur.com/BKB2EQi.png';
             $user->Address = null;
             $user->LicenseNumber = null;
             $user->Title = $request['Title'];
@@ -128,7 +126,7 @@ class AuthController extends Controller
             [
                 'message' => 'User successfully registered',
                 // 'user' => $user,
-                'pswd-dvt-only' => $defaultManagerPswd,
+                'pswd-dvt-purpose-only' => $defaultManagerPswd,
             ],
             200
         );
@@ -147,17 +145,11 @@ class AuthController extends Controller
             'password' => 'required',
         ]);
         if ($validator->fails()) {
-            return response()->json(['errors'=>
-
-            implode($validator->errors()->all())
-
-            ], 422);
-
-
+            return response()->json(
+                ['errors' => implode($validator->errors()->all())],
+                422
+            );
         }
-
-
-
 
         // if (!$token = auth()->attempt($validator->validated())) {
         //     return response()->json(['message' => 'Invalid Credentials'], 401);
@@ -169,10 +161,25 @@ class AuthController extends Controller
         ]);
         if ($checkauth) {
             if (Auth::user()->roles->first()->name == 'Admin') {
+                if (
+                    User::select('IsAccountNonLocked')
+                        ->where('email', '=', $request['email'])
+                        ->value('IsAccountNonLocked') != 'VerifiedBy_Phone'
+                ) {
+                    return response()->json(
+                        [
+                            'message' =>
+                                'Your account is not verified please First verify your account and try again !!!',
+                        ],
+                        201
+                    );
+                }
+
                 //get hospital name of loggedin User
                 $HospitalnameLoggedin = Hospital::select('PracticeName')
                     ->where('id', '=', Auth::user()->Hospital_Id)
                     ->value('PracticeName');
+
                 return response()->json(
                     [
                         'message' =>
@@ -195,30 +202,6 @@ class AuthController extends Controller
             return response()->json(['errors' => 'Invalid Credentials'], 401);
         }
 
-        //Get messsage receiver telephone
-        $receiverPhone = User::select('telephone')
-            ->where('email', '=', $request['email'])
-            ->value('telephone');
-
-        //Generate Random OTP CODE & send it to the user
-
-        $otp_code = mt_rand(100000, 999999);
-        $message = 'Your LetsReason Login OTP is ' . $otp_code;
-        $sms = new TransferSms();
-        // $sms->sendSMS($receiverPhone,$message);
-
-        // save Otp
-        $record = OTP::where(['email' => $request['email']]);
-        if ($record->exists()) {
-            $record->delete();
-        }
-        OTP::create([
-            'code' => $otp_code,
-            'date' => date('Y-m-d H:i:s'),
-            'status' => 'Active',
-            'email' => $request['email'],
-        ]);
-
         //  return $this->createNewToken($token);
     }
 
@@ -237,14 +220,10 @@ class AuthController extends Controller
         if ($validator->fails()) {
             // return response()->json($validator->errors(), 401);
 
-
-
-            return response()->json(['errors'=>
-
-            implode($validator->errors()->all())
-
-            ], 422);
-
+            return response()->json(
+                ['errors' => implode($validator->errors()->all())],
+                422
+            );
         }
 
         $token = Str::random(64);
@@ -282,11 +261,10 @@ class AuthController extends Controller
         if ($validator->fails()) {
             // return response()->json($validator->errors(), 422);
 
-            return response()->json(['errors'=>
-
-            implode($validator->errors()->all())
-
-            ], 422);
+            return response()->json(
+                ['errors' => implode($validator->errors()->all())],
+                422
+            );
         }
 
         $updatePassword = DB::table('password_resets')
@@ -331,11 +309,10 @@ class AuthController extends Controller
 
             if ($validator->fails()) {
                 // return response()->json($validator->errors(), 422);
-                return response()->json(['errors'=>
-
-            implode($validator->errors()->all())
-
-            ], 422);
+                return response()->json(
+                    ['errors' => implode($validator->errors()->all())],
+                    422
+                );
             }
 
             if (Hash::check($request['password'], auth()->user()->password)) {
@@ -366,8 +343,13 @@ class AuthController extends Controller
      */
     public function logout()
     {
-        auth()->logout();
-        return response()->json(['message' => 'User successfully signed out']);
+        if (Auth::Check()) {
+            auth()->logout();
+            return response()->json([
+                'message' => 'User successfully signed out',
+            ]);
+        }
+        return response()->json(['message' => 'Unauthenticated!'], 401);
     }
     /**
      * Refresh a token.
@@ -413,35 +395,33 @@ class AuthController extends Controller
             'expires_in' =>
                 auth()
                     ->factory()
-                    ->getTTL() * 60000,
+                    ->getTTL() * 72000,
             'user' => auth()->user(),
         ]);
     }
 
     /**
-     * Get the Login OTP.
+     * validate the Login OTP.
      *
      * @param  string $token
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    protected function otp(Request $request)
+    protected function validateotp(Request $request)
     {
         //validate inputs
         $validator = Validator::make($request->all(), [
             'code' => 'required|min:6',
             'date' => 'required',
-            'email' => 'required',
+            'email' => 'required|exists:users',
         ]);
         if ($validator->fails()) {
-            // return response()->json($validator->errors(), 422);
+            // return response()->json($validator->errors()->toJson(), 400);
 
-            return response()->json(['errors'=>
-
-            implode($validator->errors()->all())
-
-            ], 422);
-
+            return response()->json(
+                ['errors' => implode($validator->errors()->all())],
+                422
+            );
         }
 
         //compare input with code value from the table
@@ -463,11 +443,90 @@ class AuthController extends Controller
             );
         }
         if (strcasecmp($CodeDb, $request['code']) == 0) {
+            DB::Table('users')
+                ->where('email', '=', $request['email'])
+                ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
+                ->update([
+                    'IsAccountNonLocked' => 'VerifiedBy_Phone',
+                ]);
+
             return response()->json(
-                ['message' => 'Your OTP Code is Valid'],
+                ['message' => 'Your accoun thas been verified Successfully'],
                 200
             );
         }
-        return response()->json(['message' => 'Invalid OTP Code'], 401);
+        return response()->json(['message' => 'Invalid OTP Code'], 201);
+    }
+
+    /**
+     * send the Login OTP.
+     *
+     * @param  string $token
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    protected function sendotp(Request $request)
+    {
+        if (Auth::check()) {
+            //validate inputs
+
+            $validator = Validator::make($request->all(), [
+                'email' => 'required|exists:users',
+            ]);
+            if ($validator->fails()) {
+                // return response()->json($validator->errors()->toJson(), 400);
+
+                return response()->json(
+                    ['errors' => implode($validator->errors()->all())],
+                    422
+                );
+            }
+
+            if (
+                User::select('IsAccountNonLocked')
+                    ->where('email', '=', $request['email'])
+                    ->value('IsAccountNonLocked') != 'VerifiedBy_Phone'
+            ) {
+                //Get messsage receiver telephone
+                $receiverPhone = User::select('telephone')
+                    ->where('email', '=', $request['email'])
+                    ->value('telephone');
+
+                //Generate Random OTP CODE & send it to the user
+
+                $otp_code = mt_rand(100000, 999999);
+                $message = 'Your LetsReason Login OTP is ';
+                $sms = new TransferSms();
+                $sms->sendSMS($receiverPhone,$message);
+
+                // save Otp
+                $record = OTP::where(['email' => $request['email']]);
+                if ($record->exists()) {
+                    $record->delete();
+                }
+                OTP::create([
+                    'code' => $otp_code,
+                    'date' => date('Y-m-d H:i:s'),
+                    'status' => 'Active',
+                    'email' => $request['email'],
+                ]);
+
+                return response()->json(
+                    [
+                        'message' =>
+                            'Please check your inbox for Letsreason Login OTP !!! ' .
+                            $otp_code,
+                    ],
+                    201
+                );
+            }
+            return response()->json(
+                [
+                    'message' => 'Your account is verified already !!!',
+                ],
+                201
+            );
+        }
+        return response()->json(['message' => 'Unauthorized'], 401);
     }
 }
