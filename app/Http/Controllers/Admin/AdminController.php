@@ -507,6 +507,24 @@ class AdminController extends Controller
                     422
                 );
             }
+            $patData=Patient::select('FirstName','LastName','MobilePhone','email')
+            ->where('id','=',$request['Patient_Id'])
+            ->first();
+
+            $typeApp=TypeAppointment::select('name')
+            ->where('Hospital_Id','=',auth()->user()->Hospital_Id)
+            ->first();
+
+            $doctorData=User::select('FirstName','LastName','Title','Hospital_Id')
+            ->where('id','=',$request['Patient_Id'])
+            ->first();
+
+            $hospitalName=Hospital::select('PracticeName','District','Sector','Cell','Village')
+            ->where('id','=',$doctorData->Hospital_Id)
+            ->first();
+
+
+
 
             $appointment = new Appointment();
             $appointment->AppointmentType_Id = $request['AppointmentType_Id'];
@@ -520,13 +538,32 @@ class AdminController extends Controller
             $appointment->Status = 'Active';
             $appointment->AppointmentAlert = $request['AppointmentAlert'];
             $appointment->Hospital_Id = auth()->user()->Hospital_Id;
-            $appointment->link='https://meet.jit.si/Letsreason-test';
+
+           if($request['Location'] == 'online'){
+           $link='https://meet.jit.si/Letsreason-test';
+            $appointment->link=$link;
+
+
+            $message='Hello '.$patData->FirstName.' '.$patData->LastName.' Your '.$typeApp->name. ' Appointment at  '.$hospitalName->PracticeName.' Located at '.$hospitalName->District.' ,'.$hospitalName->Sector.','.$hospitalName->Cell.' with '.$doctorData->Title.' '.$doctorData->FirstName.' '.$doctorData->LastName.' has been scheduled successfully , Date: '
+            .$request['ScheduledTime'].' Location: '.$request['Location']. ' and Video Link is:  '.$link;
+            $sms = new TransferSms();
+           // $sms->sendSMS($patData->MobilePhone,$message);
+
+
+          }else{
+           $appointment->link='null';}
             $appointment->save();
 
+
+
             return response()->json(
-                ['message' => 'Appointment has been created Successfully'],
+                ['message' =>
+                $typeApp->name.' Appointment of '.$patData->FirstName.' '
+                .$patData->LastName.' has been created Successfully '
+                ],
                 200
             );
+
         }
         return response()->json(['message' => 'Unauthorized'], 401);
     }
