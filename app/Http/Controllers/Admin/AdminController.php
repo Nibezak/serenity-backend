@@ -11,6 +11,7 @@ use App\Models\Appointment;
 use App\Models\Role;
 use App\Models\Patient;
 use App\Models\Diagnosis;
+use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 use Validator;
 use Illuminate\Support\Str;
@@ -440,7 +441,12 @@ class AdminController extends Controller
                 'name' => 'required|unique:typeappointments',
             ]);
             if ($validator->fails()) {
-                return response()->json($validator->errors()->toJson(), 400);
+                // return response()->json($validator->errors(), 422);
+
+                return response()->json(
+                    ['errors' => implode($validator->errors()->all())],
+                    422
+                );
             }
 
             $service = new TypeAppointment();
@@ -461,13 +467,18 @@ class AdminController extends Controller
     public function viewhospitalservice()
     {
         if (Auth::check()) {
-            return TypeAppointment::where(
+
+            return response()->json(['data' =>
+            TypeAppointment::where(
                 'hospital_Id',
                 '=',
                 auth()->user()->Hospital_Id
             )
-                ->with(['creator', 'hospital'])
-                ->get();
+                ->with(['creator:id,FirstName,LastName', 'hospital'])
+                ->get()
+
+            ], 200);
+
         }
         return response()->json(['message' => 'Unauthorized'], 401);
     }
@@ -477,6 +488,8 @@ class AdminController extends Controller
         if (Auth::check()) {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
+
+
                 'AppointmentType_Id' => 'required',
                 'Patient_Id' => 'required',
                 'Doctor_Id' => 'required',
@@ -485,10 +498,14 @@ class AdminController extends Controller
                 'Duration' => 'required',
                 'Frequency' => 'required',
                 'AppointmentAlert' => 'required',
-                'Hospital_Id' => 'required',
             ]);
             if ($validator->fails()) {
-                return response()->json($validator->errors()->toJson(), 400);
+                // return response()->json($validator->errors(), 422);
+
+                return response()->json(
+                    ['errors' => implode($validator->errors()->all())],
+                    422
+                );
             }
 
             $appointment = new Appointment();
@@ -502,54 +519,34 @@ class AdminController extends Controller
             $appointment->CreatedBy_Id = auth()->user()->id;
             $appointment->Status = 'Active';
             $appointment->AppointmentAlert = $request['AppointmentAlert'];
-            $appointment->Hospital_Id = $request['Hospital_Id'];
+            $appointment->Hospital_Id = auth()->user()->Hospital_Id;
+            $appointment->link='https://meet.jit.si/Letsreason-test';
             $appointment->save();
 
             return response()->json(
-                ['message' => 'Your Appointment has been created Successfully'],
+                ['message' => 'Appointment has been created Successfully'],
                 200
             );
         }
         return response()->json(['message' => 'Unauthorized'], 401);
     }
 
-    public function viewmyappointments(Request $request)
+    public function viewallappointments(Request $request)
     {
-        if (Auth::check()) {
-            //Validate User Inputs
-            $validator = Validator::make($request->all(), [
-                'Doctor_Id' => 'required',
-            ]);
-            if ($validator->fails()) {
-                return response()->json($validator->errors()->toJson(), 400);
-            }
-
-            if (
-                User::where('id', '=', $request['Doctor_Id'])
-                    ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
-                    ->exists()
-            ) {
-                // user found
-
-                return response()->json(
-                    [
-                        'data' => Appointment::where(
-                            'Doctor_Id',
-                            '=',
-                            $request['Doctor_Id']
-                        )
-                            ->with(['patient', 'doctor', 'DoneBy'])
-                            ->get(),
-                    ],
-                    200
-                );
-            }
+        if (!Auth::user()->roles->first()->name == 'Admin') {
             return response()->json(
-                ['message' => 'Sorry this user does not exists '],
-                201
+                [
+                    'message' => 'Unauthorized User',
+                ],
+                200
             );
         }
-        return response()->json(['message' => 'Unauthorized'], 401);
+
+        return response()->json(['data' =>
+
+        Appointment::where('Hospital_Id','=',Auth::user()->Hospital_Id)->get()
+
+        ], 200);
     }
 
     public function creatediagnosis(Request $request)
