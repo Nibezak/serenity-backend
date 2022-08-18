@@ -27,8 +27,7 @@ class CreateAppointmentsTable extends Migration
             $table->string('Status')->nullable();
             $table->unsignedBigInteger('CreatedBy_Id')->nullable();
             $table->unsignedBigInteger('Hospital_Id')->nullable();
-
-
+            $table->string('link');
 
             $table->timestamps();
 

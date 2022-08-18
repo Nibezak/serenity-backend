@@ -24,6 +24,7 @@ class Appointment extends Model
     'CreatedBy_Id',
     'Hospital_Id',
     'Status',
+    'link',
 
     ];
 

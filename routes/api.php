@@ -31,7 +31,7 @@ Route::group(
         Route::post('/logout', [AuthController::class, 'logout']);
         Route::post('/refresh', [AuthController::class, 'refresh']);
         Route::get('/user-profile', [AuthController::class, 'userProfile']);
-        Route::post('/validate-OTP', [AuthController::class, 'validateotp']);
+        Route::post('/validate-OTP/{token}', [AuthController::class, 'validateotp']);
         Route::post('/send-OTP', [AuthController::class, 'sendotp']);
 
         Route::post('/forgot-password', [
@@ -110,9 +110,9 @@ Route::group(
             AdminController::class,
             'createappointment',
         ]);
-        Route::post('/Hospital/view/doctor-appointment', [
+        Route::post('/view/all-appointment', [
             AdminController::class,
-            'viewmyappointments',
+            'viewallappointments',
         ]);
 
         Route::post('/Hospital/view/doctor-appointment', [

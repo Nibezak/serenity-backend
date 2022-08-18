@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 use App\Models\OTP;
+use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Support\Facades\DB;
 use App\Models\Role;
 use Validator;
@@ -48,7 +49,6 @@ class AuthController extends Controller
         //Validate User Inputs
         $validator = Validator::make($request->all(), [
             'TypeOrganization' => 'required',
-            'role' => 'required',
             'PracticeName' => 'required|string|unique:hospital',
             'BusinessPhone' => 'required|string|between:2,20',
             'BusinessEmail' => 'required|string|between:2,20|unique:hospital',
@@ -82,11 +82,11 @@ class AuthController extends Controller
         $hospital->logo = 'null';
         $hospital->save();
 
-        $role = Role::find($request['role']);
+        $role = Role::find('110');
 
         if ($role) {
             $user = new User();
-            $user->Role_id = $request['role'];
+            $user->Role_id = '110';
             $user->hospital_id = $hospital->id;
             $user->FirstName = $request['FirstName'];
             $user->LastName = $request['LastName'];
@@ -166,12 +166,39 @@ class AuthController extends Controller
                         ->where('email', '=', $request['email'])
                         ->value('IsAccountNonLocked') != 'VerifiedBy_Phone'
                 ) {
+
+
+                 //Get messsage receiver telephone
+                 $receiverPhone = User::select('telephone')
+                 ->where('email', '=', $request['email'])
+                 ->value('telephone');
+
+             //Generate Random OTP CODE & send it to the user
+
+             $otp_code = mt_rand(100000, 999999);
+             $message = 'Your LetsReason Login OTP is '.$otp_code;
+             $sms = new TransferSms();
+           //  $sms->sendSMS($receiverPhone,$message);
+
+             // save Otp
+             $record = OTP::where(['email' => $request['email']]);
+             if ($record->exists()) {
+                 $record->delete();
+             }
+             OTP::create([
+                 'code' => $otp_code,
+                 'date' => date('Y-m-d H:i:s'),
+                 'status' => 'Active',
+                 'email' => $request['email'],
+             ]);
+
+
                     return response()->json(
                         [
                             'message' =>
-                                'Your account is not verified please First verify your account and try again !!!',
+                                $otp_code.'Your account is not verified please FirstCheck your email address or Phone number to verify your account !!! '.$checkauth,
                         ],
-                        201
+                        401
                     );
                 }
 
@@ -226,8 +253,13 @@ class AuthController extends Controller
             );
         }
 
-        $token = Str::random(64);
+        $token = Str::random(124);
 
+
+        $record = DB::table('password_resets')->where(['email' => $request['email']]);
+        if ($record->exists()) {
+            $record->delete();
+        }
         DB::table('password_resets')->insert([
             'email' => $request->email,
             'token' => $token,
@@ -238,9 +270,7 @@ class AuthController extends Controller
             [
                 'message' =>
                     'We have E-mailed your password reset link! ' .
-                    $token .
-                    ',' .
-                    $request['email'],
+                    $token,
             ],
             200
         );
@@ -251,11 +281,11 @@ class AuthController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function updatePassword(Request $request)
+    public function updatePassword(Request $request,$token)
     {
         $validator = Validator::make($request->all(), [
-            'email' => 'required|email|exists:users',
-            'password' => 'required|string|min:6|confirmed',
+            'password' => 'min:6',
+            'password_confirmation' => 'required_with:password|same:password|min:6',
         ]);
 
         if ($validator->fails()) {
@@ -269,10 +299,10 @@ class AuthController extends Controller
 
         $updatePassword = DB::table('password_resets')
             ->where([
-                'email' => $request['email'],
-                'token' => $request['token'],
+                'token' => $token,
             ])
             ->first();
+
 
         if (!$updatePassword) {
             return response()->json(
@@ -281,17 +311,24 @@ class AuthController extends Controller
             );
         }
 
-        $user = User::where('email', $request['email'])->update([
+        $emaili=DB::table('password_resets')
+        ->select('email')
+        ->where(['token' => $token])
+        ->value('email');
+
+        $user = User::where('email', $emaili)->update([
             'password' => bcrypt($request['password']),
         ]);
 
         DB::table('password_resets')
-            ->where(['email' => $request->email])
+            ->where(['email' => $emaili])
             ->delete();
 
         return response()->json([
             'message' => 'Your password has been changed!',
         ]);
+
+
     }
 
     /**
@@ -304,7 +341,7 @@ class AuthController extends Controller
         if (Auth::Check()) {
             $validator = Validator::make($request->all(), [
                 'password' => 'required',
-                'NewPassword' => 'required|string|min:6',
+                'NewPassword' => 'required',
             ]);
 
             if ($validator->fails()) {
@@ -407,13 +444,12 @@ class AuthController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    protected function validateotp(Request $request)
+    protected function validateotp(Request $request,$token)
     {
         //validate inputs
         $validator = Validator::make($request->all(), [
-            'code' => 'required|min:6',
+            'code' => 'required',
             'date' => 'required',
-            'email' => 'required|exists:users',
         ]);
         if ($validator->fails()) {
             // return response()->json($validator->errors()->toJson(), 400);
@@ -424,12 +460,14 @@ class AuthController extends Controller
             );
         }
 
+        $email=JWTAuth::setToken($token)->toUser()->email;
+
         //compare input with code value from the table
         $CodeDb = OTP::select('code')
-            ->where(['email' => $request['email']])
+            ->where(['email' => $email])
             ->value('code');
         $DateDb = OTP::select('date')
-            ->where(['email' => $request['email']])
+            ->where(['email' => $email])
             ->value('date');
 
         $to = Carbon::parse($request['date']);
@@ -444,7 +482,7 @@ class AuthController extends Controller
         // }
         if (strcasecmp($CodeDb, $request['code']) == 0) {
             DB::Table('users')
-                ->where('email', '=', $request['email'])
+                ->where('email', '=', $em)
                 ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
                 ->update([
                     'IsAccountNonLocked' => 'VerifiedBy_Phone',
