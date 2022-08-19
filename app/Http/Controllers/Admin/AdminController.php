@@ -96,6 +96,7 @@ class AdminController extends Controller
             $user->IsNotLocked = '1';
             $user->IsAccountNonExpired = '1';
             $user->IsAccountNonLocked = '1';
+            $user->session='1';
             $user->IsCredentialsNonExpired = '1';
             $user->save();
 
