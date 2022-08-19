@@ -207,7 +207,7 @@ class AuthController extends Controller
                         [
                             'message' =>
                                 $otp_code .
-                                'Your account is not verified please FirstCheck your email address or Phone number to verify your account !!! ' .
+                                'Your account is not verified please First Check your email address or Phone number to verify your account !!! ' .
                                 $checkauth,
                         ],
                         401

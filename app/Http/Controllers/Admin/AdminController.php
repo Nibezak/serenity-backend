@@ -273,7 +273,7 @@ class AdminController extends Controller
                         'gender',
                         'profileimageurl'
                     )
-                        ->with(['doctor:id,Title,FirstName,LastName'])
+                        ->with(['doctor:id,Title,FirstName,LastName,telephone,email'])
 
                         ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
                         ->get()
@@ -307,7 +307,9 @@ class AdminController extends Controller
                         'MobilePhone',
                         'email',
                         'Dob',
-                        'AssignedDoctor_Id'
+                        'AssignedDoctor_Id',
+                        'gender',
+                        'profileimageurl',
                     )
                         ->with(['doctor:id,Title,FirstName,LastName,telephone'])
                         ->where('id', '=', $id)
@@ -594,7 +596,10 @@ class AdminController extends Controller
 
         Appointment::
         orderBy('ScheduledTime', 'asc')
-        ->where('Hospital_Id','=',Auth::user()->Hospital_Id)->get()
+        ->where('Hospital_Id','=',Auth::user()->Hospital_Id)
+        ->with(['patient:id,email,FirstName,LastName,profileimageUrl,MobilePhone,PatientCode','appointmenttype:id,name'])
+        ->get(),
+
 
         ], 200);
     }

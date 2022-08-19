@@ -51,8 +51,6 @@ class Patient extends Model
         'PatientCode',
         'gender',
 
-
-
     ];
 
     public function hospital()
