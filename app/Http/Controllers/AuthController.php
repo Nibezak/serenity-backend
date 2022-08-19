@@ -105,6 +105,7 @@ class AuthController extends Controller
             $user->IsAccountNonExpired = '1';
             $user->IsAccountNonLocked = '1';
             $user->IsCredentialsNonExpired = '1';
+            $user->session='null';
             $user->save();
 
             $user->attachRole($role);
@@ -120,11 +121,17 @@ class AuthController extends Controller
             ' and Password is ' .
             $defaultManagerPswd;
         $sms = new TransferSms();
-        //$sms->sendSMS($request['Telephone'], $message);
+        $sms->sendSMS($request['Telephone'], $message);
 
         return response()->json(
             [
-                'message' => $request['PracticeName'].' Hospital Account successfully created, Please Check your Admin email '.$request['email'].' or Your Phone number ' .$request['Telephone'].' For login credentials of your Hospital',
+                'message' =>
+                    $request['PracticeName'] .
+                    ' Hospital Account successfully created, Please Check your Admin email ' .
+                    $request['email'] .
+                    ' or Your Phone number ' .
+                    $request['Telephone'] .
+                    ' For login credentials of your Hospital',
                 // 'user' => $user,
                 'pswd-dvt-purpose-only' => $defaultManagerPswd,
             ],
@@ -141,7 +148,7 @@ class AuthController extends Controller
     {
         //Validate inputs
         $validator = Validator::make($request->all(), [
-            'email' => 'required|email',
+            'email' => 'required|email|exists:users',
             'password' => 'required',
         ]);
         if ($validator->fails()) {
@@ -167,39 +174,57 @@ class AuthController extends Controller
                         ->value('IsAccountNonLocked') != 'VerifiedBy_Phone'
                 ) {
 
+                    DB::Table('users')
+                    ->where('email', '=', $request['email'])
+                    ->update([
+                        'session' => 'true',
+                    ]);
+                    //Get messsage receiver telephone
+                    $receiverPhone = User::select('telephone')
+                        ->where('email', '=', $request['email'])
+                        ->value('telephone');
 
-                 //Get messsage receiver telephone
-                 $receiverPhone = User::select('telephone')
-                 ->where('email', '=', $request['email'])
-                 ->value('telephone');
+                    //Generate Random OTP CODE & send it to the user
 
-             //Generate Random OTP CODE & send it to the user
+                    $otp_code = mt_rand(100000, 999999);
+                    $message = 'Your LetsReason Login OTP is ' . $otp_code;
+                    $sms = new TransferSms();
+                    //  $sms->sendSMS($receiverPhone,$message);
 
-             $otp_code = mt_rand(100000, 999999);
-             $message = 'Your LetsReason Login OTP is '.$otp_code;
-             $sms = new TransferSms();
-           //  $sms->sendSMS($receiverPhone,$message);
-
-             // save Otp
-             $record = OTP::where(['email' => $request['email']]);
-             if ($record->exists()) {
-                 $record->delete();
-             }
-             OTP::create([
-                 'code' => $otp_code,
-                 'date' => date('Y-m-d H:i:s'),
-                 'status' => 'Active',
-                 'email' => $request['email'],
-             ]);
-
+                    // save Otp
+                    $record = OTP::where(['email' => $request['email']]);
+                    if ($record->exists()) {
+                        $record->delete();
+                    }
+                    OTP::create([
+                        'code' => $otp_code,
+                        'date' => date('Y-m-d H:i:s'),
+                        'status' => 'Active',
+                        'email' => $request['email'],
+                    ]);
 
                     return response()->json(
                         [
                             'message' =>
-                                $otp_code.'Your account is not verified please FirstCheck your email address or Phone number to verify your account !!! '.$checkauth,
+                                $otp_code .
+                                'Your account is not verified please FirstCheck your email address or Phone number to verify your account !!! ' .
+                                $checkauth,
                         ],
                         401
                     );
+                }
+
+
+
+                $MinuteCounter = 60 - date('i', time());
+
+                if($MinuteCounter == 59){
+                    DB::Table('users')
+                    ->where('email', '=', $request['email'])
+                    ->update([
+                        'session' => 'false',
+                    ]);
+
                 }
 
                 //get hospital name of loggedin User
@@ -216,9 +241,12 @@ class AuthController extends Controller
                             $HospitalnameLoggedin,
                         'token' => $checkauth,
                         'user' => Auth::user(),
+
                     ],
                     200
                 );
+
+
             } else {
                 return response()->json(
                     ['message' => 'UnAuthorized User'],
@@ -255,8 +283,9 @@ class AuthController extends Controller
 
         $token = Str::random(124);
 
-
-        $record = DB::table('password_resets')->where(['email' => $request['email']]);
+        $record = DB::table('password_resets')->where([
+            'email' => $request['email'],
+        ]);
         if ($record->exists()) {
             $record->delete();
         }
@@ -269,8 +298,7 @@ class AuthController extends Controller
         return response()->json(
             [
                 'message' =>
-                    'We have E-mailed your password reset link! ' .
-                    $token,
+                    'We have E-mailed your password reset link! ' . $token,
             ],
             200
         );
@@ -281,11 +309,12 @@ class AuthController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function updatePassword(Request $request,$token)
+    public function updatePassword(Request $request, $token)
     {
         $validator = Validator::make($request->all(), [
             'password' => 'min:6',
-            'password_confirmation' => 'required_with:password|same:password|min:6',
+            'password_confirmation' =>
+                'required_with:password|same:password|min:6',
         ]);
 
         if ($validator->fails()) {
@@ -303,7 +332,6 @@ class AuthController extends Controller
             ])
             ->first();
 
-
         if (!$updatePassword) {
             return response()->json(
                 ['mesage' => 'Invalid Email Reset token!'],
@@ -311,10 +339,10 @@ class AuthController extends Controller
             );
         }
 
-        $emaili=DB::table('password_resets')
-        ->select('email')
-        ->where(['token' => $token])
-        ->value('email');
+        $emaili = DB::table('password_resets')
+            ->select('email')
+            ->where(['token' => $token])
+            ->value('email');
 
         $user = User::where('email', $emaili)->update([
             'password' => bcrypt($request['password']),
@@ -327,8 +355,6 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'Your password has been changed!',
         ]);
-
-
     }
 
     /**
@@ -395,7 +421,12 @@ class AuthController extends Controller
      */
     public function refresh()
     {
-        return $this->createNewToken(auth()->refresh());
+        return response()->json(
+            ['data' => $this->createNewToken(auth()->refresh())],
+            201
+        );
+
+        // return $this->createNewToken(auth()->refresh());
     }
     /**
      * Get the authenticated User.
@@ -432,7 +463,7 @@ class AuthController extends Controller
             'expires_in' =>
                 auth()
                     ->factory()
-                    ->getTTL() * 72000,
+                    ->getTTL() * 6000,
             'user' => auth()->user(),
         ]);
     }
@@ -444,7 +475,7 @@ class AuthController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    protected function validateotp(Request $request,$token)
+    protected function validateotp(Request $request, $token)
     {
         //validate inputs
         $validator = Validator::make($request->all(), [
@@ -460,7 +491,7 @@ class AuthController extends Controller
             );
         }
 
-        $email=JWTAuth::setToken($token)->toUser()->email;
+        $email = JWTAuth::setToken($token)->toUser()->email;
 
         //compare input with code value from the table
         $CodeDb = OTP::select('code')
@@ -493,7 +524,7 @@ class AuthController extends Controller
                 200
             );
         }
-        return response()->json(['message' => 'Invalid OTP Code'], 201);
+        return response()->json(['message' => 'Invalid OTP Code'], 401);
     }
 
     /**
@@ -533,9 +564,9 @@ class AuthController extends Controller
                 //Generate Random OTP CODE & send it to the user
 
                 $otp_code = mt_rand(100000, 999999);
-                $message = 'Your LetsReason Login OTP is '.$otp_code;
+                $message = 'Your LetsReason Login OTP is ' . $otp_code;
                 $sms = new TransferSms();
-              //  $sms->sendSMS($receiverPhone,$message);
+                //  $sms->sendSMS($receiverPhone,$message);
 
                 // save Otp
                 $record = OTP::where(['email' => $request['email']]);

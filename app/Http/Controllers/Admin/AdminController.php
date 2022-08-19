@@ -209,6 +209,7 @@ class AdminController extends Controller
                 'Marital_Status' => 'required',
                 'Employment' => 'required',
                 'Languages' => 'required',
+                'gender'=>'required',
             ]);
             if ($validator->fails()) {
                 // return response()->json($validator->errors()->toJson(), 400);
@@ -234,6 +235,9 @@ class AdminController extends Controller
             $patient->Hospital_Id = auth()->user()->Hospital_Id;
             $patient->Languages=$request['Languages'];
             $patient->Employment=$request['Employment'];
+            $patient->profileimageUrl='https://i.imgur.com/BKB2EQi.png';
+            $patient->PatientCode='P'.strtoupper(Str::random(5));
+            $patient->gender=$request['gender'];
             $patient->Createdby_Id = auth()->user()->id;
             $patient->save();
 
@@ -256,19 +260,24 @@ class AdminController extends Controller
         if (Auth::check()) {
             return response()->json(
                 [
-                    'data' => Patient::select(
+                    'data' => Patient::
+                    orderBy('created_at', 'desc')
+                     ->select(
                         'id',
                         'FirstName',
                         'LastName',
                         'MobilePhone',
                         'email',
                         'Dob',
-                        'AssignedDoctor_Id'
+                        'AssignedDoctor_Id',
+                        'gender',
+                        'profileimageurl'
                     )
                         ->with(['doctor:id,Title,FirstName,LastName'])
 
                         ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
-                        ->get(),
+                        ->get()
+                        ,
                 ],
                 200
             );
@@ -319,7 +328,9 @@ class AdminController extends Controller
         if (Auth::check()) {
             return response()->json(
                 [
-                    'data' => User::join(
+                    'data' => User::
+                    orderBy('created_at', 'desc')
+                    ->join(
                         'roles',
                         'users.Role_id',
                         '=',
@@ -547,7 +558,7 @@ class AdminController extends Controller
             $message='Hello '.$patData->FirstName.' '.$patData->LastName.' Your '.$typeApp->name. ' Appointment at  '.$hospitalName->PracticeName.' Located at '.$hospitalName->District.' ,'.$hospitalName->Sector.','.$hospitalName->Cell.' with '.$doctorData->Title.' '.$doctorData->FirstName.' '.$doctorData->LastName.' has been scheduled successfully , Date: '
             .$request['ScheduledTime'].' Location: '.$request['Location']. ' and Video Link is:  '.$link;
             $sms = new TransferSms();
-           // $sms->sendSMS($patData->MobilePhone,$message);
+            $sms->sendSMS($patData->MobilePhone,$message);
 
 
           }else{
@@ -581,7 +592,9 @@ class AdminController extends Controller
 
         return response()->json(['data' =>
 
-        Appointment::where('Hospital_Id','=',Auth::user()->Hospital_Id)->get()
+        Appointment::
+        orderBy('ScheduledTime', 'asc')
+        ->where('Hospital_Id','=',Auth::user()->Hospital_Id)->get()
 
         ], 200);
     }
