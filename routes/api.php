@@ -110,7 +110,7 @@ Route::group(
             AdminController::class,
             'createappointment',
         ]);
-        Route::post('/view/all-appointment', [
+        Route::get('/view/all-appointment', [
             AdminController::class,
             'viewallappointments',
         ]);

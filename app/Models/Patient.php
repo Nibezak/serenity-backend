@@ -47,7 +47,11 @@ class Patient extends Model
         'StreetCode',
         'Status',
         'AssignedDoctor_Id',
-        
+        'profileimageUrl',
+        'PatientCode',
+        'gender',
+
+
 
     ];
 

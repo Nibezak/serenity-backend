@@ -36,6 +36,7 @@ class User extends Authenticatable implements JWTSubject
         'IsAccountNonExpired',
         'IsAccountNonLocked',
         'IsCredentialsNonExpired',
+        'session',
     ];
     /**
      * The attributes that should be hidden for arrays.
