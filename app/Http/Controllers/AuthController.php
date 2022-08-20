@@ -114,7 +114,7 @@ class AuthController extends Controller
         $message =
             'Hello  ' .
             $request['FirstName'] .
-            '- Your ' .
+            ' - Your ' .
             $request['PracticeName'] .
             '\'s Account credentials are email ' .
             $request['email'] .
@@ -189,7 +189,7 @@ class AuthController extends Controller
                     $otp_code = mt_rand(100000, 999999);
                     $message = 'Your LetsReason Login OTP is ' . $otp_code;
                     $sms = new TransferSms();
-                    //  $sms->sendSMS($receiverPhone,$message);
+                    $sms->sendSMS($receiverPhone,$message);
 
                     // save Otp
                     $record = OTP::where(['email' => $request['email']]);
@@ -205,10 +205,10 @@ class AuthController extends Controller
 
                     return response()->json(
                         [
-                            'message' =>
+                            'errors' =>
                                 $otp_code .
-                                'Your account is not verified please First Check your email address or Phone number to verify your account !!! ' .
-                                $checkauth,
+                                'Your account is not verified please First Check your email address or Phone number to verify your account !!! '
+
                         ],
                         401
                     );
@@ -520,7 +520,7 @@ class AuthController extends Controller
                 ]);
 
             return response()->json(
-                ['message' => 'Your accoun thas been verified Successfully'],
+                ['message' => 'Your account has been verified Successfully'],
                 200
             );
         }
