@@ -153,7 +153,9 @@ class AdminController extends Controller
 
         return response()->json(
             [
-                'data' => User::join('roles', 'users.Role_id', '=', 'roles.id')
+                'data' => User::
+                orderBy('created_at', 'desc')
+                ->join('roles', 'users.Role_id', '=', 'roles.id')
                     ->where(
                         'users.Hospital_Id',
                         '=',
@@ -161,6 +163,7 @@ class AdminController extends Controller
                     )
 
                     ->get([
+                        'users.created_at',
                         'users.FirstName',
                         'users.LastName',
                         'users.telephone',
@@ -530,13 +533,12 @@ class AdminController extends Controller
             ->first();
 
             $doctorData=User::select('FirstName','LastName','Title','Hospital_Id')
-            ->where('id','=',$request['Patient_Id'])
+            ->where('id','=',$request['Doctor_Id'])
             ->first();
 
             $hospitalName=Hospital::select('PracticeName','District','Sector','Cell','Village')
             ->where('id','=',$doctorData->Hospital_Id)
             ->first();
-
 
 
 
@@ -557,11 +559,12 @@ class AdminController extends Controller
            $link='https://meet.jit.si/Letsreason-test';
             $appointment->link=$link;
 
+           
 
             $message='Hello '.$patData->FirstName.' '.$patData->LastName.' Your '.$typeApp->name. ' Appointment at  '.$hospitalName->PracticeName.' Located at '.$hospitalName->District.' ,'.$hospitalName->Sector.','.$hospitalName->Cell.' with '.$doctorData->Title.' '.$doctorData->FirstName.' '.$doctorData->LastName.' has been scheduled successfully , Date: '
             .$request['ScheduledTime'].' Location: '.$request['Location']. ' and Video Link is:  '.$link;
             $sms = new TransferSms();
-            $sms->sendSMS($patData->MobilePhone,$message);
+           $sms->sendSMS($patData->MobilePhone,$message);
 
 
           }else{
