@@ -158,9 +158,6 @@ class AuthController extends Controller
             );
         }
 
-        // if (!$token = auth()->attempt($validator->validated())) {
-        //     return response()->json(['message' => 'Invalid Credentials'], 401);
-        // }
 
         $checkauth = Auth::attempt([
             'email' => $request->email,
@@ -189,7 +186,7 @@ class AuthController extends Controller
                     $otp_code = mt_rand(100000, 999999);
                     $message = 'Your LetsReason Login OTP is ' . $otp_code;
                     $sms = new TransferSms();
-                    $sms->sendSMS($receiverPhone,$message);
+                    //$sms->sendSMS($receiverPhone,$message);
 
                     // save Otp
                     $record = OTP::where(['email' => $request['email']]);
@@ -206,8 +203,7 @@ class AuthController extends Controller
                     return response()->json(
                         [
                             'errors' =>
-                                $otp_code .
-                                'Your account is not verified please First Check your email address or Phone number to verify your account !!! '
+                                'Your account is not verified please First Check your email address or Phone number to verify your account !!!'
 
                         ],
                         401
@@ -218,7 +214,7 @@ class AuthController extends Controller
 
                 $MinuteCounter = 60 - date('i', time());
 
-                if($MinuteCounter == 59){
+                if($MinuteCounter == 0){
                     DB::Table('users')
                     ->where('email', '=', $request['email'])
                     ->update([
@@ -368,10 +364,11 @@ class AuthController extends Controller
             $validator = Validator::make($request->all(), [
                 'password' => 'required',
                 'NewPassword' => 'required',
+                'password_confirmation' =>
+                'required_with:password|same:NewPassword|min:6',
             ]);
 
             if ($validator->fails()) {
-                // return response()->json($validator->errors(), 422);
                 return response()->json(
                     ['errors' => implode($validator->errors()->all())],
                     422
@@ -475,15 +472,16 @@ class AuthController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    protected function validateotp(Request $request, $token)
+    protected function validateotp(Request $request)
     {
+
+        if (Auth::check()) {
         //validate inputs
         $validator = Validator::make($request->all(), [
-            'code' => 'required',
-            'date' => 'required',
+            'code' => 'required|exists:otp',
         ]);
         if ($validator->fails()) {
-            // return response()->json($validator->errors()->toJson(), 400);
+
 
             return response()->json(
                 ['errors' => implode($validator->errors()->all())],
@@ -491,32 +489,22 @@ class AuthController extends Controller
             );
         }
 
-        $email = JWTAuth::setToken($token)->toUser()->email;
+
+
 
         //compare input with code value from the table
         $CodeDb = OTP::select('code')
-            ->where(['email' => $email])
+            ->where(['email' => auth()->user()->email])
             ->value('code');
-        $DateDb = OTP::select('date')
-            ->where(['email' => $email])
-            ->value('date');
 
-        $to = Carbon::parse($request['date']);
-        $from = Carbon::parse($DateDb);
-        $diff_in_minutes = $to->diffInMinutes($from);
 
-        // if ($diff_in_minutes > 5) {
-        //     return response()->json(
-        //         ['message' => 'Your OTP Code has expired,Please Retry again'],
-        //         201
-        //     );
-        // }
         if (strcasecmp($CodeDb, $request['code']) == 0) {
             DB::Table('users')
-                ->where('email', '=', $em)
+                ->where('email', '=', auth()->user()->email)
                 ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
                 ->update([
                     'IsAccountNonLocked' => 'VerifiedBy_Phone',
+                    'email_verified_at' =>  \Carbon\Carbon::now()->toDateTimeString(),
                 ]);
 
             return response()->json(
@@ -525,6 +513,12 @@ class AuthController extends Controller
             );
         }
         return response()->json(['message' => 'Invalid OTP Code'], 401);
+
+
+
+    }
+    return response()->json(['message' => 'Unauthorized'], 401);
+
     }
 
     /**
@@ -561,12 +555,12 @@ class AuthController extends Controller
                     ->where('email', '=', $request['email'])
                     ->value('telephone');
 
-                //Generate Random OTP CODE & send it to the user
+                //Generate Random OTP CODE & send it to the user for verification
 
                 $otp_code = mt_rand(100000, 999999);
                 $message = 'Your LetsReason Login OTP is ' . $otp_code;
                 $sms = new TransferSms();
-                //  $sms->sendSMS($receiverPhone,$message);
+                $sms->sendSMS($receiverPhone,$message);
 
                 // save Otp
                 $record = OTP::where(['email' => $request['email']]);
@@ -583,7 +577,7 @@ class AuthController extends Controller
                 return response()->json(
                     [
                         'message' =>
-                            'Please check your inbox for Letsreason Login OTP !!! ' .
+                            'Please check your phone inbox for Letsreason Login OTP !!! ' .
                             $otp_code,
                     ],
                     201
