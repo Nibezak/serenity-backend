@@ -186,7 +186,7 @@ class AuthController extends Controller
                     $otp_code = mt_rand(100000, 999999);
                     $message = 'Your LetsReason Login OTP is ' . $otp_code;
                     $sms = new TransferSms();
-                    //$sms->sendSMS($receiverPhone,$message);
+                    $sms->sendSMS($receiverPhone,$message);
 
                     // save Otp
                     $record = OTP::where(['email' => $request['email']]);
@@ -202,8 +202,9 @@ class AuthController extends Controller
 
                     return response()->json(
                         [
-                            'errors' =>
-                                'Your account is not verified please First Check your email address or Phone number to verify your account !!!'
+                            'message' =>
+                                'Your account is not verified please First Check your email address or Phone number to verify your account !!!',
+                                'token' => $checkauth,
 
                         ],
                         401
