@@ -118,7 +118,7 @@ class AdminController extends Controller
             $defaultManagerPswd;
 
         $sms = new TransferSms();
-        //  $sms->sendSMS($request['telephone'],$message);
+        $sms->sendSMS($request['telephone'],$message);
 
         return response()->json(
             [
