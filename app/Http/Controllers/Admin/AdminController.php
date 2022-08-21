@@ -651,7 +651,7 @@ class AdminController extends Controller
     }
 
 
-public function getonepatientappointment($appointmentId){
+public function getappointmentbyid($appointmentId){
     if (Auth::check()) {
 
         $user = Appointment::where('id', '=', $appointmentId)->first();
@@ -673,7 +673,7 @@ public function getonepatientappointment($appointmentId){
         ->get(),
 
 
-        ], 401);
+        ], 201);
 
 
 
@@ -682,6 +682,47 @@ public function getonepatientappointment($appointmentId){
 return response()->json(['message' => 'Unauthorized'], 401);
 
 }
+
+
+public function getonepatientappointments($patientId){
+
+    if (Auth::check()) {
+
+        $patApp = Appointment::where('Patient_Id', '=', $patientId)->first();
+        $pat=Patient::where('id', '=', $patientId)->first();
+        if ($pat === null) {
+            // Patient checks
+            return response()->json(
+                ['message' => 'This Patient does not exists our system'],
+                201
+            );
+        }else if($patApp === null){
+            return response()->json(
+                ['message' => 'This Patient does not have any appointment'],
+                201
+            );
+        }
+
+        return response()->json(['data' =>
+
+        Appointment::
+        orderBy('ScheduledTime', 'asc')
+        ->where('Hospital_Id','=',Auth::user()->Hospital_Id)
+        ->where('Patient_Id','=',$patientId)
+        ->get(),
+
+
+        ], 201);
+
+
+
+    }
+    return response()->json(['message' => 'Unauthorized'], 401);
+
+
+
+}
+
     public function creatediagnosis(Request $request)
     {
         if (Auth::check()) {

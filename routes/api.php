@@ -120,9 +120,14 @@ Route::group(
             'viewmyappointments',
         ]);
 
-        Route::get('/Hospital/patient/one-appointment/{appointmentId}', [
+        Route::get('/Hospital/view/appointment-byid/{appointmentId}', [
             AdminController::class,
-            'getonepatientappointment',
+            'getappointmentbyid',
+        ]);
+
+        Route::get('/Hospital/patient/one-appointment/{patientId}', [
+            AdminController::class,
+            'getonepatientappointments',
         ]);
 
         Route::post('/create-diagnosis', [
