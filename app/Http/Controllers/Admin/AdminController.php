@@ -391,7 +391,7 @@ class AdminController extends Controller
                             'AssignedDoctor_Id' => $request['Doctor_Id'],
                         ]);
                     return $result = [
-                        'msg' =>
+                        'message' =>
                             'Patient is assigned to Doctor successfully !! ',
                         'success' => true,
                     ];
@@ -436,7 +436,7 @@ class AdminController extends Controller
                         'Status' => $request['Status'],
                     ]);
                 return $result = [
-                    'msg' =>
+                    'message' =>
                         'Patient Status is updated successfully - Now ' .
                         $request['Status'] .
                         ' !!',
@@ -505,9 +505,7 @@ class AdminController extends Controller
         if (Auth::check()) {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
-
-
-                'AppointmentType_Id' => 'required',
+                'AppointmentType_Id' =>'required',
                 'Patient_Id' => 'required',
                 'Doctor_Id' => 'required',
                 'Location' => 'required',
@@ -524,21 +522,64 @@ class AdminController extends Controller
                     422
                 );
             }
+            $recordAppoint = TypeAppointment::
+            where('id','=',$request['AppointmentType_Id'])
+            ->where('Hospital_Id','=',auth()->user()->Hospital_Id);
+
+            if (!$recordAppoint->exists()) {
+                return response()->json(
+                    ['errors' =>
+                    'This Appointment type does not exists'
+                    ],
+                    422
+                );
+            }
+
+            $recorddoct = User::
+            where('id','=',$request['Doctor_Id'])
+            ->where('Hospital_Id','=',auth()->user()->Hospital_Id);
+
+            if (!$recorddoct->exists()) {
+                return response()->json(
+                    ['errors' =>
+                    'This Doctor does not exists'
+                    ],
+                    422
+                );
+            }
+
+
+            $recordpat = Patient::
+            where('id','=',$request['Patient_Id'])
+            ->where('Hospital_Id','=',auth()->user()->Hospital_Id);
+
+            if (!$recordpat->exists()) {
+                return response()->json(
+                    ['errors' =>
+                    'This Patient does not exists'
+                    ],
+                    422
+                );
+            }
+
+
             $patData=Patient::select('FirstName','LastName','MobilePhone','email')
             ->where('id','=',$request['Patient_Id'])
-            ->first();
+            ->get();
 
             $typeApp=TypeAppointment::select('name')
             ->where('Hospital_Id','=',auth()->user()->Hospital_Id)
-            ->first();
+            ->where('id','=',$request['AppointmentType_Id'])
+            ->get();
 
             $doctorData=User::select('FirstName','LastName','Title','Hospital_Id')
             ->where('id','=',$request['Doctor_Id'])
-            ->first();
+            ->get();
 
             $hospitalName=Hospital::select('PracticeName','District','Sector','Cell','Village')
-            ->where('id','=',$doctorData->Hospital_Id)
-            ->first();
+            ->where('id','=',$doctorData[0]->Hospital_Id)
+            ->get();
+
 
 
 
@@ -559,27 +600,28 @@ class AdminController extends Controller
            $link='https://meet.jit.si/Letsreason-test';
             $appointment->link=$link;
 
-           
 
-            $message='Hello '.$patData->FirstName.' '.$patData->LastName.' Your '.$typeApp->name. ' Appointment at  '.$hospitalName->PracticeName.' Located at '.$hospitalName->District.' ,'.$hospitalName->Sector.','.$hospitalName->Cell.' with '.$doctorData->Title.' '.$doctorData->FirstName.' '.$doctorData->LastName.' has been scheduled successfully , Date: '
+
+            $message='Hello '.$patData[0]->FirstName.' '.$patData[0]->LastName.' Your '.$typeApp[0]->name. ' Appointment at  '.$hospitalName[0]->PracticeName.' Located at '.$hospitalName[0]->District.' ,'.$hospitalName[0]->Sector.','.$hospitalName[0]->Cell.' with '.$doctorData[0]->Title.' '.$doctorData[0]->FirstName.' '.$doctorData[0]->LastName.' has been scheduled successfully , Date: '
             .$request['ScheduledTime'].' Location: '.$request['Location']. ' and Video Link is:  '.$link;
+
             $sms = new TransferSms();
-           $sms->sendSMS($patData->MobilePhone,$message);
+            $sms->sendSMS($patData->MobilePhone,$message);
 
 
           }else{
-           $appointment->link='null';}
-            $appointment->save();
+           $appointment[0]->link='null';}
+             $appointment->save();
 
 
-
+    if($appointment){
             return response()->json(
                 ['message' =>
-                $typeApp->name.' Appointment of '.$patData->FirstName.' '
-                .$patData->LastName.' has been created Successfully '
+                $typeApp[0]->name.' Appointment of '.$patData[0]->FirstName.' '
+                .$patData[0]->LastName.' has been created Successfully '
                 ],
                 200
-            );
+            );} return response()->json(['message' => 'Ooops Something went wrong on our side, we are fixing it ASAP'], 401);
 
         }
         return response()->json(['message' => 'Unauthorized'], 401);
@@ -608,6 +650,38 @@ class AdminController extends Controller
         ], 200);
     }
 
+
+public function getonepatientappointment($appointmentId){
+    if (Auth::check()) {
+
+        $user = Appointment::where('id', '=', $appointmentId)->first();
+        if ($user === null) {
+            // Appointment doesn't exist
+            return response()->json(
+                ['message' => 'This Appointment does not exists'],
+                201
+            );
+        }
+
+        return response()->json(['data' =>
+
+        Appointment::
+        orderBy('ScheduledTime', 'asc')
+        ->where('Hospital_Id','=',Auth::user()->Hospital_Id)
+        ->where('id','=',$appointmentId)
+        ->with(['doctor:id,email,telephone,Title,FirstName,LastName','patient','appointmenttype:id,name'])
+        ->get(),
+
+
+        ], 401);
+
+
+
+
+}
+return response()->json(['message' => 'Unauthorized'], 401);
+
+}
     public function creatediagnosis(Request $request)
     {
         if (Auth::check()) {
