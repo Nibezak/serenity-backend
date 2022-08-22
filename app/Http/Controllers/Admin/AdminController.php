@@ -206,7 +206,7 @@ class AdminController extends Controller
     //register new patient
     public function createnewpatient(Request $request)
     {
-        if (Auth::user()->roles->first()->name == ('Admin' |'Reception' |'Clinician') ) {
+        if (Auth::user()->roles->first()->name == ('Admin' ||('Reception') )) {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
                 'FirstName' => 'required',
@@ -274,7 +274,7 @@ class AdminController extends Controller
     public function fetchourActivepatients()
     {
 
-        if (Auth::user()->roles->first()->name == ('Admin' |'Reception') ) {
+        if (Auth::user()->roles->first()->name == ('Admin' ||('Reception')) ) {
 
 
         return response()->json(
@@ -381,7 +381,7 @@ class AdminController extends Controller
 
     public function assigndocotortopatient(Request $request)
     {
-        if (Auth::user()->roles->first()->name == ('Admin' |'Reception') ) {
+        if (Auth::user()->roles->first()->name == ('Admin' ||('Reception')) ) {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
                 'Doctor_Id' => 'required',
@@ -434,7 +434,7 @@ class AdminController extends Controller
 
     public function activatepatient(Request $request)
     {
-        if (Auth::user()->roles->first()->name == ('Admin' |'Reception') ) {
+        if (Auth::user()->roles->first()->name == ('Admin' ||('Reception')) ) {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
                 'PatientId' => 'required',
@@ -638,7 +638,7 @@ class AdminController extends Controller
             .$request['ScheduledTime'].' Location: '.$request['Location']. ' and Video Link is:  '.$link;
 
             $sms = new TransferSms();
-            $sms->sendSMS($patData->MobilePhone,$message);
+           // $sms->sendSMS($patData->MobilePhone,$message);
 
 
           }else{
