@@ -206,7 +206,7 @@ class AdminController extends Controller
     //register new patient
     public function createnewpatient(Request $request)
     {
-        if (Auth::user()->roles->first()->name == ('Admin' ||('Reception') )) {
+        if (Auth::user()->roles->first()->name == ('Admin' ||('Reception') ||('Clinician'))) {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
                 'FirstName' => 'required',
