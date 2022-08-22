@@ -50,8 +50,15 @@ class Patient extends Model
         'profileimageUrl',
         'PatientCode',
         'gender',
+        'lastappoint',
+        'nextappoint',
 
     ];
+
+    public function LastAppointment()
+    {
+        return $this->belongsTo('App\Models\Appointment','lastappoint');
+    }
 
     public function hospital()
     {
@@ -66,5 +73,9 @@ class Patient extends Model
         return $this->belongsTo('App\Models\User','Createdby_Id');
     }
 
+    public function NextAppointment()
+    {
+        return $this->belongsTo('App\Models\Appointment','nextappoint');
+    }
 
 }

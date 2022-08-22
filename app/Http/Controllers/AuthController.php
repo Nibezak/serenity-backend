@@ -164,7 +164,7 @@ class AuthController extends Controller
             'password' => $request->password,
         ]);
         if ($checkauth) {
-            if (Auth::user()->roles->first()->name == 'Admin') {
+            if (Auth::user()->roles->first()->name == ('Admin'||('Clinician')||('Reception')||('Cashier'))) {
                 if (
                     User::select('IsAccountNonLocked')
                         ->where('email', '=', $request['email'])
@@ -208,7 +208,7 @@ class AuthController extends Controller
                                 'AccountStatus'=>"notVerified",
 
                         ],
-                        401
+                        201
                     );
                 }
 
@@ -411,7 +411,7 @@ class AuthController extends Controller
                 'message' => 'User successfully signed out',
             ]);
         }
-        return response()->json(['message' => 'Unauthenticated!'], 401);
+        return response()->json(['message' => 'Unauthenticated user'], 201);
     }
     /**
      * Refresh a token.
@@ -420,10 +420,13 @@ class AuthController extends Controller
      */
     public function refresh()
     {
+        if (Auth::Check()) {
         return response()->json(
             ['data' => $this->createNewToken(auth()->refresh())],
             201
         );
+    }
+    return response()->json(['message' => 'Unauthenticated user'], 201);
 
         // return $this->createNewToken(auth()->refresh());
     }
@@ -434,18 +437,10 @@ class AuthController extends Controller
      */
     public function userProfile()
     {
+        if (Auth::Check()) {
         return response()->json(auth()->user());
-        // return response()->json(
-        //     [
-        //         'data' => auth()
-        //             ->user()
-        //             ->ignore(Auth::id()),
-        //         'Acount_Created_At' => auth()
-        //             ->user()
-        //             ->created_at->diffForHumans(),
-        //     ],
-        //     200
-        // );
+    }
+    return response()->json(['message' => 'Unauthenticated user'], 201);
     }
     /**
      * Get the token array structure.
@@ -509,17 +504,37 @@ class AuthController extends Controller
                     'email_verified_at' =>  \Carbon\Carbon::now()->toDateTimeString(),
                 ]);
 
-            return response()->json(
-                ['message' => 'Your account has been verified Successfully'],
-                200
-            );
+
+              //get hospital name of loggedin User
+              $HospitalnameLoggedin = Hospital::select('PracticeName')
+              ->where('id', '=', Auth::user()->Hospital_Id)
+              ->value('PracticeName');
+
+          return response()->json(
+              [
+                  'message' =>
+                      'Welcome ' .
+                      Auth::user()->roles->first()->display_name .
+                      ' of ' .
+                      $HospitalnameLoggedin,
+                  'token' => $checkauth,
+                  'user' => Auth::user(),
+                  'success'=>'Your account has been verified Successfully',
+
+              ],
+              200
+          );
+
+
+
+
         }
-        return response()->json(['message' => 'Invalid OTP Code'], 401);
+        return response()->json(['message' => 'Invalid OTP Code'], 201);
 
 
 
     }
-    return response()->json(['message' => 'Unauthorized'], 401);
+    return response()->json(['message' => 'Unauthorized User'], 201);
 
     }
 
@@ -592,6 +607,6 @@ class AuthController extends Controller
                 201
             );
         }
-        return response()->json(['message' => 'Unauthorized'], 401);
+        return response()->json(['message' => 'Unauthorized user'], 201);
     }
 }

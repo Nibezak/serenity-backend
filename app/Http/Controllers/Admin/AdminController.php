@@ -13,6 +13,7 @@ use App\Models\Patient;
 use App\Models\Diagnosis;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 use Validator;
 use Illuminate\Support\Str;
 use App\TransferSms;
@@ -51,7 +52,7 @@ class AdminController extends Controller
      */
     public function createNewUser(Request $request)
     {
-        //
+        if (Auth::user()->roles->first()->name == 'Admin' ) {
 
         //validate inputs
         $validator = Validator::make($request->all(), [
@@ -137,17 +138,23 @@ class AdminController extends Controller
             ],
             200
         );
+
     }
+    return response()->json(['message' => 'Unauthorized user'], 201);
+
+
+    }
+
 
     //Get all our hospital staff
     public function fetchourstaff()
     {
-        if (!Auth::user()->roles->first()->name == 'Admin') {
+        if (!Auth::check()) {
             return response()->json(
                 [
                     'message' => 'Unauthorized User',
                 ],
-                200
+                201
             );
         }
 
@@ -174,7 +181,8 @@ class AdminController extends Controller
             200
         );
 
-        return 'okay';
+
+
     }
 
     //Fetch hospitall staff roles
@@ -192,12 +200,13 @@ class AdminController extends Controller
                 200
             );
         }
+        return response()->json(['message' => 'Unauthorized user'], 201);
     }
 
     //register new patient
     public function createnewpatient(Request $request)
     {
-        if (Auth::check()) {
+        if (Auth::user()->roles->first()->name == ('Admin' |'Reception' |'Clinician') ) {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
                 'FirstName' => 'required',
@@ -240,10 +249,13 @@ class AdminController extends Controller
             $patient->Languages=$request['Languages'];
             $patient->Employment=$request['Employment'];
             $patient->profileimageUrl='https://i.imgur.com/BKB2EQi.png';
-            $patient->PatientCode='P'.strtoupper(Str::random(5));
+            $patient->PatientCode='P'.strtoupper(Str::random(6));
             $patient->gender=$request['gender'];
             $patient->Createdby_Id = auth()->user()->id;
-            $patient->save();
+           $patient->save();
+
+
+
 
             return response()->json(
                 [
@@ -256,28 +268,21 @@ class AdminController extends Controller
                 200
             );
         }
-        return response()->json(['message' => 'Unauthorized'], 401);
+        return response()->json(['message' => 'Unauthorized'], 201);
     }
 
     public function fetchourActivepatients()
     {
-        if (Auth::check()) {
-            return response()->json(
+
+        if (Auth::user()->roles->first()->name == ('Admin' |'Reception') ) {
+
+
+        return response()->json(
                 [
                     'data' => Patient::
                     orderBy('created_at', 'desc')
-                     ->select(
-                        'id',
-                        'FirstName',
-                        'LastName',
-                        'MobilePhone',
-                        'email',
-                        'Dob',
-                        'AssignedDoctor_Id',
-                        'gender',
-                        'profileimageurl'
-                    )
-                        ->with(['doctor:id,Title,FirstName,LastName,telephone,email'])
+                    ->where('AssignedDoctor_Id','=',null)
+                        ->with(['doctor:id,Title,FirstName,LastName,telephone','LastAppointment','NextAppointment','doneby:id,FirstName,LastName,email,telephone,ProfileImageUrl'])
 
                         ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
                         ->get()
@@ -285,15 +290,43 @@ class AdminController extends Controller
                 ],
                 200
             );
+
+
+
+
+
         }
-        return response()->json(['errors' => 'Unauthorized'], 401);
+
+        else if (Auth::user()->roles->first()->name == 'Clinician') {
+
+
+
+            return response()->json(
+                [
+                    'data' => Patient::
+                    orderBy('created_at', 'desc')
+                    ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
+                    ->where('AssignedDoctor_Id','=',auth()->user()->id)
+                    ->where('Status','=','Active')
+                    ->with(['doctor:id,Title,FirstName,LastName,telephone','LastAppointment','NextAppointment','doneby:id,FirstName,LastName,email,telephone,ProfileImageUrl'])
+                    ->get()
+                        ,
+                ],
+                200
+            );
+
+
+        }
+        return response()->json(['message' => 'Unauthorized user'], 201);
     }
 
     public function fetchonepatient($id)
     {
         if (Auth::check()) {
             //Validate User Inputs
-            $user = Patient::where('id', '=', $id)->first();
+            $user = Patient::where('id', '=', $id)
+              ->where('Hospital_Id','=',auth()->user()->Hospital_Id)
+            ->first();
             if ($user === null) {
                 // user doesn't exist
                 return response()->json(
@@ -304,26 +337,16 @@ class AdminController extends Controller
 
             return response()->json(
                 [
-                    'data' => Patient::select(
-                        'id',
-                        'FirstName',
-                        'LastName',
-                        'MobilePhone',
-                        'email',
-                        'Dob',
-                        'AssignedDoctor_Id',
-                        'gender',
-                        'profileimageurl',
-                    )
-                        ->with(['doctor:id,Title,FirstName,LastName,telephone'])
-                        ->where('id', '=', $id)
+                    'data' => Patient::
+                        where('id', '=', $id)
+                        ->with(['doctor:id,Title,FirstName,LastName,telephone','LastAppointment','NextAppointment','doneby:id,FirstName,LastName,email,telephone,ProfileImageUrl'])
                         ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
                         ->get(),
                 ],
                 200
             );
         }
-        return response()->json(['message' => 'Unauthorized'], 401);
+        return response()->json(['message' => 'Unauthorized user '], 201);
 
 
     }
@@ -331,7 +354,7 @@ class AdminController extends Controller
 
     public function viewourhospitaldoctor()
     {
-        if (Auth::check()) {
+       if( Auth::user()->roles->first()->name == ('Admin') ){
             return response()->json(
                 [
                     'data' => User::
@@ -353,12 +376,12 @@ class AdminController extends Controller
                 200
             );
         }
-        return response()->json(['message' => 'Unauthorized'], 401);
+        return response()->json(['message' => 'Unauthorized User'], 201);
     }
 
     public function assigndocotortopatient(Request $request)
     {
-        if (Auth::check()) {
+        if (Auth::user()->roles->first()->name == ('Admin' |'Reception') ) {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
                 'Doctor_Id' => 'required',
@@ -402,16 +425,16 @@ class AdminController extends Controller
                 }
             }
             return response()->json(
-                ['message' => 'Patient is Inactive,Please Pay  '],
-                401
+                ['message' => 'Patient is Inactive,Please Pay or consult Letsreason Admin for consultation or other support '],
+                201
             );
         }
-        return response()->json(['message' => 'Unauthorized'], 401);
+        return response()->json(['message' => 'Unauthorized user'], 201);
     }
 
     public function activatepatient(Request $request)
     {
-        if (Auth::check()) {
+        if (Auth::user()->roles->first()->name == ('Admin' |'Reception') ) {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
                 'PatientId' => 'required',
@@ -448,11 +471,12 @@ class AdminController extends Controller
                 ];
             }
         }
+        return response()->json(['message' => 'Unauthorized user'], 201);
     }
 
     public function addhospitalservice(Request $request)
     {
-        if (Auth::check()) {
+        if( Auth::user()->roles->first()->name == ('Admin') ){
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
                 'name' => 'required|unique:typeappointments',
@@ -478,12 +502,12 @@ class AdminController extends Controller
                 200
             );
         }
-        return response()->json(['message' => 'Unauthorized'], 401);
+        return response()->json(['message' => 'Unauthorized user'], 201);
     }
 
     public function viewhospitalservice()
     {
-        if (Auth::check()) {
+        if( Auth::user()->roles->first()->name == ('Admin') ){
 
             return response()->json(['data' =>
             TypeAppointment::where(
@@ -497,7 +521,7 @@ class AdminController extends Controller
             ], 200);
 
         }
-        return response()->json(['message' => 'Unauthorized'], 401);
+        return response()->json(['message' => 'Unauthorized'], 201);
     }
 
     public function createappointment(Request $request)
@@ -507,7 +531,6 @@ class AdminController extends Controller
             $validator = Validator::make($request->all(), [
                 'AppointmentType_Id' =>'required',
                 'Patient_Id' => 'required',
-                'Doctor_Id' => 'required',
                 'Location' => 'required',
                 'ScheduledTime' => 'required',
                 'Duration' => 'required',
@@ -529,43 +552,52 @@ class AdminController extends Controller
             if (!$recordAppoint->exists()) {
                 return response()->json(
                     ['errors' =>
-                    'This Appointment type does not exists'
+                    'This Appointment type does not exists in our hospital'
                     ],
                     422
                 );
             }
-
-            $recorddoct = User::
-            where('id','=',$request['Doctor_Id'])
-            ->where('Hospital_Id','=',auth()->user()->Hospital_Id);
-
-            if (!$recorddoct->exists()) {
-                return response()->json(
-                    ['errors' =>
-                    'This Doctor does not exists'
-                    ],
-                    422
-                );
-            }
-
-
             $recordpat = Patient::
             where('id','=',$request['Patient_Id'])
             ->where('Hospital_Id','=',auth()->user()->Hospital_Id);
 
             if (!$recordpat->exists()) {
                 return response()->json(
-                    ['errors' =>
-                    'This Patient does not exists'
+                    ['message' =>
+                    'This Patient does not exists in our hospital'
                     ],
-                    422
+                    201
                 );
             }
-
 
             $patData=Patient::select('FirstName','LastName','MobilePhone','email')
             ->where('id','=',$request['Patient_Id'])
             ->get();
+
+
+          $AssignedDoctorId=Patient::select('AssignedDoctor_Id')->where('id','=',$request['Patient_Id'])->value('AssignedDoctor_Id');
+
+
+   if($AssignedDoctorId ==null){
+    return response()->json(['message' => 'Sorry Patient '. $patData[0]->FirstName.' '.$patData[0]->LastName.' does not have assigned doctor, please first assign the patient with the doctor first'], 201);
+   }
+
+
+            $recorddoct = User::
+            where('id','=',$AssignedDoctorId)
+            ->where('Hospital_Id','=',auth()->user()->Hospital_Id);
+
+            if (!$recorddoct->exists()) {
+                return response()->json(
+                    ['message' =>
+                    'This Doctor does not exists in our hospital'
+                    ],
+                    201
+                );
+            }
+
+
+
 
             $typeApp=TypeAppointment::select('name')
             ->where('Hospital_Id','=',auth()->user()->Hospital_Id)
@@ -573,7 +605,7 @@ class AdminController extends Controller
             ->get();
 
             $doctorData=User::select('FirstName','LastName','Title','Hospital_Id')
-            ->where('id','=',$request['Doctor_Id'])
+            ->where('id','=',$AssignedDoctorId)
             ->get();
 
             $hospitalName=Hospital::select('PracticeName','District','Sector','Cell','Village')
@@ -586,7 +618,7 @@ class AdminController extends Controller
             $appointment = new Appointment();
             $appointment->AppointmentType_Id = $request['AppointmentType_Id'];
             $appointment->Patient_Id = $request['Patient_Id'];
-            $appointment->Doctor_Id = $request['Doctor_Id'];
+            $appointment->Doctor_Id =$AssignedDoctorId;
             $appointment->Location = $request['Location'];
             $appointment->ScheduledTime = $request['ScheduledTime'];
             $appointment->Duration = $request['Duration'];
@@ -611,7 +643,35 @@ class AdminController extends Controller
 
           }else{
            $appointment[0]->link='null';}
-             $appointment->save();
+              $appointment->save();
+
+
+            $PatientnextAppointment=Appointment::select('id','ScheduledTime')
+            ->where('Hospital_Id','=',auth()->user()->Hospital_Id)
+            ->where('Patient_Id','=',$request['Patient_Id'])
+           ->whereDate('ScheduledTime', '>', Carbon::now())
+            ->orderBy('ScheduledTime', 'ASC')
+            ->first();
+           ;
+
+           $PatientlastAppointment=Appointment::select('id','ScheduledTime')
+           ->where('Hospital_Id','=',auth()->user()->Hospital_Id)
+           ->where('Patient_Id','=',$request['Patient_Id'])
+          ->whereDate('ScheduledTime', '<', Carbon::now())
+           ->orderBy('ScheduledTime', 'DESC')
+           ->first();
+          ;
+
+
+
+           DB::Table('patients')
+           ->where('Hospital_Id','=',auth()->user()->Hospital_Id)
+           ->where('id','=',$request['Patient_Id'])
+                    ->update([
+                        'lastappoint' =>  $PatientlastAppointment->id,
+                        'nextappoint'=>$PatientnextAppointment->id,
+                    ]);
+
 
 
     if($appointment){
@@ -624,7 +684,7 @@ class AdminController extends Controller
             );} return response()->json(['message' => 'Ooops Something went wrong on our side, we are fixing it ASAP'], 401);
 
         }
-        return response()->json(['message' => 'Unauthorized'], 401);
+        return response()->json(['message' => 'Unauthorized user'], 201);
     }
 
     public function viewallappointments(Request $request)
@@ -679,7 +739,7 @@ public function getappointmentbyid($appointmentId){
 
 
 }
-return response()->json(['message' => 'Unauthorized'], 401);
+return response()->json(['message' => 'Unauthorized User '], 201);
 
 }
 
@@ -717,7 +777,7 @@ public function getonepatientappointments($patientId){
 
 
     }
-    return response()->json(['message' => 'Unauthorized'], 401);
+    return response()->json(['message' => 'Unauthorized user'], 201);
 
 
 
@@ -752,7 +812,7 @@ public function getonepatientappointments($patientId){
                 200
             );
         }
-        return response()->json(['errors' => 'Unauthorized'], 401);
+        return response()->json(['errors' => 'Unauthorized user'], 201);
     }
 
     public function fetchdiagnosis()
@@ -771,7 +831,7 @@ public function getonepatientappointments($patientId){
                 200
             );
         }
-        return response()->json(['message' => 'Unauthorized'], 401);
+        return response()->json(['message' => 'Unauthorized user'], s01);
     }
 
     public function fetchonedoctor($id){
@@ -807,7 +867,7 @@ public function getonepatientappointments($patientId){
                 200
             );
         }
-        return response()->json(['message' => 'Unauthorized'], 401);
+        return response()->json(['message' => 'Unauthorized user'], 201);
 
 
     }
