@@ -26,8 +26,10 @@ class Appointment extends Model
     'Status',
     'link',
 
+
     ];
 
+    
 
     public function appointmenttype()
     {

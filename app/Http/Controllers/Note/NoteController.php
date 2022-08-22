@@ -26,7 +26,7 @@ class NoteController extends Controller
 
     public function createtreatmentstrategy(Request $request)
     {
-        if (Auth::check()) {
+        if (Auth::user()->roles->first()->name == ('Admin' |'Clinician') ) {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
                 'name' => 'required|unique:treatmentstrategy',
@@ -52,12 +52,12 @@ class NoteController extends Controller
                 200
             );
         }
-        return response()->json(['message' => 'Unauthorized'], 401);
+        return response()->json(['message' => 'Unauthorized user'], 201);
     }
 
     public function fetchreatmentstrategy()
     {
-        if (Auth::check()) {
+        if (Auth::user()->roles->first()->name == ('Admin' |'Clinician') ) {
             return response()->json(
                 [
                     'data' => Treatmentstrategy::where(
@@ -71,12 +71,12 @@ class NoteController extends Controller
                 200
             );
         }
-        return response()->json(['message' => 'Unauthorized'], 401);
+        return response()->json(['message' => 'Unauthorized user'], 201);
     }
 
     public function createfrequencytreatment(Request $request)
     {
-        if (Auth::check()) {
+        if (Auth::user()->roles->first()->name == ('Admin' |'Clinician') ) {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
                 'name' => 'required|unique:frequencytreatment',
@@ -102,11 +102,11 @@ class NoteController extends Controller
                 200
             );
         }
-        return response()->json(['message' => 'Unauthorized'], 401);
+        return response()->json(['message' => 'Unauthorized user'], 201);
     }
     public function fetchfrequencytreatment()
     {
-        if (Auth::check()) {
+        if (Auth::user()->roles->first()->name == ('Admin' |'Clinician') ) {
             return response()->json(
                 [
                     'data' => Frequencytreatment::where(
@@ -120,12 +120,12 @@ class NoteController extends Controller
                 200
             );
         }
-        return response()->json(['message' => 'Unauthorized'], 401);
+        return response()->json(['message' => 'Unauthorized 201'], 201);
     }
 
     public function addptreatmentplan(Request $request)
     {
-        if (Auth::check()) {
+        if (Auth::user()->roles->first()->name == ('Admin' |'Clinician') ) {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
                 'Note_Type' => 'required',
@@ -201,12 +201,12 @@ class NoteController extends Controller
                 200
             );
         }
-        return response()->json(['message' => 'Unauthorized'], 401);
+        return response()->json(['message' => 'Unauthorized user'], 201);
     }
 
     public function createmiscellaneousnote(Request $request)
     {
-        if (Auth::check()) {
+        if (Auth::user()->roles->first()->name == ('Admin' |'Clinician') ) {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
                 'Note_Type' => 'required',
@@ -245,12 +245,12 @@ class NoteController extends Controller
                 200
             );
         }
-        return response()->json(['message' => 'Unauthorized'], 401);
+        return response()->json(['message' => 'Unauthorized user'], 201);
     }
 
     public function fetchmiscnote(Request $request)
     {
-        if (Auth::check()) {
+        if (Auth::user()->roles->first()->name == ('Admin' |'Clinician') ) {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
                 'Patient_Id' => 'required|exists:miscnote',
@@ -282,12 +282,12 @@ class NoteController extends Controller
                 200
             );
         }
-        return response()->json(['message' => 'Unauthorized'], 401);
+        return response()->json(['message' => 'Unauthorized user'], 201);
     }
 
     public function createContactNote(Request $request)
     {
-        if (Auth::check()) {
+        if (Auth::user()->roles->first()->name == ('Admin' |'Clinician') ) {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
                 'Note_Type' => 'required',
@@ -343,12 +343,12 @@ class NoteController extends Controller
                 200
             );
         }
-        return response()->json(['message' => 'Unauthorized'], 401);
+        return response()->json(['message' => 'Unauthorized user'], 201);
     }
 
     public function viewContactNote(Request $request)
     {
-        if (Auth::check()) {
+        if (Auth::user()->roles->first()->name == ('Admin' |'Clinician') ) {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
                 'Patient_Id' => 'required|exists:contactnote',
@@ -380,12 +380,12 @@ class NoteController extends Controller
                 200
             );
         }
-        return response()->json(['message' => 'Unauthorized'], 401);
+        return response()->json(['message' => 'Unauthorized user'], 201);
     }
 
     public function createProcessNote(Request $request)
     {
-        if (Auth::check()) {
+        if (Auth::user()->roles->first()->name == ('Admin' |'Clinician') ) {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
                 'NoteType' => 'required',
@@ -428,12 +428,12 @@ class NoteController extends Controller
                 200
             );
         }
-        return response()->json(['message' => 'Unauthorized'], 401);
+        return response()->json(['message' => 'Unauthorized user'], 201);
     }
 
     public function viewProcessNote(Request $request)
     {
-        if (Auth::check()) {
+        if (Auth::user()->roles->first()->name == ('Admin' |'Clinician') ) {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
                 'Patient_Id' => 'required|exists:processnote',
@@ -464,12 +464,12 @@ class NoteController extends Controller
                 200
             );
         }
-        return response()->json(['message' => 'Unauthorized'], 401);
+        return response()->json(['message' => 'Unauthorized user'], 201);
     }
 
     public function createConsulationnote(Request $request)
     {
-        if (Auth::check()) {
+        if (Auth::user()->roles->first()->name == ('Admin' |'Clinician') ) {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
                 'Note_Type' => 'required',
@@ -517,6 +517,6 @@ class NoteController extends Controller
 
 
         }
-        return response()->json(['message' => 'Unauthorized'], 401);
+        return response()->json(['message' => 'Unauthorized user'], 201);
     }
 }
