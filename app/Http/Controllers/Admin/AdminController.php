@@ -434,7 +434,7 @@ class AdminController extends Controller
 
     public function activatepatient(Request $request)
     {
-        if (Auth::user()->roles->first()->name == ('Admin' |'Reception') ) {
+        if (Auth::user()->roles->first()->name == ('Admin' ||('Reception') )) {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
                 'PatientId' => 'required',
@@ -476,7 +476,7 @@ class AdminController extends Controller
 
     public function addhospitalservice(Request $request)
     {
-        if( Auth::user()->roles->first()->name == ('Admin') ){
+        if( Auth::user()->roles->first()->name == 'Admin' ){
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
                 'name' => 'required|unique:typeappointments',
@@ -507,7 +507,7 @@ class AdminController extends Controller
 
     public function viewhospitalservice()
     {
-        if( Auth::user()->roles->first()->name == ('Admin') ){
+        if( Auth::user()->roles->first()->name == 'Admin' ){
 
             return response()->json(['data' =>
             TypeAppointment::where(
