@@ -26,7 +26,7 @@ class NoteController extends Controller
 
     public function createtreatmentstrategy(Request $request)
     {
-        if (Auth::user()->roles->first()->name == ('Admin' |'Clinician') ) {
+        if (Auth::user()->roles->first()->name == ('Admin'||('Clinician')||('Reception'))) {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
                 'name' => 'required|unique:treatmentstrategy',
@@ -57,7 +57,7 @@ class NoteController extends Controller
 
     public function fetchreatmentstrategy()
     {
-        if (Auth::user()->roles->first()->name == ('Admin' |'Clinician') ) {
+        if (Auth::user()->roles->first()->name == ('Admin'||('Clinician')||('Reception'))) {
             return response()->json(
                 [
                     'data' => Treatmentstrategy::where(
@@ -76,7 +76,7 @@ class NoteController extends Controller
 
     public function createfrequencytreatment(Request $request)
     {
-        if (Auth::user()->roles->first()->name == ('Admin' |'Clinician') ) {
+        if (Auth::user()->roles->first()->name == ('Admin'||('Clinician')||('Reception'))) {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
                 'name' => 'required|unique:frequencytreatment',
@@ -106,7 +106,7 @@ class NoteController extends Controller
     }
     public function fetchfrequencytreatment()
     {
-        if (Auth::user()->roles->first()->name == ('Admin' |'Clinician') ) {
+        if (Auth::user()->roles->first()->name == ('Admin'||('Clinician')||('Reception'))) {
             return response()->json(
                 [
                     'data' => Frequencytreatment::where(
@@ -125,7 +125,7 @@ class NoteController extends Controller
 
     public function addptreatmentplan(Request $request)
     {
-        if (Auth::user()->roles->first()->name == ('Admin' |'Clinician') ) {
+        if (Auth::user()->roles->first()->name == ('Admin'||('Clinician')||('Reception'))) {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
                 'Note_Type' => 'required',
@@ -206,7 +206,7 @@ class NoteController extends Controller
 
     public function createmiscellaneousnote(Request $request)
     {
-        if (Auth::user()->roles->first()->name == ('Admin' |'Clinician') ) {
+        if (Auth::user()->roles->first()->name == ('Admin'||('Clinician')||('Reception'))) {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
                 'Note_Type' => 'required',
@@ -250,7 +250,7 @@ class NoteController extends Controller
 
     public function fetchmiscnote(Request $request)
     {
-        if (Auth::user()->roles->first()->name == ('Admin' |'Clinician') ) {
+        if (Auth::user()->roles->first()->name == ('Admin'||('Clinician')||('Reception'))) {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
                 'Patient_Id' => 'required|exists:miscnote',
@@ -287,7 +287,7 @@ class NoteController extends Controller
 
     public function createContactNote(Request $request)
     {
-        if (Auth::user()->roles->first()->name == ('Admin' |'Clinician') ) {
+        if (Auth::user()->roles->first()->name == ('Admin'||('Clinician')||('Reception'))) {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
                 'Note_Type' => 'required',
@@ -348,7 +348,7 @@ class NoteController extends Controller
 
     public function viewContactNote(Request $request)
     {
-        if (Auth::user()->roles->first()->name == ('Admin' |'Clinician') ) {
+        if (Auth::user()->roles->first()->name == ('Admin'||('Clinician')||('Reception'))) {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
                 'Patient_Id' => 'required|exists:contactnote',
@@ -385,7 +385,7 @@ class NoteController extends Controller
 
     public function createProcessNote(Request $request)
     {
-        if (Auth::user()->roles->first()->name == ('Admin' |'Clinician') ) {
+        if (Auth::user()->roles->first()->name == ('Admin'||('Clinician')||('Reception'))) {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
                 'NoteType' => 'required',
@@ -433,7 +433,7 @@ class NoteController extends Controller
 
     public function viewProcessNote(Request $request)
     {
-        if (Auth::user()->roles->first()->name == ('Admin' |'Clinician') ) {
+        if (Auth::user()->roles->first()->name == ('Admin'||('Clinician')||('Reception'))) {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
                 'Patient_Id' => 'required|exists:processnote',
@@ -469,7 +469,7 @@ class NoteController extends Controller
 
     public function createConsulationnote(Request $request)
     {
-        if (Auth::user()->roles->first()->name == ('Admin' |'Clinician') ) {
+        if (Auth::user()->roles->first()->name == ('Admin'||('Clinician')||('Reception'))) {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
                 'Note_Type' => 'required',

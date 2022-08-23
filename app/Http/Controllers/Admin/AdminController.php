@@ -206,7 +206,7 @@ class AdminController extends Controller
     //register new patient
     public function createnewpatient(Request $request)
     {
-        if (Auth::user()->roles->first()->name == ('Admin' ||('Reception') )) {
+        if (Auth::user()->roles->first()->name == 'Admin') {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
                 'FirstName' => 'required',
@@ -274,7 +274,7 @@ class AdminController extends Controller
     public function fetchourActivepatients()
     {
 
-        if (Auth::user()->roles->first()->name == ('Admin' ||('Reception')) ) {
+        if (Auth::user()->roles->first()->name == 'Admin') {
 
 
         return response()->json(
@@ -297,17 +297,17 @@ class AdminController extends Controller
 
         }
 
-        else if (Auth::user()->roles->first()->name == ('Clinician')) {
+        else if (Auth::user()->roles->first()->name == 'Clinician') {
 
 
             return response()->json(
                 [
                     'data' => Patient::
-                    orderBy('created_at', 'desc')
-                    ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
+                    where('Hospital_Id', '=', auth()->user()->Hospital_Id)
                     ->where('AssignedDoctor_Id','=',auth()->user()->id)
                     ->where('Status','=','Active')
                     ->with(['doctor:id,Title,FirstName,LastName,telephone','LastAppointment','NextAppointment','doneby:id,FirstName,LastName,email,telephone,ProfileImageUrl'])
+                    ->orderBy('created_at', 'desc')
                     ->get()
                         ,
                 ],
@@ -380,7 +380,7 @@ class AdminController extends Controller
 
     public function assigndocotortopatient(Request $request)
     {
-        if (Auth::user()->roles->first()->name == ('Admin' ||('Reception')) ) {
+        if (Auth::user()->roles->first()->name == 'Admin') {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
                 'Doctor_Id' => 'required',
@@ -433,7 +433,7 @@ class AdminController extends Controller
 
     public function activatepatient(Request $request)
     {
-        if (Auth::user()->roles->first()->name == ('Admin' ||('Reception') )) {
+        if (Auth::user()->roles->first()->name == 'Admin') {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
                 'PatientId' => 'required',
