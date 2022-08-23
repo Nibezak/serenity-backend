@@ -208,7 +208,7 @@ class AuthController extends Controller
                                 'AccountStatus'=>"notVerified",
 
                         ],
-                        201
+                        200
                     );
                 }
 
@@ -300,6 +300,9 @@ class AuthController extends Controller
             ],
             200
         );
+
+
+
     }
 
     /**
@@ -426,7 +429,7 @@ class AuthController extends Controller
             201
         );
     }
-    return response()->json(['message' => 'Unauthenticated user'], 201);
+    return response()->json(['message' => 'UnAuthenticated user'], 401);
 
         // return $this->createNewToken(auth()->refresh());
     }
@@ -440,7 +443,7 @@ class AuthController extends Controller
         if (Auth::Check()) {
         return response()->json(auth()->user());
     }
-    return response()->json(['message' => 'Unauthenticated user'], 201);
+    return response()->json(['message' => 'Unauthenticated user'], 401);
     }
     /**
      * Get the token array structure.
@@ -528,12 +531,12 @@ class AuthController extends Controller
 
 
         }
-        return response()->json(['message' => 'Invalid OTP Code'], 201);
+        return response()->json(['message' => 'Invalid OTP Code'], 401);
 
 
 
     }
-    return response()->json(['message' => 'Unauthorized User'], 201);
+    return response()->json(['message' => 'Unauthorized User'], 401);
 
     }
 
@@ -606,6 +609,6 @@ class AuthController extends Controller
                 201
             );
         }
-        return response()->json(['message' => 'Unauthorized user'], 201);
+        return response()->json(['message' => 'Unauthorized user'], 401);
     }
 }

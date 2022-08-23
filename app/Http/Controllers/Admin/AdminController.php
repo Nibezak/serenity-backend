@@ -140,7 +140,7 @@ class AdminController extends Controller
         );
 
     }
-    return response()->json(['message' => 'Unauthorized user'], 201);
+    return response()->json(['message' => 'Unauthorized user'], 401);
 
 
     }
@@ -154,7 +154,7 @@ class AdminController extends Controller
                 [
                     'message' => 'Unauthorized User',
                 ],
-                201
+                401
             );
         }
 
@@ -200,7 +200,7 @@ class AdminController extends Controller
                 200
             );
         }
-        return response()->json(['message' => 'Unauthorized user'], 201);
+        return response()->json(['message' => 'Unauthorized user'], 401);
     }
 
     //register new patient
@@ -268,7 +268,7 @@ class AdminController extends Controller
                 200
             );
         }
-        return response()->json(['message' => 'Unauthorized'], 201);
+        return response()->json(['message' => 'Unauthorized'], 401);
     }
 
     public function fetchourActivepatients()
@@ -317,7 +317,7 @@ class AdminController extends Controller
 
 
         }
-        return response()->json(['message' => 'Unauthorized user'], 201);
+        return response()->json(['message' => 'Unauthorized user'], 401);
     }
 
     public function fetchonepatient($id)
@@ -331,7 +331,7 @@ class AdminController extends Controller
                 // user doesn't exist
                 return response()->json(
                     ['message' => 'This patient does not exists'],
-                    201
+                    404
                 );
             }
 
@@ -346,7 +346,7 @@ class AdminController extends Controller
                 200
             );
         }
-        return response()->json(['message' => 'Unauthorized user '], 201);
+        return response()->json(['message' => 'Unauthorized user '], 401);
 
 
     }
@@ -376,7 +376,7 @@ class AdminController extends Controller
                 200
             );
         }
-        return response()->json(['message' => 'Unauthorized User'], 201);
+        return response()->json(['message' => 'Unauthorized User'], 401);
     }
 
     public function assigndocotortopatient(Request $request)
@@ -429,7 +429,7 @@ class AdminController extends Controller
                 201
             );
         }
-        return response()->json(['message' => 'Unauthorized user'], 201);
+        return response()->json(['message' => 'Unauthorized user'], 401);
     }
 
     public function activatepatient(Request $request)
@@ -471,7 +471,7 @@ class AdminController extends Controller
                 ];
             }
         }
-        return response()->json(['message' => 'Unauthorized user'], 201);
+        return response()->json(['message' => 'Unauthorized user'], 401);
     }
 
     public function addhospitalservice(Request $request)
@@ -502,7 +502,7 @@ class AdminController extends Controller
                 200
             );
         }
-        return response()->json(['message' => 'Unauthorized user'], 201);
+        return response()->json(['message' => 'Unauthorized user'], 401);
     }
 
     public function viewhospitalservice()
@@ -521,7 +521,7 @@ class AdminController extends Controller
             ], 200);
 
         }
-        return response()->json(['message' => 'Unauthorized'], 201);
+        return response()->json(['message' => 'Unauthorized'], 401);
     }
 
     public function createappointment(Request $request)
@@ -554,7 +554,7 @@ class AdminController extends Controller
                     ['errors' =>
                     'This Appointment type does not exists in our hospital'
                     ],
-                    422
+                    404
                 );
             }
             $recordpat = Patient::
@@ -566,7 +566,7 @@ class AdminController extends Controller
                     ['message' =>
                     'This Patient does not exists in our hospital'
                     ],
-                    201
+                    404
                 );
             }
 
@@ -579,7 +579,7 @@ class AdminController extends Controller
 
 
    if($AssignedDoctorId ==null){
-    return response()->json(['message' => 'Sorry Patient '. $patData[0]->FirstName.' '.$patData[0]->LastName.' does not have assigned doctor, please first assign the patient with the doctor first'], 201);
+    return response()->json(['message' => 'Sorry Patient '. $patData[0]->FirstName.' '.$patData[0]->LastName.' does not have assigned doctor, please first assign the patient with the doctor first'], 404);
    }
 
 
@@ -739,7 +739,7 @@ public function getappointmentbyid($appointmentId){
 
 
 }
-return response()->json(['message' => 'Unauthorized User '], 201);
+return response()->json(['message' => 'Unauthorized User '], 401);
 
 }
 
@@ -772,7 +772,7 @@ public function getonepatientappointments($patientId){
         ->get(),
 
 
-        ], 201);
+        ], 401);
 
 
 
@@ -812,7 +812,7 @@ public function getonepatientappointments($patientId){
                 200
             );
         }
-        return response()->json(['errors' => 'Unauthorized user'], 201);
+        return response()->json(['errors' => 'Unauthorized user'], 401);
     }
 
     public function fetchdiagnosis()
@@ -831,7 +831,7 @@ public function getonepatientappointments($patientId){
                 200
             );
         }
-        return response()->json(['message' => 'Unauthorized user'], s01);
+        return response()->json(['message' => 'Unauthorized user'], 401);
     }
 
     public function fetchonedoctor($id){
@@ -843,7 +843,7 @@ public function getonepatientappointments($patientId){
                 // user doesn't exist
                 return response()->json(
                     ['message' => 'This Doctor does not exists'],
-                    201
+                    404
                 );
             }
 
@@ -867,7 +867,7 @@ public function getonepatientappointments($patientId){
                 200
             );
         }
-        return response()->json(['message' => 'Unauthorized user'], 201);
+        return response()->json(['message' => 'Unauthorized user'], 401);
 
 
     }
