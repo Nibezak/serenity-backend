@@ -7,8 +7,10 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 use App\Models\OTP;
+use Illuminate\Support\Facades\Mail;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Support\Facades\DB;
+use App\Mail\ForgotPasswordMail;
 use App\Models\Role;
 use Validator;
 use App\Models\Hospital;
@@ -35,8 +37,10 @@ class AuthController extends Controller
                 'register',
                 'getPasswordToken',
                 'updatePassword',
+                'checkmail',
             ],
         ]);
+
     }
 
     /**
@@ -138,6 +142,27 @@ class AuthController extends Controller
             200
         );
     }
+
+    public function checkmail(){
+
+        $user = [
+            'name' => 'Tango mambo',
+            'info' => 'Laravel & Python Devloper'
+        ];
+
+        Mail::to('mugisha172741@gmail.com')->send(new \App\Mail\ForgotPasswordMail());
+
+
+        return new ForgotPasswordMail();
+
+
+
+        dd("Email is Sent.");
+
+        // return new ForgotPasswordMail();
+
+        }
+
 
     /**
      * Get a JWT via given credentials.

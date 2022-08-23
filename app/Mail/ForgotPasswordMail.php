@@ -28,6 +28,9 @@ class ForgotPasswordMail extends Mailable
      */
     public function build()
     {
-        return $this->view('view.name');
+        return $this->markdown('emails.Forgotpassword')
+        ->from('mugisha-dev@letsreason.co')
+        ->subject('Forgot Password')
+         ;
     }
 }
