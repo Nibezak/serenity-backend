@@ -204,7 +204,7 @@ class AuthController extends Controller
                         [
                             'message' =>
                                 'Your account is not verified please First Check your email address or Phone number for OTP code to verify your account first!!!',
-                                // 'token' => $checkauth,
+                                 'token' => $checkauth,
                                 'AccountStatus'=>"notVerified",
 
                         ],
