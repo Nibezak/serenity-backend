@@ -5,7 +5,6 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Super\SuperDashboardController;
-
 use App\Http\Controllers\Note\NoteController;
 /*
 |--------------------------------------------------------------------------
@@ -18,6 +17,8 @@ use App\Http\Controllers\Note\NoteController;
 |
 */
 
+
+
 //Auth Routes here is where you can login,logout,refresh token,user profile and validate OTP Api Routes for your application.
 
 Route::group(
@@ -26,6 +27,10 @@ Route::group(
         'prefix' => 'V1',
     ],
     function ($router) {
+
+        Route::get('/test-email', [AuthController::class, 'checkmail']);
+
+
         Route::post('/register', [AuthController::class, 'register']);
         Route::post('/login', [AuthController::class, 'login']);
         Route::post('/logout', [AuthController::class, 'logout']);
@@ -48,6 +53,11 @@ Route::group(
         ]);
     }
 );
+
+
+
+
+
 
 //Routes for Hospital Actvities
 Route::group(

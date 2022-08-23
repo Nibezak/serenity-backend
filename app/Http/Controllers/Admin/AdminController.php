@@ -297,8 +297,7 @@ class AdminController extends Controller
 
         }
 
-        else if (Auth::user()->roles->first()->name == 'Clinician') {
-
+        else if (Auth::user()->roles->first()->name == ('Clinician')) {
 
 
             return response()->json(
