@@ -203,8 +203,8 @@ class AuthController extends Controller
                     return response()->json(
                         [
                             'message' =>
-                                'Your account is not verified please First Check your email address or Phone number to verify your account !!!',
-                                'token' => $checkauth,
+                                'Your account is not verified please First Check your email address or Phone number for OTP code to verify your account first!!!',
+                                // 'token' => $checkauth,
                                 'AccountStatus'=>"notVerified",
 
                         ],
@@ -271,7 +271,7 @@ class AuthController extends Controller
         ]);
 
         if ($validator->fails()) {
-            // return response()->json($validator->errors(), 401);
+
 
             return response()->json(
                 ['errors' => implode($validator->errors()->all())],
@@ -487,8 +487,6 @@ class AuthController extends Controller
         }
 
 
-
-
         //compare input with code value from the table
         $CodeDb = OTP::select('code')
             ->where(['email' => auth()->user()->email])
@@ -504,6 +502,7 @@ class AuthController extends Controller
                     'email_verified_at' =>  \Carbon\Carbon::now()->toDateTimeString(),
                 ]);
 
+                // JWTAuth::parseToken()->authenticate()
 
               //get hospital name of loggedin User
               $HospitalnameLoggedin = Hospital::select('PracticeName')
@@ -517,7 +516,7 @@ class AuthController extends Controller
                       Auth::user()->roles->first()->display_name .
                       ' of ' .
                       $HospitalnameLoggedin,
-                  'token' => $checkauth,
+                  'token' => $request->bearerToken(),
                   'user' => Auth::user(),
                   'success'=>'Your account has been verified Successfully',
 
