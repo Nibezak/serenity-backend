@@ -353,7 +353,7 @@ class AdminController extends Controller
 
     public function viewourhospitaldoctor()
     {
-       if( Auth::user()->roles->first()->name == ('Admin') ){
+        if (Auth::check()) {
             return response()->json(
                 [
                     'data' => User::
@@ -459,7 +459,7 @@ class AdminController extends Controller
                     ]);
                 return $result = [
                     'message' =>
-                        'Patient Status is updated successfully - Now ' .
+                        'Patient Account is Activate successfully - Now ' .
                         $request['Status'] .
                         ' !!',
                     'success' => true,
@@ -475,10 +475,10 @@ class AdminController extends Controller
 
     public function addhospitalservice(Request $request)
     {
-        if( Auth::user()->roles->first()->name == 'Admin' ){
+        if (Auth::check()) {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
-                'name' => 'required|unique:typeappointments',
+                'name' => 'required',
             ]);
             if ($validator->fails()) {
                 // return response()->json($validator->errors(), 422);
@@ -498,7 +498,7 @@ class AdminController extends Controller
 
             return response()->json(
                 ['message' => 'Created a new Appointment type !!'],
-                200
+                201
             );
         }
         return response()->json(['message' => 'Unauthorized user'], 401);
@@ -506,7 +506,7 @@ class AdminController extends Controller
 
     public function viewhospitalservice()
     {
-        if( Auth::user()->roles->first()->name == 'Admin' ){
+        if (Auth::check()) {
 
             return response()->json(['data' =>
             TypeAppointment::where(
@@ -591,7 +591,7 @@ class AdminController extends Controller
                     ['message' =>
                     'This Doctor does not exists in our hospital'
                     ],
-                    201
+                    404
                 );
             }
 
@@ -637,7 +637,7 @@ class AdminController extends Controller
             .$request['ScheduledTime'].' Location: '.$request['Location']. ' and Video Link is:  '.$link;
 
             $sms = new TransferSms();
-           // $sms->sendSMS($patData->MobilePhone,$message);
+            //$sms->sendSMS($patData[0]->MobilePhone,$message);
 
 
           }else{
@@ -661,13 +661,21 @@ class AdminController extends Controller
            ->first();
           ;
 
+if($PatientlastAppointment ==null){
+    DB::Table('patients')
+    ->where('Hospital_Id','=',auth()->user()->Hospital_Id)
+    ->where('id','=',$request['Patient_Id'])
+             ->update([
+                 'lastappoint'=>$appointment->id,
+             ]);
+}
 
 
-           DB::Table('patients')
+
+             DB::Table('patients')
            ->where('Hospital_Id','=',auth()->user()->Hospital_Id)
            ->where('id','=',$request['Patient_Id'])
                     ->update([
-                        'lastappoint' =>  $PatientlastAppointment->id,
                         'nextappoint'=>$PatientnextAppointment->id,
                     ]);
 
@@ -679,11 +687,11 @@ class AdminController extends Controller
                 $typeApp[0]->name.' Appointment of '.$patData[0]->FirstName.' '
                 .$patData[0]->LastName.' has been created Successfully '
                 ],
-                200
+                201
             );} return response()->json(['message' => 'Ooops Something went wrong on our side, we are fixing it ASAP'], 401);
 
         }
-        return response()->json(['message' => 'Unauthorized user'], 201);
+        return response()->json(['message' => 'Unauthorized user'], 401);
     }
 
     public function viewallappointments(Request $request)
