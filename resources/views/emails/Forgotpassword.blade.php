@@ -2,11 +2,10 @@
 # Welcome to Letsreason
 
 
-{{--  Hello <h1>{{ $user['name'] }}</h1>
-    <p>{{ $user['info'] }}</p>,  --}}
+Hello **{{$name}}**,
 
 
-You requested a password reset on your Flutterwave account.
+You requested a password reset on your Letsreason account.
 
 
 Please click the button below to set a new password on your account

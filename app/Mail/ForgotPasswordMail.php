@@ -31,6 +31,10 @@ class ForgotPasswordMail extends Mailable
         return $this->markdown('emails.Forgotpassword')
         ->from('mugisha-dev@letsreason.co')
         ->subject('Forgot Password')
+        ->with([
+            'name' => 'New Letsreason User',
+            'link' => 'https://letsreason.co/'
+        ]);
          ;
     }
 }

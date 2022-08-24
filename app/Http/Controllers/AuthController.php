@@ -155,11 +155,7 @@ class AuthController extends Controller
 
         return new ForgotPasswordMail();
 
-
-
-        dd("Email is Sent.");
-
-        // return new ForgotPasswordMail();
+       
 
         }
 
