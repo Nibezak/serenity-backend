@@ -11,8 +11,11 @@ use App\Models\NoteObjective;
 use App\Models\Miscnote;
 use App\Models\Processnote;
 use App\Models\Consulationnote;
+use App\Models\Patient;
 use App\Models\Contactnote;
+use App\Models\Areaofrisk;
 use Carbon\Carbon;
+use App\Models\Pintakenote;
 use Validator;
 use Illuminate\Support\Facades\Auth;
 
@@ -519,4 +522,170 @@ class NoteController extends Controller
         }
         return response()->json(['message' => 'Unauthorized user'], 401);
     }
+
+
+    public function saveintakenote(Request $request){
+        if (Auth::check()) {
+
+        $array= collect($request->all()['risk_assessment'])->map(function ($item)use ($request) {
+            return $item + [
+            'Hospital_Id' => auth()->user()->Hospital_Id,
+            'Patient_Id'=>$request['Patient_Id'],
+            'Visibility'=>'asigned_clinicians_only',
+            'Status' =>'Active',
+            'CreatedBy_Id'=>auth()->user()->id,
+
+            ];
+
+            })->toArray();
+
+
+
+     if($request['Patient_denies_all_areas_of_risk'] =='no'){
+         foreach( $array as $key=> $value)
+         {
+               Areaofrisk::create($value);
+
+         }
+         }
+
+    $vldtriskassment= Validator::make($request->all()['risk_assessment'], [
+
+            'Area_of_risk' => 'required|string',
+            'Patient_Id' => 'required',
+            'Level_risk'=>'required|string',
+            'Intent_act'=>'required|string',
+            'Plan_act'=>'required|string',
+            'Means_act'=>'required|string',
+            'Risks_factors'=>'required|string',
+            'Protective_factors'=>'required|string',
+            'Additional_details'=>'required|string',
+    ]);
+
+    return $vldtriskassment;
+
+
+         $validator = Validator::make($request->all(),[
+
+
+            'Presenting_problem'=>'required|string',
+            'Note_Type'=>'required|string',
+            'Appointment_Id'=>'required',
+            'Orientation'=>'required',
+            'General_appearance'=>'required',
+            'Dress'=>'required',
+            'Motor_activity'=>'required',
+            'Interview_behavior'=>'required',
+            'Speech'=>'required',
+            'Mood'=>'required',
+            'Affect'=>'required',
+            'Insight'=>'required',
+            'Judgement'=>'required',
+            'Memory'=>'required',
+            'Attention'=>'required',
+            'Thought_process'=>'required',
+            'Thought_content'=>'required',
+            'Perception'=>'required',
+            'Functional_status'=>'required',
+            'Objective_content'=>'required',
+            'Identification'=>'required',
+            'History_present_problem'=>'required',
+            'Psychiatric_history'=>'required',
+            'TraumaHistory'=>'required',
+            'Family_psychiatric_history'=>'required',
+            'Medical_conditions_history'=>'required',
+            'Current_medications'=>'required',
+            'Substance_Use'=>'required',
+            'Family_history'=>'required',
+            'Social_history'=>'required',
+            'Spiritual_factors'=>'required',
+            'Developmental_history'=>'required',
+            'Educational_vocational_history'=>'required',
+            'LegalHistory'=>'required',
+            'Snap'=>'required',
+            'Other_important_information'=>'required',
+            'Plan'=>'required',
+            'Diagnosis'=>'required|array',
+            'Diagnostic_justification'=>'required',
+            'Date_time_Scheduled'=>'required',
+            'Date_time_Occured'=>'required',
+
+        ]);
+
+
+        if ($validator->fails()) {
+            return response()->json(
+                ['errors' => implode($validator->errors()->all())],
+                422
+            );
+        }
+        $assignedDr=Patient::select('AssignedDoctor_Id')->where('Hospital_Id','=',auth()->user()->Hospital_Id)->where('id','=',$request['Patient_Id'])->value('AssignedDoctor_Id');
+
+    $intake = new Pintakenote();
+
+    $intake->Patient_id=$request['Patient_Id'];
+    $intake->Hospital_Id = auth()->user()->Hospital_Id;
+    $intake->Signator_Id=$assignedDr;
+    $intake->Doctor_Id=$assignedDr;
+    $intake->Visibility='asigned_clinicians_only';
+    $intake->Status='Active';
+    $intake->CreatedBy_Id=auth()->user()->id;
+    $intake->PresentingProblem=$request['Presenting_problem'];
+    $intake->Note_Type=$request['Note_Type'];
+    $intake->Appointment_Id=$request['Appointment_Id'];
+    $intake->Orientation=$request['Orientation'];
+    $intake->GeneralAppearance=$request['General_appearance'];
+    $intake->Dress=$request['Dress'];
+    $intake->MotorActivity=$request['Motor_activity'];
+    $intake->InterviewBehavior=$request['Interview_behavior'];
+    $intake->Speech=$request['Speech'];
+    $intake->Mood=$request['Mood'];
+    $intake->Affect=$request['Affect'];
+    $intake->Insight=$request['Insight'];
+    $intake->Judgement=$request['Judgement'];
+    $intake->Memory=$request['Memory'];
+    $intake->Attention=$request['Attention'];
+    $intake->ThoughtProcess=$request['Thought_process'];
+    $intake->ThoughtContent=$request['Thought_content'];
+    $intake->Identification=$request['Identification'];
+    $intake->HistoryOfPresentProblem=$request['History_present_problem'];
+    $intake->PsychiatricHistory=$request['Psychiatric_history'];
+    $intake->TraumaHistory=$request['TraumaHistory'];
+    $intake->FamilyPsychiatricHistory=$request['Family_psychiatric_history'];
+    $intake->MedicalConditionsHistory=$request['Medical_conditions_history'];
+    $intake->CurrentMedications=$request['Current_medications'];
+    $intake->SubstanceUse=$request['Substance_Use'];
+    $intake->FamilyHistory=$request['Family_history'];
+    $intake->SocialHistory=$request['Social_history'];
+    $intake->SpiritualFactors=$request['Spiritual_factors'];
+    $intake->SpiritualFactors=$request['Spiritual_factors'];
+    $intake->DevelopmentalHistory=$request['Developmental_history'];
+    $intake->EducationalVocationalHistory=$request['Educational_vocational_history'];
+    $intake->LegalHistory=$request['LegalHistory'];
+    $intake->Snap=$request['Snap'];
+    $intake->OtherImportantInformation=$request['Other_important_information'];
+    $intake->Plan=$request['Plan'];
+    $intake->Diagnosis= json_encode(
+        $request['Diagnosis']
+    );
+
+    $intake->DiagnosticJustification=$request['Diagnostic_justification'];
+    $intake->DateTimeScheduled=$request['Date_time_Scheduled'];
+    $intake->DateTimeOccured=$request['Date_time_Occured'];
+     $intake->save();
+
+     return response()->json(['message' => 'Psychotherapy Intake Note created successfully'], 201);
+
+
+
+
+        }
+
+
+        return response()->json(['message' => 'Unauthorized user'], 401);
+
+
+    }
+
+
 }

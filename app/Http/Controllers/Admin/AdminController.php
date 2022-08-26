@@ -274,17 +274,17 @@ class AdminController extends Controller
     public function fetchourActivepatients()
     {
 
-        if (Auth::user()->roles->first()->name == 'Admin') {
+        if (Auth::user()->roles->first()->name == ('Admin'||('Reception'))) {
 
 
         return response()->json(
                 [
                     'data' => Patient::
-                    orderBy('created_at', 'desc')
-                    ->where('AssignedDoctor_Id','=',null)
+                        where('AssignedDoctor_Id','=',null)
                         ->with(['doctor:id,Title,FirstName,LastName,telephone','LastAppointment','NextAppointment','doneby:id,FirstName,LastName,email,telephone,ProfileImageUrl'])
 
                         ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
+                        ->orderBy('created_at', 'desc')
                         ->get()
                         ,
                 ],
@@ -297,7 +297,7 @@ class AdminController extends Controller
 
         }
 
-        else if (Auth::user()->roles->first()->name == 'Clinician') {
+        else if (Auth::user()->roles->first()->name == ('Admin'||('Clinician'))) {
 
 
             return response()->json(
@@ -637,11 +637,11 @@ class AdminController extends Controller
             .$request['ScheduledTime'].' Location: '.$request['Location']. ' and Video Link is:  '.$link;
 
             $sms = new TransferSms();
-            //$sms->sendSMS($patData[0]->MobilePhone,$message);
+            $sms->sendSMS($patData[0]->MobilePhone,$message);
 
 
           }else{
-           $appointment[0]->link='null';}
+           $appointment->link='null';}
               $appointment->save();
 
 

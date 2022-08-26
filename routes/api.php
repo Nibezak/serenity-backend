@@ -203,6 +203,9 @@ Route::group(
          Route::post('/Manager/create-Consulation-Note', [NoteController::class, 'createConsulationnote']);
 
 
+         Route::post('/Manager/create-Intake-Note', [NoteController::class, 'saveintakenote']);
+
+
 
 
 
