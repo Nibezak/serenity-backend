@@ -274,7 +274,7 @@ class AdminController extends Controller
     public function fetchourActivepatients()
     {
 
-        if (Auth::user()->roles->first()->name == ('Admin'||('Reception'))) {
+        if (Auth::user()->roles->first()->name == 'Admin') {
 
 
         return response()->json(
@@ -297,7 +297,7 @@ class AdminController extends Controller
 
         }
 
-        else if (Auth::user()->roles->first()->name == ('Admin'||('Clinician'))) {
+        else if (Auth::user()->roles->first()->name == 'Clinician') {
 
 
             return response()->json(
