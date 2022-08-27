@@ -206,6 +206,9 @@ Route::group(
          Route::post('/Manager/create-Intake-Note', [NoteController::class, 'saveintakenote']);
 
 
+         Route::post('/Manager/get-all-notes', [NoteController::class, 'getallnotes']);
+
+
 
 
 

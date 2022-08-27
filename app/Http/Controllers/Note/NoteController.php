@@ -137,8 +137,6 @@ class NoteController extends Controller
                 'Treatment_Goals' => 'required',
                 'Frequency_Treatment_Id' => 'required|array',
                 'Patient_Id' => 'required',
-                'Signator_Id' => 'required',
-                'Doctor_id' => 'required',
                 'Treatmentstrategy_Id' => 'required|array',
                 'Objective_content' => 'required',
                 'EstimatedCompletion' => 'required',
@@ -152,6 +150,8 @@ class NoteController extends Controller
                     422
                 );
             }
+            $assignedDr=Patient::select('AssignedDoctor_Id')->where('Hospital_Id','=',auth()->user()->Hospital_Id)
+            ->where('id','=',$request['Patient_Id'])->value('AssignedDoctor_Id');
 
             //create note objective
             $note_Obj = new NoteObjective();
@@ -187,10 +187,10 @@ class NoteController extends Controller
             $ptreatmentplan->Hospital_Id = auth()->user()->Hospital_Id;
             $ptreatmentplan->CreatedBy_Id = auth()->user()->id;
             $ptreatmentplan->Status = 'Active';
-            $ptreatmentplan->Signator_Id = $request['Signator_Id'];
-            $ptreatmentplan->Date = Carbon::now()->format('d/m/Y');
+            $ptreatmentplan->Signator_Id = $assignedDr;
+            $ptreatmentplan->Date = Carbon::now()->format('d-m-Y');
             $ptreatmentplan->Time = Carbon::now()->format('H:i:m');
-            $ptreatmentplan->Doctor_id = $request['Doctor_id'];
+            $ptreatmentplan->Doctor_id = $assignedDr;
             $ptreatmentplan->Treatmentstrategy_Id = json_encode(
                 $request['Treatmentstrategy_Id']
             );
@@ -215,7 +215,6 @@ class NoteController extends Controller
                 'Note_Type' => 'required',
                 'PatientId' => 'required',
                 'SignatorId' => 'required',
-                'DoctorId' => 'required|',
                 'AppointmentID' => 'required',
                 'DateTime' => 'required',
                 'NoteContent' => 'required',
@@ -230,11 +229,15 @@ class NoteController extends Controller
                 );
             }
 
+            $assignedDr=Patient::select('AssignedDoctor_Id')->where('Hospital_Id','=',auth()->user()->Hospital_Id)
+            ->where('id','=',$request['PatientId'])->value('AssignedDoctor_Id');
+
+
             $miscnote = new Miscnote();
             $miscnote->Note_Type = $request['Note_Type'];
             $miscnote->Hospital_Id = auth()->user()->Hospital_Id;
             $miscnote->Patient_Id = $request['PatientId'];
-            $miscnote->Doctor_Id = $request['DoctorId'];
+            $miscnote->Doctor_Id = $assignedDr;
             $miscnote->DateTime = $request['DateTime'];
             $miscnote->NoteContent = $request['NoteContent'];
             $miscnote->Signator_Id = $request['SignatorId'];
@@ -295,8 +298,6 @@ class NoteController extends Controller
             $validator = Validator::make($request->all(), [
                 'Note_Type' => 'required',
                 'PatientId' => 'required',
-                'SignatorId' => 'required',
-                'DoctorId' => 'required|',
                 'DateTime' => 'required',
                 'Visibility' => 'required',
                 'Contact_name' => 'required',
@@ -315,12 +316,17 @@ class NoteController extends Controller
                 );
             }
 
+            $assignedDr=Patient::select('AssignedDoctor_Id')->where('Hospital_Id','=',auth()->user()->Hospital_Id)
+            ->where('id','=',$request['PatientId'])->value('AssignedDoctor_Id');
+
+
+
             $contactnote = new Contactnote();
 
             $contactnote->Note_Type = $request['Note_Type'];
             $contactnote->Hospital_Id = auth()->user()->Hospital_Id;
             $contactnote->Patient_Id = $request['PatientId'];
-            $contactnote->Doctor_Id = $request['DoctorId'];
+            $contactnote->Doctor_Id = $assignedDr;
             $contactnote->DateTime = $request['DateTime'];
             $contactnote->ContactName = $request['Contact_name'];
             $contactnote->RelationshipToPatient =
@@ -332,7 +338,7 @@ class NoteController extends Controller
             $contactnote->TimeSpent = $request['Time_spent'];
             $contactnote->CommunicationDetails =
                 $request['Communication_details'];
-            $contactnote->Signator_Id = $request['SignatorId'];
+            $contactnote->Signator_Id = $assignedDr;
             $contactnote->Visibility = $request['Visibility'];
             $contactnote->Status = 'Active';
             $contactnote->CreatedBy_Id = auth()->user()->id;
@@ -393,7 +399,6 @@ class NoteController extends Controller
             $validator = Validator::make($request->all(), [
                 'NoteType' => 'required',
                 'PatientId' => 'required',
-                'DoctorId' => 'required',
                 'AppointmentId' => 'required',
                 'ProcessNote' => 'required',
                 'Visibility' => 'required',
@@ -409,11 +414,13 @@ class NoteController extends Controller
                 );
             }
 
+            $assignedDr=Patient::select('AssignedDoctor_Id')->where('Hospital_Id','=',auth()->user()->Hospital_Id)->where('id','=',$request['PatientId'])->value('AssignedDoctor_Id');
+
             $procnote = new Processnote();
             $procnote->Note_Type = $request['NoteType'];
             $procnote->Hospital_Id = auth()->user()->Hospital_Id;
             $procnote->Patient_Id = $request['PatientId'];
-            $procnote->Doctor_Id = $request['DoctorId'];
+            $procnote->Doctor_Id = $assignedDr;
             $procnote->DateTime_Scheduled = $request['DateTime_Scheduled'];
             $procnote->DateTime_Occured = $request['DateTime_Occured'];
             $procnote->Visibility = $request['Visibility'];
@@ -478,8 +485,7 @@ class NoteController extends Controller
                 'Note_Type' => 'required',
                 'Diagnosis_Id' => 'required|array',
                 'AppointmentId' => 'required',
-                'PatientID' => 'required',
-                'DoctorID'=>'required',
+                'PatientId' => 'required',
                 'DateTime_Scheduled' => 'required',
                 'DateTime_Occured' => 'required',
                 'Visibility' => 'required',
@@ -496,11 +502,14 @@ class NoteController extends Controller
                 );
             }
 
+            $assignedDr=Patient::select('AssignedDoctor_Id')->where('Hospital_Id','=',auth()->user()->Hospital_Id)
+            ->where('id','=',$request['PatientId'])->value('AssignedDoctor_Id');
+
             $consnote = new Consulationnote();
             $consnote->Note_Type = $request['Note_Type'];
             $consnote-> Hospital_Id= auth()->user()->Hospital_Id;
-            $consnote-> Patient_Id= $request['PatientID'];
-            $consnote-> Doctor_Id= $request['DoctorID'];
+            $consnote-> Patient_Id= $request['PatientId'];
+            $consnote-> Doctor_Id= $assignedDr;
             $consnote-> Appointment_Id= $request['AppointmentId'];
             $consnote-> DateTime_Scheduled= $request['DateTime_Scheduled'];
             $consnote-> DateTime_Occured= $request['DateTime_Occured'];
@@ -549,20 +558,20 @@ class NoteController extends Controller
          }
          }
 
-    $vldtriskassment= Validator::make($request->all()['risk_assessment'], [
+    // $vldtriskassment= Validator::make($request->all()['risk_assessment'], [
 
-            'Area_of_risk' => 'required|string',
-            'Patient_Id' => 'required',
-            'Level_risk'=>'required|string',
-            'Intent_act'=>'required|string',
-            'Plan_act'=>'required|string',
-            'Means_act'=>'required|string',
-            'Risks_factors'=>'required|string',
-            'Protective_factors'=>'required|string',
-            'Additional_details'=>'required|string',
-    ]);
+    //         'Area_of_risk' => 'required|string',
+    //         'Patient_Id' => 'required',
+    //         'Level_risk'=>'required|string',
+    //         'Intent_act'=>'required|string',
+    //         'Plan_act'=>'required|string',
+    //         'Means_act'=>'required|string',
+    //         'Risks_factors'=>'required|string',
+    //         'Protective_factors'=>'required|string',
+    //         'Additional_details'=>'required|string',
+    // ]);
 
-    return $vldtriskassment;
+    // return $vldtriskassment;
 
 
          $validator = Validator::make($request->all(),[
@@ -686,6 +695,161 @@ class NoteController extends Controller
 
 
     }
+
+
+    public function getallnotes(Request $request){
+
+        if (Auth::user()->roles->first()->name == (('Admin')||('Clinician'))) {
+            //Validate User Inputs
+            $validator = Validator::make($request->all(), [
+                'Patient_Id' => 'required',
+            ]);
+            if ($validator->fails()) {
+                // return response()->json($validator->errors()->toJson(), 400);
+
+                return response()->json(
+                    ['errors' => implode($validator->errors()->all())],
+                    422
+                );
+            }
+
+            $recordpat = Patient::
+            where('id','=',$request['Patient_Id'])
+            ->where('Hospital_Id','=',auth()->user()->Hospital_Id);
+
+            if (!$recordpat->exists()) {
+                return response()->json(
+                    ['message' =>
+                    'This Patient does not exists in our hospital'
+                    ],
+                    404
+                );
+            }
+
+            $getallprocessnote=Processnote::select('id','Note_Type','DateTime_Scheduled','Doctor_Id','CreatedBy_Id')
+            ->where('Patient_Id','=',$request['Patient_Id'])
+            ->where('Hospital_Id','=',auth()->user()->Hospital_Id)
+            ->orderBy('DateTime_Scheduled', 'asc')
+            ->with('doctor:id,FirstName,LastName,Title,ProfileImageUrl','doneby:id,FirstName,LastName,Title,ProfileImageUrl')
+            ->get();
+
+
+
+        $getallconsultationnote=Consulationnote::select('id','Note_Type','DateTime_Scheduled','Doctor_Id','CreatedBy_Id')
+        ->where('Patient_Id','=',$request['Patient_Id'])
+        ->where('Hospital_Id','=',auth()->user()->Hospital_Id)
+        ->orderBy('DateTime_Scheduled', 'asc')
+        ->with('doctor:id,FirstName,LastName,Title,ProfileImageUrl','doneby:id,FirstName,LastName,Title,ProfileImageUrl')
+        ->get();
+
+        $getallcontactnote=Contactnote::select('id','Note_Type','DateTime','Doctor_Id','CreatedBy_Id')
+        ->where('Patient_Id','=',$request['Patient_Id'])
+        ->where('Hospital_Id','=',auth()->user()->Hospital_Id)
+        ->orderBy('DateTime', 'asc')
+        ->with('doctor:id,FirstName,LastName,Title,ProfileImageUrl','doneby:id,FirstName,LastName,Title,ProfileImageUrl')
+        ->get();
+
+        $getmiscnote=Miscnote::select('id','Note_Type','DateTime','Doctor_Id','CreatedBy_Id')
+        ->where('Patient_Id','=',$request['Patient_Id'])
+        ->where('Hospital_Id','=',auth()->user()->Hospital_Id)
+        ->orderBy('DateTime', 'asc')
+        ->with('doctor:id,FirstName,LastName,Title,ProfileImageUrl','doneby:id,FirstName,LastName,Title,ProfileImageUrl')
+        ->get();
+
+
+        $getalltreatmentnote=PtreatmentPlan::select('id','Note_Type','Date','Time','Doctor_id','CreatedBy_Id')
+        ->where('Patient_Id','=',$request['Patient_Id'])
+        ->where('Hospital_Id','=',auth()->user()->Hospital_Id)
+        ->orderBy('Date', 'asc')
+        ->with('doctor:id,FirstName,LastName,Title,ProfileImageUrl','doneby:id,FirstName,LastName,Title,ProfileImageUrl')
+        ->get();
+
+
+      $miscellnoteAll= collect($getmiscnote)->map(function ($item) {
+            return [
+                'id'=>$item['id'],
+                'Note_Type'=>$item['Note_Type'],
+                'DateTime' => $item['DateTime'],
+                'Doctor'=>$item['doctor']['Title'].' '.$item['doctor']['FirstName'].' '.$item['doctor']['LastName'],
+                'CreatedBy'=>$item['doneby']['Title'].' '.$item['doneby']['FirstName'].' '.$item['doneby']['LastName'],
+                'DoctorImage'=>$item['doctor']['ProfileImageUrl'],
+                'CreatorImage'=>$item['doneby']['ProfileImageUrl'],
+
+            ];
+        })->all();
+
+
+
+        $treatmentplannoteAll=  collect($getalltreatmentnote)->map(function ($item) {
+            return [
+                'id'=>$item['id'],
+                'Note_Type'=>$item['Note_Type'],
+                'DateTime' => $item['Date'].' '.$item['Time'],
+                'Doctor'=>$item['doctor']['Title'].' '.$item['doctor']['FirstName'].' '.$item['doctor']['LastName'],
+                'CreatedBy'=>$item['doneby']['Title'].' '.$item['doneby']['FirstName'].' '.$item['doneby']['LastName'],
+                'DoctorImage'=>$item['doctor']['ProfileImageUrl'],
+                'CreatorImage'=>$item['doneby']['ProfileImageUrl'],   ];   })->all();
+
+
+        $contactnoteAll=collect($getallcontactnote)->map(function ($item) {
+            return [
+                'id'=>$item['id'],
+                'Note_Type'=>$item['Note_Type'],
+                'DateTime' => $item['DateTime'],
+                'Doctor'=>$item['doctor']['Title'].' '.$item['doctor']['FirstName'].' '.$item['doctor']['LastName'],
+                'CreatedBy'=>$item['doneby']['Title'].' '.$item['doneby']['FirstName'].' '.$item['doneby']['LastName'],
+                'DoctorImage'=>$item['doctor']['ProfileImageUrl'],
+                'CreatorImage'=>$item['doneby']['ProfileImageUrl'], ];  })->all();
+
+
+        $consultationnoteAll= collect($getallconsultationnote)->map(function ($item) {
+                 return [
+                    'id'=>$item['id'],
+                    'Note_Type'=>$item['Note_Type'],
+                    'DateTime' => $item['DateTime_Scheduled'],
+                    'Doctor'=>$item['doctor']['Title'].' '.$item['doctor']['FirstName'].' '.$item['doctor']['LastName'],
+                    'CreatedBy'=>$item['doneby']['Title'].' '.$item['doneby']['FirstName'].' '.$item['doneby']['LastName'],
+                    'DoctorImage'=>$item['doctor']['ProfileImageUrl'],
+                    'CreatorImage'=>$item['doneby']['ProfileImageUrl'],   ];            })->all();
+
+
+        $processnoteAll =collect($getallprocessnote)->map(function ($item) {
+            return [
+               'id'=>$item['id'],
+               'Note_Type'=>$item['Note_Type'],
+               'DateTime' => $item['DateTime_Scheduled'],
+               'Doctor'=>$item['doctor']['Title'].' '.$item['doctor']['FirstName'].' '.$item['doctor']['LastName'],
+               'CreatedBy'=>$item['doneby']['Title'].' '.$item['doneby']['FirstName'].' '.$item['doneby']['LastName'],
+               'DoctorImage'=>$item['doctor']['ProfileImageUrl'],
+               'CreatorImage'=>$item['doneby']['ProfileImageUrl'],   ];            })->all();
+
+
+
+               $assignedDr=Patient::select('AssignedDoctor_Id')->where('Hospital_Id','=',auth()->user()->Hospital_Id)
+               ->where('id','=',$request['Patient_Id'])->value('AssignedDoctor_Id');
+
+      if((auth()->user()->id ==$assignedDr) ||(Auth::user()->roles->first()->name == 'Admin')){
+
+        return response()->json(['data' =>
+        array_merge([$treatmentplannoteAll,$contactnoteAll,$consultationnoteAll,$processnoteAll])
+
+
+
+        ], 200);
+
+
+
+       }
+
+
+        }
+
+
+        return response()->json(['errors' => 'Unauthorized user'], 401);
+
+
+    }
+
 
 
 }
