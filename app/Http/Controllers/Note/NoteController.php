@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Note;
 
 use App\Http\Controllers\Controller;
+use App\Models\Appointment;
 use Illuminate\Http\Request;
 use App\Models\Treatmentstrategy;
 use App\Models\Frequencytreatment;
@@ -397,13 +398,9 @@ class NoteController extends Controller
         if (Auth::check()) {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
-                'NoteType' => 'required',
                 'PatientId' => 'required',
                 'AppointmentId' => 'required',
                 'ProcessNote' => 'required',
-                'Visibility' => 'required',
-                'DateTime_Scheduled' => 'required',
-                'DateTime_Occured' => 'required',
             ]);
             if ($validator->fails()) {
                 // return response()->json($validator->errors()->toJson(), 400);
@@ -414,16 +411,24 @@ class NoteController extends Controller
                 );
             }
 
+            $datetimescheduled=Appointment::select('ScheduledTime')->where('Hospital_Id','=',auth()->user()->Hospital_Id)
+            ->where('id','=',$request['AppointmentId'])
+            ->where('Patient_Id','=',$request['PatientId'])->value('ScheduledTime');
+
+
+
+
+
             $assignedDr=Patient::select('AssignedDoctor_Id')->where('Hospital_Id','=',auth()->user()->Hospital_Id)->where('id','=',$request['PatientId'])->value('AssignedDoctor_Id');
 
             $procnote = new Processnote();
-            $procnote->Note_Type = $request['NoteType'];
+            $procnote->Note_Type = 'Psychotherapy Process Note';
             $procnote->Hospital_Id = auth()->user()->Hospital_Id;
             $procnote->Patient_Id = $request['PatientId'];
             $procnote->Doctor_Id = $assignedDr;
-            $procnote->DateTime_Scheduled = $request['DateTime_Scheduled'];
-            $procnote->DateTime_Occured = $request['DateTime_Occured'];
-            $procnote->Visibility = $request['Visibility'];
+            $procnote->DateTime_Scheduled = $datetimescheduled;
+            $procnote->DateTime_Occured = $datetimescheduled;
+            $procnote->Visibility = 'Assigned_Clinician_Only';
             $procnote->Status = 'Active';
             $procnote->CreatedBy_Id = auth()->user()->id;
             $procnote->Appointment_Id = $request['AppointmentId'];
@@ -437,6 +442,9 @@ class NoteController extends Controller
                 ],
                 201
             );
+
+
+
         }
         return response()->json(['message' => 'Unauthorized user'], 401);
     }
@@ -831,7 +839,7 @@ class NoteController extends Controller
       if((auth()->user()->id ==$assignedDr) ||(Auth::user()->roles->first()->name == 'Admin')){
 
         return response()->json(['data' =>
-        array_merge([$treatmentplannoteAll,$contactnoteAll,$consultationnoteAll,$processnoteAll])
+        array_merge([$treatmentplannoteAll,$contactnoteAll,$consultationnoteAll,$processnoteAll, $miscellnoteAll])
 
 
 
