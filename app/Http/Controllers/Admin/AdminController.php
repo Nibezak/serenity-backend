@@ -188,7 +188,7 @@ class AdminController extends Controller
     //Fetch hospitall staff roles
     public function retrieveRoles()
     {
-        if (Auth::user()->roles->first()->name == 'Admin') {
+        if (Auth::check()) {
             // $myRoleId = json_decode(Auth::user()->roles->first()['Clinician'], true);
 
             return response()->json(
@@ -206,7 +206,7 @@ class AdminController extends Controller
     //register new patient
     public function createnewpatient(Request $request)
     {
-        if (Auth::user()->roles->first()->name == 'Admin') {
+        if (Auth::check()) {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
                 'FirstName' => 'required',
@@ -380,7 +380,7 @@ class AdminController extends Controller
 
     public function assigndocotortopatient(Request $request)
     {
-        if (Auth::user()->roles->first()->name == 'Admin') {
+        if (Auth::user()->roles->first()->name == ('Admin'||('Reception')||('Cashier'))) {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
                 'Doctor_Id' => 'required',
@@ -433,7 +433,7 @@ class AdminController extends Controller
 
     public function activatepatient(Request $request)
     {
-        if (Auth::user()->roles->first()->name == 'Admin') {
+        if (Auth::user()->roles->first()->name == ('Admin'||('Reception')||('Cashier'))) {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
                 'PatientId' => 'required',
@@ -627,6 +627,8 @@ class AdminController extends Controller
             $appointment->AppointmentAlert = $request['AppointmentAlert'];
             $appointment->Hospital_Id = auth()->user()->Hospital_Id;
 
+
+            $sms = new TransferSms();
            if($request['Location'] == 'online'){
            $link='https://meet.jit.si/Letsreason-test';
             $appointment->link=$link;
@@ -636,14 +638,19 @@ class AdminController extends Controller
             $message='Hello '.$patData[0]->FirstName.' '.$patData[0]->LastName.' Your '.$typeApp[0]->name. ' Appointment at  '.$hospitalName[0]->PracticeName.' Located at '.$hospitalName[0]->District.' ,'.$hospitalName[0]->Sector.','.$hospitalName[0]->Cell.' with '.$doctorData[0]->Title.' '.$doctorData[0]->FirstName.' '.$doctorData[0]->LastName.' has been scheduled successfully , Date: '
             .$request['ScheduledTime'].' Location: '.$request['Location']. ' and Video Link is:  '.$link;
 
-            $sms = new TransferSms();
+
             $sms->sendSMS($patData[0]->MobilePhone,$message);
 
 
           }else{
-           $appointment->link='null';}
-              $appointment->save();
+          $msg='Hello '.$patData[0]->FirstName.' '.$patData[0]->LastName.' Your '.$typeApp[0]->name. ' Appointment at  '.$hospitalName[0]->PracticeName.' Located at '.$hospitalName[0]->District.' ,'.$hospitalName[0]->Sector.','.$hospitalName[0]->Cell.' with '.$doctorData[0]->Title.' '.$doctorData[0]->FirstName.' '.$doctorData[0]->LastName.' has been scheduled successfully , Date: '
+          .$request['ScheduledTime'].' Venue: '.$request['Location'];
 
+             $sms->sendSMS($patData[0]->MobilePhone,$msg);
+
+             $appointment->link='null';}
+
+           $appointment->save();
 
             $PatientnextAppointment=Appointment::select('id','ScheduledTime')
             ->where('Hospital_Id','=',auth()->user()->Hospital_Id)
@@ -661,14 +668,14 @@ class AdminController extends Controller
            ->first();
           ;
 
-if($PatientlastAppointment ==null){
-    DB::Table('patients')
-    ->where('Hospital_Id','=',auth()->user()->Hospital_Id)
-    ->where('id','=',$request['Patient_Id'])
+          if($PatientlastAppointment ==null){
+            DB::Table('patients')
+             ->where('Hospital_Id','=',auth()->user()->Hospital_Id)
+             ->where('id','=',$request['Patient_Id'])
              ->update([
                  'lastappoint'=>$appointment->id,
              ]);
-}
+        }
 
 
 
@@ -681,7 +688,7 @@ if($PatientlastAppointment ==null){
 
 
 
-    if($appointment){
+            if($appointment){
             return response()->json(
                 ['message' =>
                 $typeApp[0]->name.' Appointment of '.$patData[0]->FirstName.' '
@@ -690,13 +697,15 @@ if($PatientlastAppointment ==null){
                 201
             );} return response()->json(['message' => 'Ooops Something went wrong on our side, we are fixing it ASAP'], 401);
 
+
+
         }
         return response()->json(['message' => 'Unauthorized user'], 401);
     }
 
     public function viewallappointments(Request $request)
     {
-        if (!Auth::user()->roles->first()->name == 'Admin') {
+        if (!Auth::check()) {
             return response()->json(
                 [
                     'message' => 'Unauthorized User',
@@ -708,9 +717,9 @@ if($PatientlastAppointment ==null){
         return response()->json(['data' =>
 
         Appointment::
-        orderBy('ScheduledTime', 'asc')
-        ->where('Hospital_Id','=',Auth::user()->Hospital_Id)
+         where('Hospital_Id','=',Auth::user()->Hospital_Id)
         ->with(['patient:id,email,FirstName,LastName,profileimageUrl,MobilePhone,PatientCode','appointmenttype:id,name'])
+        ->orderBy('ScheduledTime', 'asc')
         ->get(),
 
 
@@ -820,6 +829,7 @@ public function getonepatientappointments($patientId){
             );
         }
         return response()->json(['errors' => 'Unauthorized user'], 401);
+
     }
 
     public function fetchdiagnosis()
