@@ -788,7 +788,7 @@ public function getonepatientappointments($patientId){
         ->get(),
 
 
-        ], 401);
+        ], 200);
 
 
 
