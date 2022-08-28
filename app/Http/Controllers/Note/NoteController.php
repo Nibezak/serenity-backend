@@ -213,13 +213,10 @@ class NoteController extends Controller
         if (Auth::check()) {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
-                'Note_Type' => 'required',
+
                 'PatientId' => 'required',
-                'SignatorId' => 'required',
                 'AppointmentID' => 'required',
-                'DateTime' => 'required',
                 'NoteContent' => 'required',
-                'Visibility' => 'required',
             ]);
             if ($validator->fails()) {
                 // return response()->json($validator->errors()->toJson(), 400);
@@ -233,22 +230,28 @@ class NoteController extends Controller
             $assignedDr=Patient::select('AssignedDoctor_Id')->where('Hospital_Id','=',auth()->user()->Hospital_Id)
             ->where('id','=',$request['PatientId'])->value('AssignedDoctor_Id');
 
+            $datimescheduled=Appointment::select('ScheduledTime')->where('Hospital_Id','=',auth()->user()->Hospital_Id)
+            ->where('id','=',$request['AppointmentID'])
+            ->where('Patient_Id','=',$request['PatientId'])->value('ScheduledTime');
+
+
+
 
             $miscnote = new Miscnote();
-            $miscnote->Note_Type = $request['Note_Type'];
+            $miscnote->Note_Type = 'Miscellaneous Note';
             $miscnote->Hospital_Id = auth()->user()->Hospital_Id;
             $miscnote->Patient_Id = $request['PatientId'];
             $miscnote->Doctor_Id = $assignedDr;
-            $miscnote->DateTime = $request['DateTime'];
+            $miscnote->DateTime = $datimescheduled;
             $miscnote->NoteContent = $request['NoteContent'];
-            $miscnote->Signator_Id = $request['SignatorId'];
-            $miscnote->Visibility = $request['Visibility'];
+            $miscnote->Signator_Id = $assignedDr;
+            $miscnote->Visibility = 'assigned clinician only';
             $miscnote->Status = 'Active';
             $miscnote->CreatedBy_Id = auth()->user()->id;
             $miscnote->Appoint_Id = $request['AppointmentID'];
             $miscnote->save();
             return response()->json(
-                ['message' => 'Successfully created ' . $request['Note_Type']],
+                ['message' => 'Successfully created new Psychotherapy Miscellaneous Note' ],
                 201
             );
         }
@@ -280,8 +283,7 @@ class NoteController extends Controller
                     )
                         ->where('Patient_Id', '=', $request['Patient_Id'])
                         ->with([
-                            'doctor:id,FirstName,LastName',
-                            'signator:id,Title,Firstname,LastName',
+                            'doctor:id,Title,FirstName,LastName',
                             'patient:id,FirstName,LastName,Dob,MobilePhone',
                         ])
                         ->get(),
@@ -438,7 +440,7 @@ class NoteController extends Controller
             return response()->json(
                 [
                     'message' =>
-                        'Successfully created new ' . $request['NoteType'],
+                        'Successfully created new Psychotherapy Process Note',
                 ],
                 201
             );
