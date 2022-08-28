@@ -583,10 +583,8 @@ class NoteController extends Controller
 
 
          $validator = Validator::make($request->all(),[
-
-
+            'Patient_Id' => 'required',
             'Presenting_problem'=>'required|string',
-            'Note_Type'=>'required|string',
             'Appointment_Id'=>'required',
             'Orientation'=>'required',
             'General_appearance'=>'required',
@@ -624,8 +622,6 @@ class NoteController extends Controller
             'Plan'=>'required',
             'Diagnosis'=>'required|array',
             'Diagnostic_justification'=>'required',
-            'Date_time_Scheduled'=>'required',
-            'Date_time_Occured'=>'required',
 
         ]);
 
@@ -638,6 +634,12 @@ class NoteController extends Controller
         }
         $assignedDr=Patient::select('AssignedDoctor_Id')->where('Hospital_Id','=',auth()->user()->Hospital_Id)->where('id','=',$request['Patient_Id'])->value('AssignedDoctor_Id');
 
+
+        $DAtcheduled=Appointment::select('ScheduledTime')->where('Hospital_Id','=',auth()->user()->Hospital_Id)
+        ->where('id','=',$request['Appointment_Id'])
+        ->where('Patient_Id','=',$request['Patient_Id'])->value('ScheduledTime');
+
+
     $intake = new Pintakenote();
 
     $intake->Patient_id=$request['Patient_Id'];
@@ -648,7 +650,7 @@ class NoteController extends Controller
     $intake->Status='Active';
     $intake->CreatedBy_Id=auth()->user()->id;
     $intake->PresentingProblem=$request['Presenting_problem'];
-    $intake->Note_Type=$request['Note_Type'];
+    $intake->Note_Type='Psychotherapy Intake Note';
     $intake->Appointment_Id=$request['Appointment_Id'];
     $intake->Orientation=$request['Orientation'];
     $intake->GeneralAppearance=$request['General_appearance'];
@@ -687,8 +689,8 @@ class NoteController extends Controller
     );
 
     $intake->DiagnosticJustification=$request['Diagnostic_justification'];
-    $intake->DateTimeScheduled=$request['Date_time_Scheduled'];
-    $intake->DateTimeOccured=$request['Date_time_Occured'];
+    $intake->DateTimeScheduled=$DAtcheduled;
+    $intake->DateTimeOccured=$DAtcheduled;
      $intake->save();
 
      return response()->json(['message' => 'Psychotherapy Intake Note created successfully'], 201);
