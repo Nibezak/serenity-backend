@@ -149,7 +149,7 @@ class AdminController extends Controller
     //Get all our hospital staff
     public function fetchourstaff()
     {
-        if (!Auth::check()) {
+        if (Auth::user()->roles->first()->name == 'Admin') {
             return response()->json(
                 [
                     'message' => 'Unauthorized User',
@@ -274,7 +274,8 @@ class AdminController extends Controller
     public function fetchourActivepatients()
     {
 
-        if (Auth::user()->roles->first()->name == 'Admin') {
+        $var =Auth::user()->roles->first()->name;
+        if ( $var == 'Admin' || $var =='Reception') {
 
 
         return response()->json(
@@ -475,10 +476,10 @@ class AdminController extends Controller
 
     public function addhospitalservice(Request $request)
     {
-        if (Auth::check()) {
+        if (Auth::user()->roles->first()->name == 'Admin') {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
-                'name' => 'required',
+                'name' => 'required|unique:typeappointments',
             ]);
             if ($validator->fails()) {
                 // return response()->json($validator->errors(), 422);
@@ -509,12 +510,13 @@ class AdminController extends Controller
         if (Auth::check()) {
 
             return response()->json(['data' =>
-            TypeAppointment::where(
-                'hospital_Id',
-                '=',
-                auth()->user()->Hospital_Id
-            )
-                ->with(['creator:id,FirstName,LastName', 'hospital'])
+            TypeAppointment::
+            // where(
+            //     'hospital_Id',
+            //     '=',
+            //     auth()->user()->Hospital_Id
+            // )
+                with(['creator:id,FirstName,LastName'])
                 ->get()
 
             ], 200);
@@ -801,7 +803,7 @@ public function getonepatientappointments($patientId){
 
     public function creatediagnosis(Request $request)
     {
-        if (Auth::check()) {
+        if (Auth::user()->roles->first()->name == 'Admin') {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
                 'name' => 'required|unique:diagnosis',
@@ -834,15 +836,17 @@ public function getonepatientappointments($patientId){
 
     public function fetchdiagnosis()
     {
-        if (Auth::check()) {
+        $var =Auth::user()->roles->first()->name;
+        if ( $var == 'Admin' || $var =='Clinician') {
             return response()->json(
                 [
-                    'data' => Diagnosis::where(
-                        'Hospital_Id',
-                        '=',
-                        auth()->user()->Hospital_Id
-                    )
-                        ->with(['createdby:id,FirstName,LastName'])
+                    'data' => Diagnosis::
+                    // where(
+                    //     'Hospital_Id',
+                    //     '=',
+                    //     auth()->user()->Hospital_Id
+                    // )
+                        with(['createdby:id,FirstName,LastName'])
                         ->get(),
                 ],
                 200

@@ -152,6 +152,8 @@ Route::group(
 );
 
 //Routes for hospital Notes
+
+
 Route::group(
     [
         'middleware' => 'api',
