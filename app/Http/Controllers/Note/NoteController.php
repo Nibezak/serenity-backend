@@ -30,7 +30,7 @@ class NoteController extends Controller
 
     public function createtreatmentstrategy(Request $request)
     {
-        if (Auth::check()) {
+        if (Auth::user()->roles->first()->name == 'Admin') {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
                 'name' => 'required|unique:treatmentstrategy',
@@ -80,7 +80,7 @@ class NoteController extends Controller
 
     public function createfrequencytreatment(Request $request)
     {
-        if (Auth::check()) {
+        if (Auth::user()->roles->first()->name == 'Admin') {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
                 'name' => 'required|unique:frequencytreatment',
@@ -113,12 +113,13 @@ class NoteController extends Controller
         if (Auth::check()) {
             return response()->json(
                 [
-                    'data' => Frequencytreatment::where(
-                        'Hospital_Id',
-                        '=',
-                        auth()->user()->Hospital_Id
-                    )
-                        ->with(['createdby:id,FirstName,LastName'])
+                    'data' => Frequencytreatment
+                        // where(
+                        //     'Hospital_Id',
+                        //     '=',
+                        //     auth()->user()->Hospital_Id
+                        // )
+                        ::with(['createdby:id,FirstName,LastName'])
                         ->get(),
                 ],
                 200
@@ -129,10 +130,10 @@ class NoteController extends Controller
 
     public function addptreatmentplan(Request $request)
     {
-        if (Auth::check()) {
+    $var =Auth::user()->roles->first()->name;
+        if ( $var == 'Admin' || $var =='Clinician') {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
-                'Note_Type' => 'required',
                 'Diagnosis_Id' => 'required|array',
                 'Presenting_Problem' => 'required',
                 'Treatment_Goals' => 'required',
@@ -151,8 +152,10 @@ class NoteController extends Controller
                     422
                 );
             }
-            $assignedDr=Patient::select('AssignedDoctor_Id')->where('Hospital_Id','=',auth()->user()->Hospital_Id)
-            ->where('id','=',$request['Patient_Id'])->value('AssignedDoctor_Id');
+            $assignedDr = Patient::select('AssignedDoctor_Id')
+                ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
+                ->where('id', '=', $request['Patient_Id'])
+                ->value('AssignedDoctor_Id');
 
             //create note objective
             $note_Obj = new NoteObjective();
@@ -161,7 +164,7 @@ class NoteController extends Controller
             $note_Obj->Hospital_Id = auth()->user()->Hospital_Id;
             $note_Obj->CreatedBy_Id = auth()->user()->id;
             $note_Obj->Status = 'Active';
-            $note_Obj->Notetype = $request['Note_Type'];
+            $note_Obj->Notetype = 'Psychotherapy Treatment Plan';
             $note_Obj->EstimatedComplation = $request['EstimatedCompletion'];
             $note_Obj->TreatmentStartegyID = json_encode(
                 $request['Treatmentstrategy_Id']
@@ -170,7 +173,7 @@ class NoteController extends Controller
             $note_Obj->save();
 
             $ptreatmentplan = new PtreatmentPlan();
-            $ptreatmentplan->Note_type = $request['Note_Type'];
+            $ptreatmentplan->Note_type = 'Psychotherapy Treatment Plan';
             $ptreatmentplan->Diagnositic_Justification =
                 $request['Diagnositic_Justification'];
             $ptreatmentplan->Diagnosis_Id = json_encode(
@@ -200,7 +203,7 @@ class NoteController extends Controller
             return response()->json(
                 [
                     'message' =>
-                        'Successfully Created new ' . $request['Note_Type'],
+                        'Successfully Created new Psychotherapy Treatment Plan',
                 ],
                 201
             );
@@ -210,10 +213,10 @@ class NoteController extends Controller
 
     public function createmiscellaneousnote(Request $request)
     {
-        if (Auth::check()) {
+        $var =Auth::user()->roles->first()->name;
+        if ( $var == 'Admin' || $var =='Clinician') {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
-
                 'PatientId' => 'required',
                 'AppointmentID' => 'required',
                 'NoteContent' => 'required',
@@ -227,15 +230,16 @@ class NoteController extends Controller
                 );
             }
 
-            $assignedDr=Patient::select('AssignedDoctor_Id')->where('Hospital_Id','=',auth()->user()->Hospital_Id)
-            ->where('id','=',$request['PatientId'])->value('AssignedDoctor_Id');
+            $assignedDr = Patient::select('AssignedDoctor_Id')
+                ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
+                ->where('id', '=', $request['PatientId'])
+                ->value('AssignedDoctor_Id');
 
-            $datimescheduled=Appointment::select('ScheduledTime')->where('Hospital_Id','=',auth()->user()->Hospital_Id)
-            ->where('id','=',$request['AppointmentID'])
-            ->where('Patient_Id','=',$request['PatientId'])->value('ScheduledTime');
-
-
-
+            $datimescheduled = Appointment::select('ScheduledTime')
+                ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
+                ->where('id', '=', $request['AppointmentID'])
+                ->where('Patient_Id', '=', $request['PatientId'])
+                ->value('ScheduledTime');
 
             $miscnote = new Miscnote();
             $miscnote->Note_Type = 'Miscellaneous Note';
@@ -251,7 +255,10 @@ class NoteController extends Controller
             $miscnote->Appoint_Id = $request['AppointmentID'];
             $miscnote->save();
             return response()->json(
-                ['message' => 'Successfully created new Psychotherapy Miscellaneous Note' ],
+                [
+                    'message' =>
+                        'Successfully created new Psychotherapy Miscellaneous Note',
+                ],
                 201
             );
         }
@@ -260,7 +267,8 @@ class NoteController extends Controller
 
     public function fetchmiscnote(Request $request)
     {
-        if (Auth::check()) {
+        $var =Auth::user()->roles->first()->name;
+        if ( $var == 'Admin' || $var =='Clinician') {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
                 'Patient_Id' => 'required|exists:miscnote',
@@ -296,7 +304,8 @@ class NoteController extends Controller
 
     public function createContactNote(Request $request)
     {
-        if (Auth::check()) {
+        $var =Auth::user()->roles->first()->name;
+        if ( $var == 'Admin' || $var =='Clinician') {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
                 'Note_Type' => 'required',
@@ -319,10 +328,10 @@ class NoteController extends Controller
                 );
             }
 
-            $assignedDr=Patient::select('AssignedDoctor_Id')->where('Hospital_Id','=',auth()->user()->Hospital_Id)
-            ->where('id','=',$request['PatientId'])->value('AssignedDoctor_Id');
-
-
+            $assignedDr = Patient::select('AssignedDoctor_Id')
+                ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
+                ->where('id', '=', $request['PatientId'])
+                ->value('AssignedDoctor_Id');
 
             $contactnote = new Contactnote();
 
@@ -360,7 +369,8 @@ class NoteController extends Controller
 
     public function viewContactNote(Request $request)
     {
-        if (Auth::check()) {
+        $var =Auth::user()->roles->first()->name;
+        if ( $var == 'Admin' || $var =='Clinician') {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
                 'Patient_Id' => 'required|exists:contactnote',
@@ -397,7 +407,8 @@ class NoteController extends Controller
 
     public function createProcessNote(Request $request)
     {
-        if (Auth::check()) {
+        $var =Auth::user()->roles->first()->name;
+        if ( $var == 'Admin' || $var =='Clinician') {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
                 'PatientId' => 'required',
@@ -413,15 +424,16 @@ class NoteController extends Controller
                 );
             }
 
-            $datetimescheduled=Appointment::select('ScheduledTime')->where('Hospital_Id','=',auth()->user()->Hospital_Id)
-            ->where('id','=',$request['AppointmentId'])
-            ->where('Patient_Id','=',$request['PatientId'])->value('ScheduledTime');
+            $datetimescheduled = Appointment::select('ScheduledTime')
+                ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
+                ->where('id', '=', $request['AppointmentId'])
+                ->where('Patient_Id', '=', $request['PatientId'])
+                ->value('ScheduledTime');
 
-
-
-
-
-            $assignedDr=Patient::select('AssignedDoctor_Id')->where('Hospital_Id','=',auth()->user()->Hospital_Id)->where('id','=',$request['PatientId'])->value('AssignedDoctor_Id');
+            $assignedDr = Patient::select('AssignedDoctor_Id')
+                ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
+                ->where('id', '=', $request['PatientId'])
+                ->value('AssignedDoctor_Id');
 
             $procnote = new Processnote();
             $procnote->Note_Type = 'Psychotherapy Process Note';
@@ -444,16 +456,14 @@ class NoteController extends Controller
                 ],
                 201
             );
-
-
-
         }
         return response()->json(['message' => 'Unauthorized user'], 401);
     }
 
     public function viewProcessNote(Request $request)
     {
-        if (Auth::check()) {
+        $var =Auth::user()->roles->first()->name;
+        if ( $var == 'Admin' || $var =='Clinician') {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
                 'Patient_Id' => 'required|exists:processnote',
@@ -489,7 +499,8 @@ class NoteController extends Controller
 
     public function createConsulationnote(Request $request)
     {
-        if (Auth::check()) {
+        $var =Auth::user()->roles->first()->name;
+        if ( $var == 'Admin' || $var =='Clinician') {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
                 'Note_Type' => 'required',
@@ -501,7 +512,7 @@ class NoteController extends Controller
                 'Visibility' => 'required',
                 'diagnostic_justification' => 'required',
                 'Note_Content' => 'required',
-                'Signator_Id'=>'required',
+                'Signator_Id' => 'required',
             ]);
             if ($validator->fails()) {
                 // return response()->json($validator->errors()->toJson(), 400);
@@ -512,206 +523,206 @@ class NoteController extends Controller
                 );
             }
 
-            $assignedDr=Patient::select('AssignedDoctor_Id')->where('Hospital_Id','=',auth()->user()->Hospital_Id)
-            ->where('id','=',$request['PatientId'])->value('AssignedDoctor_Id');
+            $assignedDr = Patient::select('AssignedDoctor_Id')
+                ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
+                ->where('id', '=', $request['PatientId'])
+                ->value('AssignedDoctor_Id');
 
             $consnote = new Consulationnote();
             $consnote->Note_Type = $request['Note_Type'];
-            $consnote-> Hospital_Id= auth()->user()->Hospital_Id;
-            $consnote-> Patient_Id= $request['PatientId'];
-            $consnote-> Doctor_Id= $assignedDr;
-            $consnote-> Appointment_Id= $request['AppointmentId'];
-            $consnote-> DateTime_Scheduled= $request['DateTime_Scheduled'];
-            $consnote-> DateTime_Occured= $request['DateTime_Occured'];
-            $consnote->Visibility=$request['Visibility'];
-            $consnote->Status='Active';
-            $consnote->CreatedBy_Id=auth()->user()->id;
-            $consnote->Diagnsosis_Id=json_encode(
-                $request['Diagnosis_Id']
-            );
-            $consnote->diagnostic_justification=$request['diagnostic_justification'];
-            $consnote->Note_Content=$request['Note_Content'];
-            $consnote->Signator_Id=$request['Signator_Id'];
+            $consnote->Hospital_Id = auth()->user()->Hospital_Id;
+            $consnote->Patient_Id = $request['PatientId'];
+            $consnote->Doctor_Id = $assignedDr;
+            $consnote->Appointment_Id = $request['AppointmentId'];
+            $consnote->DateTime_Scheduled = $request['DateTime_Scheduled'];
+            $consnote->DateTime_Occured = $request['DateTime_Occured'];
+            $consnote->Visibility = $request['Visibility'];
+            $consnote->Status = 'Active';
+            $consnote->CreatedBy_Id = auth()->user()->id;
+            $consnote->Diagnsosis_Id = json_encode($request['Diagnosis_Id']);
+            $consnote->diagnostic_justification =
+                $request['diagnostic_justification'];
+            $consnote->Note_Content = $request['Note_Content'];
+            $consnote->Signator_Id = $request['Signator_Id'];
             $consnote->save();
 
-            return response()->json(['message' => 'Successfully created a new '.$request['Note_Type']], 201);
-
-
-
-        }
-        return response()->json(['message' => 'Unauthorized user'], 401);
-    }
-
-
-    public function saveintakenote(Request $request){
-        if (Auth::check()) {
-
-        $array= collect($request->all()['risk_assessment'])->map(function ($item)use ($request) {
-            return $item + [
-            'Hospital_Id' => auth()->user()->Hospital_Id,
-            'Patient_Id'=>$request['Patient_Id'],
-            'Visibility'=>'asigned_clinicians_only',
-            'Status' =>'Active',
-            'CreatedBy_Id'=>auth()->user()->id,
-
-            ];
-
-            })->toArray();
-
-
-
-     if($request['Patient_denies_all_areas_of_risk'] =='no'){
-         foreach( $array as $key=> $value)
-         {
-               Areaofrisk::create($value);
-
-         }
-         }
-
-    // $vldtriskassment= Validator::make($request->all()['risk_assessment'], [
-
-    //         'Area_of_risk' => 'required|string',
-    //         'Patient_Id' => 'required',
-    //         'Level_risk'=>'required|string',
-    //         'Intent_act'=>'required|string',
-    //         'Plan_act'=>'required|string',
-    //         'Means_act'=>'required|string',
-    //         'Risks_factors'=>'required|string',
-    //         'Protective_factors'=>'required|string',
-    //         'Additional_details'=>'required|string',
-    // ]);
-
-    // return $vldtriskassment;
-
-
-         $validator = Validator::make($request->all(),[
-            'Patient_Id' => 'required',
-            'Presenting_problem'=>'required|string',
-            'Appointment_Id'=>'required',
-            'Orientation'=>'required',
-            'General_appearance'=>'required',
-            'Dress'=>'required',
-            'Motor_activity'=>'required',
-            'Interview_behavior'=>'required',
-            'Speech'=>'required',
-            'Mood'=>'required',
-            'Affect'=>'required',
-            'Insight'=>'required',
-            'Judgement'=>'required',
-            'Memory'=>'required',
-            'Attention'=>'required',
-            'Thought_process'=>'required',
-            'Thought_content'=>'required',
-            'Perception'=>'required',
-            'Functional_status'=>'required',
-            'Objective_content'=>'required',
-            'Identification'=>'required',
-            'History_present_problem'=>'required',
-            'Psychiatric_history'=>'required',
-            'TraumaHistory'=>'required',
-            'Family_psychiatric_history'=>'required',
-            'Medical_conditions_history'=>'required',
-            'Current_medications'=>'required',
-            'Substance_Use'=>'required',
-            'Family_history'=>'required',
-            'Social_history'=>'required',
-            'Spiritual_factors'=>'required',
-            'Developmental_history'=>'required',
-            'Educational_vocational_history'=>'required',
-            'LegalHistory'=>'required',
-            'Snap'=>'required',
-            'Other_important_information'=>'required',
-            'Plan'=>'required',
-            'Diagnosis'=>'required|array',
-            'Diagnostic_justification'=>'required',
-
-        ]);
-
-
-        if ($validator->fails()) {
             return response()->json(
-                ['errors' => implode($validator->errors()->all())],
-                422
+                [
+                    'message' =>
+                        'Successfully created a new ' . $request['Note_Type'],
+                ],
+                201
             );
         }
-        $assignedDr=Patient::select('AssignedDoctor_Id')->where('Hospital_Id','=',auth()->user()->Hospital_Id)->where('id','=',$request['Patient_Id'])->value('AssignedDoctor_Id');
-
-
-        $DAtcheduled=Appointment::select('ScheduledTime')->where('Hospital_Id','=',auth()->user()->Hospital_Id)
-        ->where('id','=',$request['Appointment_Id'])
-        ->where('Patient_Id','=',$request['Patient_Id'])->value('ScheduledTime');
-
-
-    $intake = new Pintakenote();
-
-    $intake->Patient_id=$request['Patient_Id'];
-    $intake->Hospital_Id = auth()->user()->Hospital_Id;
-    $intake->Signator_Id=$assignedDr;
-    $intake->Doctor_Id=$assignedDr;
-    $intake->Visibility='asigned_clinicians_only';
-    $intake->Status='Active';
-    $intake->CreatedBy_Id=auth()->user()->id;
-    $intake->PresentingProblem=$request['Presenting_problem'];
-    $intake->Note_Type='Psychotherapy Intake Note';
-    $intake->Appointment_Id=$request['Appointment_Id'];
-    $intake->Orientation=$request['Orientation'];
-    $intake->GeneralAppearance=$request['General_appearance'];
-    $intake->Dress=$request['Dress'];
-    $intake->MotorActivity=$request['Motor_activity'];
-    $intake->InterviewBehavior=$request['Interview_behavior'];
-    $intake->Speech=$request['Speech'];
-    $intake->Mood=$request['Mood'];
-    $intake->Affect=$request['Affect'];
-    $intake->Insight=$request['Insight'];
-    $intake->Judgement=$request['Judgement'];
-    $intake->Memory=$request['Memory'];
-    $intake->Attention=$request['Attention'];
-    $intake->ThoughtProcess=$request['Thought_process'];
-    $intake->ThoughtContent=$request['Thought_content'];
-    $intake->Identification=$request['Identification'];
-    $intake->HistoryOfPresentProblem=$request['History_present_problem'];
-    $intake->PsychiatricHistory=$request['Psychiatric_history'];
-    $intake->TraumaHistory=$request['TraumaHistory'];
-    $intake->FamilyPsychiatricHistory=$request['Family_psychiatric_history'];
-    $intake->MedicalConditionsHistory=$request['Medical_conditions_history'];
-    $intake->CurrentMedications=$request['Current_medications'];
-    $intake->SubstanceUse=$request['Substance_Use'];
-    $intake->FamilyHistory=$request['Family_history'];
-    $intake->SocialHistory=$request['Social_history'];
-    $intake->SpiritualFactors=$request['Spiritual_factors'];
-    $intake->SpiritualFactors=$request['Spiritual_factors'];
-    $intake->DevelopmentalHistory=$request['Developmental_history'];
-    $intake->EducationalVocationalHistory=$request['Educational_vocational_history'];
-    $intake->LegalHistory=$request['LegalHistory'];
-    $intake->Snap=$request['Snap'];
-    $intake->OtherImportantInformation=$request['Other_important_information'];
-    $intake->Plan=$request['Plan'];
-    $intake->Diagnosis= json_encode(
-        $request['Diagnosis']
-    );
-
-    $intake->DiagnosticJustification=$request['Diagnostic_justification'];
-    $intake->DateTimeScheduled=$DAtcheduled;
-    $intake->DateTimeOccured=$DAtcheduled;
-     $intake->save();
-
-     return response()->json(['message' => 'Psychotherapy Intake Note created successfully'], 201);
-
-
-
-
-        }
-
-
         return response()->json(['message' => 'Unauthorized user'], 401);
-
-
     }
 
+    public function saveintakenote(Request $request)
+    {
+        $var =Auth::user()->roles->first()->name;
+        if ( $var == 'Admin' || $var =='Clinician') {
+            $array = collect($request->all()['risk_assessment'])
+                ->map(function ($item) use ($request) {
+                    return $item + [
+                        'Hospital_Id' => auth()->user()->Hospital_Id,
+                        'Patient_Id' => $request['Patient_Id'],
+                        'Visibility' => 'asigned_clinicians_only',
+                        'Status' => 'Active',
+                        'CreatedBy_Id' => auth()->user()->id,
+                    ];
+                })
+                ->toArray();
 
-    public function getallnotes(Request $request){
+            if ($request['Patient_denies_all_areas_of_risk'] == 'no') {
+                foreach ($array as $key => $value) {
+                    Areaofrisk::create($value);
+                }
+            }
 
-        if (Auth::user()->roles->first()->name == (('Admin')||('Clinician'))) {
+            // $vldtriskassment= Validator::make($request->all()['risk_assessment'], [
+
+            //         'Area_of_risk' => 'required|string',
+            //         'Patient_Id' => 'required',
+            //         'Level_risk'=>'required|string',
+            //         'Intent_act'=>'required|string',
+            //         'Plan_act'=>'required|string',
+            //         'Means_act'=>'required|string',
+            //         'Risks_factors'=>'required|string',
+            //         'Protective_factors'=>'required|string',
+            //         'Additional_details'=>'required|string',
+            // ]);
+
+            // return $vldtriskassment;
+
+            $validator = Validator::make($request->all(), [
+                'Patient_Id' => 'required',
+                'Presenting_problem' => 'required|string',
+                'Appointment_Id' => 'required',
+                'Orientation' => 'required',
+                'General_appearance' => 'required',
+                'Dress' => 'required',
+                'Motor_activity' => 'required',
+                'Interview_behavior' => 'required',
+                'Speech' => 'required',
+                'Mood' => 'required',
+                'Affect' => 'required',
+                'Insight' => 'required',
+                'Judgement' => 'required',
+                'Memory' => 'required',
+                'Attention' => 'required',
+                'Thought_process' => 'required',
+                'Thought_content' => 'required',
+                'Perception' => 'required',
+                'Functional_status' => 'required',
+                'Objective_content' => 'required',
+                'Identification' => 'required',
+                'History_present_problem' => 'required',
+                'Psychiatric_history' => 'required',
+                'TraumaHistory' => 'required',
+                'Family_psychiatric_history' => 'required',
+                'Medical_conditions_history' => 'required',
+                'Current_medications' => 'required',
+                'Substance_Use' => 'required',
+                'Family_history' => 'required',
+                'Social_history' => 'required',
+                'Spiritual_factors' => 'required',
+                'Developmental_history' => 'required',
+                'Educational_vocational_history' => 'required',
+                'LegalHistory' => 'required',
+                'Snap' => 'required',
+                'Other_important_information' => 'required',
+                'Plan' => 'required',
+                'Diagnosis' => 'required|array',
+                'Diagnostic_justification' => 'required',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json(
+                    ['errors' => implode($validator->errors()->all())],
+                    422
+                );
+            }
+            $assignedDr = Patient::select('AssignedDoctor_Id')
+                ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
+                ->where('id', '=', $request['Patient_Id'])
+                ->value('AssignedDoctor_Id');
+
+            $DAtcheduled = Appointment::select('ScheduledTime')
+                ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
+                ->where('id', '=', $request['Appointment_Id'])
+                ->where('Patient_Id', '=', $request['Patient_Id'])
+                ->value('ScheduledTime');
+
+            $intake = new Pintakenote();
+
+            $intake->Patient_id = $request['Patient_Id'];
+            $intake->Hospital_Id = auth()->user()->Hospital_Id;
+            $intake->Signator_Id = $assignedDr;
+            $intake->Doctor_Id = $assignedDr;
+            $intake->Visibility = 'asigned_clinicians_only';
+            $intake->Status = 'Active';
+            $intake->CreatedBy_Id = auth()->user()->id;
+            $intake->PresentingProblem = $request['Presenting_problem'];
+            $intake->Note_Type = 'Psychotherapy Intake Note';
+            $intake->Appointment_Id = $request['Appointment_Id'];
+            $intake->Orientation = $request['Orientation'];
+            $intake->GeneralAppearance = $request['General_appearance'];
+            $intake->Dress = $request['Dress'];
+            $intake->MotorActivity = $request['Motor_activity'];
+            $intake->InterviewBehavior = $request['Interview_behavior'];
+            $intake->Speech = $request['Speech'];
+            $intake->Mood = $request['Mood'];
+            $intake->Affect = $request['Affect'];
+            $intake->Insight = $request['Insight'];
+            $intake->Judgement = $request['Judgement'];
+            $intake->Memory = $request['Memory'];
+            $intake->Attention = $request['Attention'];
+            $intake->ThoughtProcess = $request['Thought_process'];
+            $intake->ThoughtContent = $request['Thought_content'];
+            $intake->Identification = $request['Identification'];
+            $intake->HistoryOfPresentProblem =
+                $request['History_present_problem'];
+            $intake->PsychiatricHistory = $request['Psychiatric_history'];
+            $intake->TraumaHistory = $request['TraumaHistory'];
+            $intake->FamilyPsychiatricHistory =
+                $request['Family_psychiatric_history'];
+            $intake->MedicalConditionsHistory =
+                $request['Medical_conditions_history'];
+            $intake->CurrentMedications = $request['Current_medications'];
+            $intake->SubstanceUse = $request['Substance_Use'];
+            $intake->FamilyHistory = $request['Family_history'];
+            $intake->SocialHistory = $request['Social_history'];
+            $intake->SpiritualFactors = $request['Spiritual_factors'];
+            $intake->SpiritualFactors = $request['Spiritual_factors'];
+            $intake->DevelopmentalHistory = $request['Developmental_history'];
+            $intake->EducationalVocationalHistory =
+                $request['Educational_vocational_history'];
+            $intake->LegalHistory = $request['LegalHistory'];
+            $intake->Snap = $request['Snap'];
+            $intake->OtherImportantInformation =
+                $request['Other_important_information'];
+            $intake->Plan = $request['Plan'];
+            $intake->Diagnosis = json_encode($request['Diagnosis']);
+
+            $intake->DiagnosticJustification =
+                $request['Diagnostic_justification'];
+            $intake->DateTimeScheduled = $DAtcheduled;
+            $intake->DateTimeOccured = $DAtcheduled;
+            $intake->save();
+
+            return response()->json(
+                ['message' => 'Psychotherapy Intake Note created successfully'],
+                201
+            );
+        }
+
+        return response()->json(['message' => 'Unauthorized user'], 401);
+    }
+
+    public function getallnotes(Request $request)
+    {
+        $var =Auth::user()->roles->first()->name;
+        if ( $var == 'Admin' || $var =='Clinician') {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
                 'Patient_Id' => 'required',
@@ -725,143 +736,247 @@ class NoteController extends Controller
                 );
             }
 
-            $recordpat = Patient::
-            where('id','=',$request['Patient_Id'])
-            ->where('Hospital_Id','=',auth()->user()->Hospital_Id);
+            $recordpat = Patient::where(
+                'id',
+                '=',
+                $request['Patient_Id']
+            )->where('Hospital_Id', '=', auth()->user()->Hospital_Id);
 
             if (!$recordpat->exists()) {
                 return response()->json(
-                    ['message' =>
-                    'This Patient does not exists in our hospital'
+                    [
+                        'message' =>
+                            'This Patient does not exists in our hospital',
                     ],
                     404
                 );
             }
 
-            $getallprocessnote=Processnote::select('id','Note_Type','DateTime_Scheduled','Doctor_Id','CreatedBy_Id')
-            ->where('Patient_Id','=',$request['Patient_Id'])
-            ->where('Hospital_Id','=',auth()->user()->Hospital_Id)
-            ->orderBy('DateTime_Scheduled', 'asc')
-            ->with('doctor:id,FirstName,LastName,Title,ProfileImageUrl','doneby:id,FirstName,LastName,Title,ProfileImageUrl')
-            ->get();
+            $getallprocessnote = Processnote::select(
+                'id',
+                'Note_Type',
+                'DateTime_Scheduled',
+                'Doctor_Id',
+                'CreatedBy_Id'
+            )
+                ->where('Patient_Id', '=', $request['Patient_Id'])
+                ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
+                ->orderBy('DateTime_Scheduled', 'asc')
+                ->with(
+                    'doctor:id,FirstName,LastName,Title,ProfileImageUrl',
+                    'doneby:id,FirstName,LastName,Title,ProfileImageUrl'
+                )
+                ->get();
 
+            $getallconsultationnote = Consulationnote::select(
+                'id',
+                'Note_Type',
+                'DateTime_Scheduled',
+                'Doctor_Id',
+                'CreatedBy_Id'
+            )
+                ->where('Patient_Id', '=', $request['Patient_Id'])
+                ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
+                ->orderBy('DateTime_Scheduled', 'asc')
+                ->with(
+                    'doctor:id,FirstName,LastName,Title,ProfileImageUrl',
+                    'doneby:id,FirstName,LastName,Title,ProfileImageUrl'
+                )
+                ->get();
 
+            $getallcontactnote = Contactnote::select(
+                'id',
+                'Note_Type',
+                'DateTime',
+                'Doctor_Id',
+                'CreatedBy_Id'
+            )
+                ->where('Patient_Id', '=', $request['Patient_Id'])
+                ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
+                ->orderBy('DateTime', 'asc')
+                ->with(
+                    'doctor:id,FirstName,LastName,Title,ProfileImageUrl',
+                    'doneby:id,FirstName,LastName,Title,ProfileImageUrl'
+                )
+                ->get();
 
-        $getallconsultationnote=Consulationnote::select('id','Note_Type','DateTime_Scheduled','Doctor_Id','CreatedBy_Id')
-        ->where('Patient_Id','=',$request['Patient_Id'])
-        ->where('Hospital_Id','=',auth()->user()->Hospital_Id)
-        ->orderBy('DateTime_Scheduled', 'asc')
-        ->with('doctor:id,FirstName,LastName,Title,ProfileImageUrl','doneby:id,FirstName,LastName,Title,ProfileImageUrl')
-        ->get();
+            $getmiscnote = Miscnote::select(
+                'id',
+                'Note_Type',
+                'DateTime',
+                'Doctor_Id',
+                'CreatedBy_Id'
+            )
+                ->where('Patient_Id', '=', $request['Patient_Id'])
+                ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
+                ->orderBy('DateTime', 'asc')
+                ->with(
+                    'doctor:id,FirstName,LastName,Title,ProfileImageUrl',
+                    'doneby:id,FirstName,LastName,Title,ProfileImageUrl'
+                )
+                ->get();
 
-        $getallcontactnote=Contactnote::select('id','Note_Type','DateTime','Doctor_Id','CreatedBy_Id')
-        ->where('Patient_Id','=',$request['Patient_Id'])
-        ->where('Hospital_Id','=',auth()->user()->Hospital_Id)
-        ->orderBy('DateTime', 'asc')
-        ->with('doctor:id,FirstName,LastName,Title,ProfileImageUrl','doneby:id,FirstName,LastName,Title,ProfileImageUrl')
-        ->get();
+            $getalltreatmentnote = PtreatmentPlan::select(
+                'id',
+                'Note_Type',
+                'Date',
+                'Time',
+                'Doctor_id',
+                'CreatedBy_Id'
+            )
+                ->where('Patient_Id', '=', $request['Patient_Id'])
+                ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
+                ->orderBy('Date', 'asc')
+                ->with(
+                    'doctor:id,FirstName,LastName,Title,ProfileImageUrl',
+                    'doneby:id,FirstName,LastName,Title,ProfileImageUrl'
+                )
+                ->get();
 
-        $getmiscnote=Miscnote::select('id','Note_Type','DateTime','Doctor_Id','CreatedBy_Id')
-        ->where('Patient_Id','=',$request['Patient_Id'])
-        ->where('Hospital_Id','=',auth()->user()->Hospital_Id)
-        ->orderBy('DateTime', 'asc')
-        ->with('doctor:id,FirstName,LastName,Title,ProfileImageUrl','doneby:id,FirstName,LastName,Title,ProfileImageUrl')
-        ->get();
+            $miscellnoteAll = collect($getmiscnote)
+                ->map(function ($item) {
+                    return [
+                        'id' => $item['id'],
+                        'Note_Type' => $item['Note_Type'],
+                        'DateTime' => $item['DateTime'],
+                        'Doctor' =>
+                            $item['doctor']['Title'] .
+                            ' ' .
+                            $item['doctor']['FirstName'] .
+                            ' ' .
+                            $item['doctor']['LastName'],
+                        'CreatedBy' =>
+                            $item['doneby']['Title'] .
+                            ' ' .
+                            $item['doneby']['FirstName'] .
+                            ' ' .
+                            $item['doneby']['LastName'],
+                        'DoctorImage' => $item['doctor']['ProfileImageUrl'],
+                        'CreatorImage' => $item['doneby']['ProfileImageUrl'],
+                    ];
+                })
+                ->all();
 
+            $treatmentplannoteAll = collect($getalltreatmentnote)
+                ->map(function ($item) {
+                    return [
+                        'id' => $item['id'],
+                        'Note_Type' => $item['Note_Type'],
+                        'DateTime' => $item['Date'] . ' ' . $item['Time'],
+                        'Doctor' =>
+                            $item['doctor']['Title'] .
+                            ' ' .
+                            $item['doctor']['FirstName'] .
+                            ' ' .
+                            $item['doctor']['LastName'],
+                        'CreatedBy' =>
+                            $item['doneby']['Title'] .
+                            ' ' .
+                            $item['doneby']['FirstName'] .
+                            ' ' .
+                            $item['doneby']['LastName'],
+                        'DoctorImage' => $item['doctor']['ProfileImageUrl'],
+                        'CreatorImage' => $item['doneby']['ProfileImageUrl'],
+                    ];
+                })
+                ->all();
 
-        $getalltreatmentnote=PtreatmentPlan::select('id','Note_Type','Date','Time','Doctor_id','CreatedBy_Id')
-        ->where('Patient_Id','=',$request['Patient_Id'])
-        ->where('Hospital_Id','=',auth()->user()->Hospital_Id)
-        ->orderBy('Date', 'asc')
-        ->with('doctor:id,FirstName,LastName,Title,ProfileImageUrl','doneby:id,FirstName,LastName,Title,ProfileImageUrl')
-        ->get();
+            $contactnoteAll = collect($getallcontactnote)
+                ->map(function ($item) {
+                    return [
+                        'id' => $item['id'],
+                        'Note_Type' => $item['Note_Type'],
+                        'DateTime' => $item['DateTime'],
+                        'Doctor' =>
+                            $item['doctor']['Title'] .
+                            ' ' .
+                            $item['doctor']['FirstName'] .
+                            ' ' .
+                            $item['doctor']['LastName'],
+                        'CreatedBy' =>
+                            $item['doneby']['Title'] .
+                            ' ' .
+                            $item['doneby']['FirstName'] .
+                            ' ' .
+                            $item['doneby']['LastName'],
+                        'DoctorImage' => $item['doctor']['ProfileImageUrl'],
+                        'CreatorImage' => $item['doneby']['ProfileImageUrl'],
+                    ];
+                })
+                ->all();
 
+            $consultationnoteAll = collect($getallconsultationnote)
+                ->map(function ($item) {
+                    return [
+                        'id' => $item['id'],
+                        'Note_Type' => $item['Note_Type'],
+                        'DateTime' => $item['DateTime_Scheduled'],
+                        'Doctor' =>
+                            $item['doctor']['Title'] .
+                            ' ' .
+                            $item['doctor']['FirstName'] .
+                            ' ' .
+                            $item['doctor']['LastName'],
+                        'CreatedBy' =>
+                            $item['doneby']['Title'] .
+                            ' ' .
+                            $item['doneby']['FirstName'] .
+                            ' ' .
+                            $item['doneby']['LastName'],
+                        'DoctorImage' => $item['doctor']['ProfileImageUrl'],
+                        'CreatorImage' => $item['doneby']['ProfileImageUrl'],
+                    ];
+                })
+                ->all();
 
-      $miscellnoteAll= collect($getmiscnote)->map(function ($item) {
-            return [
-                'id'=>$item['id'],
-                'Note_Type'=>$item['Note_Type'],
-                'DateTime' => $item['DateTime'],
-                'Doctor'=>$item['doctor']['Title'].' '.$item['doctor']['FirstName'].' '.$item['doctor']['LastName'],
-                'CreatedBy'=>$item['doneby']['Title'].' '.$item['doneby']['FirstName'].' '.$item['doneby']['LastName'],
-                'DoctorImage'=>$item['doctor']['ProfileImageUrl'],
-                'CreatorImage'=>$item['doneby']['ProfileImageUrl'],
+            $processnoteAll = collect($getallprocessnote)
+                ->map(function ($item) {
+                    return [
+                        'id' => $item['id'],
+                        'Note_Type' => $item['Note_Type'],
+                        'DateTime' => $item['DateTime_Scheduled'],
+                        'Doctor' =>
+                            $item['doctor']['Title'] .
+                            ' ' .
+                            $item['doctor']['FirstName'] .
+                            ' ' .
+                            $item['doctor']['LastName'],
+                        'CreatedBy' =>
+                            $item['doneby']['Title'] .
+                            ' ' .
+                            $item['doneby']['FirstName'] .
+                            ' ' .
+                            $item['doneby']['LastName'],
+                        'DoctorImage' => $item['doctor']['ProfileImageUrl'],
+                        'CreatorImage' => $item['doneby']['ProfileImageUrl'],
+                    ];
+                })
+                ->all();
 
-            ];
-        })->all();
+            $assignedDr = Patient::select('AssignedDoctor_Id')
+                ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
+                ->where('id', '=', $request['Patient_Id'])
+                ->value('AssignedDoctor_Id');
 
-
-
-        $treatmentplannoteAll=  collect($getalltreatmentnote)->map(function ($item) {
-            return [
-                'id'=>$item['id'],
-                'Note_Type'=>$item['Note_Type'],
-                'DateTime' => $item['Date'].' '.$item['Time'],
-                'Doctor'=>$item['doctor']['Title'].' '.$item['doctor']['FirstName'].' '.$item['doctor']['LastName'],
-                'CreatedBy'=>$item['doneby']['Title'].' '.$item['doneby']['FirstName'].' '.$item['doneby']['LastName'],
-                'DoctorImage'=>$item['doctor']['ProfileImageUrl'],
-                'CreatorImage'=>$item['doneby']['ProfileImageUrl'],   ];   })->all();
-
-
-        $contactnoteAll=collect($getallcontactnote)->map(function ($item) {
-            return [
-                'id'=>$item['id'],
-                'Note_Type'=>$item['Note_Type'],
-                'DateTime' => $item['DateTime'],
-                'Doctor'=>$item['doctor']['Title'].' '.$item['doctor']['FirstName'].' '.$item['doctor']['LastName'],
-                'CreatedBy'=>$item['doneby']['Title'].' '.$item['doneby']['FirstName'].' '.$item['doneby']['LastName'],
-                'DoctorImage'=>$item['doctor']['ProfileImageUrl'],
-                'CreatorImage'=>$item['doneby']['ProfileImageUrl'], ];  })->all();
-
-
-        $consultationnoteAll= collect($getallconsultationnote)->map(function ($item) {
-                 return [
-                    'id'=>$item['id'],
-                    'Note_Type'=>$item['Note_Type'],
-                    'DateTime' => $item['DateTime_Scheduled'],
-                    'Doctor'=>$item['doctor']['Title'].' '.$item['doctor']['FirstName'].' '.$item['doctor']['LastName'],
-                    'CreatedBy'=>$item['doneby']['Title'].' '.$item['doneby']['FirstName'].' '.$item['doneby']['LastName'],
-                    'DoctorImage'=>$item['doctor']['ProfileImageUrl'],
-                    'CreatorImage'=>$item['doneby']['ProfileImageUrl'],   ];            })->all();
-
-
-        $processnoteAll =collect($getallprocessnote)->map(function ($item) {
-            return [
-               'id'=>$item['id'],
-               'Note_Type'=>$item['Note_Type'],
-               'DateTime' => $item['DateTime_Scheduled'],
-               'Doctor'=>$item['doctor']['Title'].' '.$item['doctor']['FirstName'].' '.$item['doctor']['LastName'],
-               'CreatedBy'=>$item['doneby']['Title'].' '.$item['doneby']['FirstName'].' '.$item['doneby']['LastName'],
-               'DoctorImage'=>$item['doctor']['ProfileImageUrl'],
-               'CreatorImage'=>$item['doneby']['ProfileImageUrl'],   ];            })->all();
-
-
-
-               $assignedDr=Patient::select('AssignedDoctor_Id')->where('Hospital_Id','=',auth()->user()->Hospital_Id)
-               ->where('id','=',$request['Patient_Id'])->value('AssignedDoctor_Id');
-
-      if((auth()->user()->id ==$assignedDr) ||(Auth::user()->roles->first()->name == 'Admin')){
-
-        return response()->json(['data' =>
-        array_merge([$treatmentplannoteAll,$contactnoteAll,$consultationnoteAll,$processnoteAll, $miscellnoteAll])
-
-
-
-        ], 200);
-
-
-
-       }
-
-
+            if (
+                auth()->user()->id == $assignedDr ||
+                Auth::user()->roles->first()->name == 'Admin'
+            ) {
+                return response()->json(
+                    [
+                        'data' => array_merge([
+                            $treatmentplannoteAll,
+                            $contactnoteAll,
+                            $consultationnoteAll,
+                            $processnoteAll,
+                            $miscellnoteAll,
+                        ]),
+                    ],
+                    200
+                );
+            }
         }
 
-
         return response()->json(['errors' => 'Unauthorized user'], 401);
-
-
     }
-
-
-
 }
