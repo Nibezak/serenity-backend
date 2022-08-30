@@ -121,6 +121,8 @@ class AdminController extends Controller
         $sms = new TransferSms();
         $sms->sendSMS($request['telephone'],$message);
 
+
+
         return response()->json(
             [
                 'message' =>
@@ -129,6 +131,22 @@ class AdminController extends Controller
                     $request['LastName'] .
                     ' Account is successfully created ,Check your email address or Phone number for the Login credentials',
                 // 'user' => $user
+                'data'=>collect("staff")
+                ->map(function ($item) use ($request, $user)  {
+                    return [
+                        // 'id' => $item['id'],
+                        'created_at'=> $user->created_at,
+                        'FirstName'=> $request['FirstName'],
+                        'LastName'=> $request['LastName'],
+                        'telephone'=> $request['telephone'],
+                        'email'=>$request['email'],
+                        'display_name'=>Role::where('id','=',$request['RoleId'])->value('display_name'),
+
+                    ];
+                })
+                ->all()
+
+                ,
                 'test' =>
                     $message .
                     ' Your Role is ' .
