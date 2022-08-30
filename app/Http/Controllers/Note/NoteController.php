@@ -717,6 +717,7 @@ class NoteController extends Controller
         }
 
         return response()->json(['message' => 'Unauthorized user'], 401);
+
     }
 
     public function getallnotes(Request $request)
@@ -979,4 +980,23 @@ class NoteController extends Controller
 
         return response()->json(['errors' => 'Unauthorized user'], 401);
     }
+
+
+    public function createprogressnote(Request $request)
+    {
+
+        $var =Auth::user()->roles->first()->name;
+        if ( $var == 'Admin' || $var =='Clinician') {
+
+        return true;
+
+        }
+
+        return response()->json(['message' => 'Unauthorized user'], 401);
+
+
+
+    }
+
+
 }

@@ -149,7 +149,7 @@ class AdminController extends Controller
     //Get all our hospital staff
     public function fetchourstaff()
     {
-        if (Auth::user()->roles->first()->name == 'Admin') {
+        if (!Auth::user()->roles->first()->name == 'Admin') {
             return response()->json(
                 [
                     'message' => 'Unauthorized User',

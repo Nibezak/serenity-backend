@@ -212,6 +212,10 @@ Route::group(
 
 
 
+         Route::post('/Manager/create-progress-note', [NoteController::class, 'createprogressnote']);
+
+
+
 
 
     }
