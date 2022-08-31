@@ -14,7 +14,7 @@ use App\Models\Diagnosis;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
-use Validator;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use App\TransferSms;
 use Illuminate\Support\Facades\Auth;
@@ -170,7 +170,7 @@ class AdminController extends Controller
         if (!Auth::user()->roles->first()->name == 'Admin') {
             return response()->json(
                 [
-                    'message' => 'Unauthorized User',
+                    'errors' => 'Unauthorized User',
                 ],
                 401
             );
@@ -311,13 +311,9 @@ class AdminController extends Controller
             );
 
 
-
-
-
         }
 
-        else if (Auth::user()->roles->first()->name == 'Clinician') {
-
+        else  if ( $var =='Clinician') {
 
             return response()->json(
                 [
@@ -336,6 +332,28 @@ class AdminController extends Controller
 
         }
         return response()->json(['message' => 'Unauthorized user'], 401);
+    }
+
+    public function fetchourAllpatients(){
+        $var =Auth::user()->roles->first()->name;
+        if ( $var == 'Admin' ) {
+
+        return response()->json(
+                [
+                    'data' => Patient::
+                    where('Hospital_Id', '=', auth()->user()->Hospital_Id)
+                    ->with(['doctor:id,Title,FirstName,LastName,telephone','LastAppointment','NextAppointment','doneby:id,FirstName,LastName,email,telephone,ProfileImageUrl'])
+                    ->orderBy('created_at', 'desc')
+                    ->get()
+                        ,
+                ],
+                200
+            );
+
+        }
+        return response()->json(['message' => 'Unauthorized user'], 401);
+
+
     }
 
     public function fetchonepatient($id)
