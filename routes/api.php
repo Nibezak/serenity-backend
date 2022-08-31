@@ -80,6 +80,11 @@ Route::group(
             'fetchourActivepatients',
         ]);
 
+        Route::get('/Admin/all-patient', [
+            AdminController::class,
+            'fetchourAllpatients',
+        ]);
+
         Route::get('/patient/view/{id}', [
             AdminController::class,
             'fetchonepatient',
@@ -207,12 +212,11 @@ Route::group(
 
          Route::post('/Manager/create-Intake-Note', [NoteController::class, 'saveintakenote']);
 
+         Route::post('/Manager/create-progress-note', [NoteController::class, 'saveprogressnote']);
+
 
          Route::post('/Manager/get-all-notes', [NoteController::class, 'getallnotes']);
 
-
-
-         Route::post('/Manager/create-progress-note', [NoteController::class, 'createprogressnote']);
 
 
 

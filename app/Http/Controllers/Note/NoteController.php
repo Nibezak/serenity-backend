@@ -13,11 +13,12 @@ use App\Models\Miscnote;
 use App\Models\Processnote;
 use App\Models\Consulationnote;
 use App\Models\Patient;
+use App\Models\Progresssnote;
 use App\Models\Contactnote;
 use App\Models\Areaofrisk;
 use Carbon\Carbon;
 use App\Models\Pintakenote;
-use Validator;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
 
 class NoteController extends Controller
@@ -679,6 +680,9 @@ class NoteController extends Controller
             $intake->Attention = $request['Attention'];
             $intake->ThoughtProcess = $request['Thought_process'];
             $intake->ThoughtContent = $request['Thought_content'];
+            $intake->Perception=$request['Perception'];
+            $intake->FunctionalStatus=$request['Functional_status'];
+            $intake->ObjectiveContent=$request['Objective_content'];
             $intake->Identification = $request['Identification'];
             $intake->HistoryOfPresentProblem =
                 $request['History_present_problem'];
@@ -752,6 +756,49 @@ class NoteController extends Controller
                     404
                 );
             }
+
+
+            $getallintakenote= Pintakenote::select(
+                'id',
+                'Note_Type',
+                'Doctor_Id',
+                'CreatedBy_Id',
+                'created_at',
+                'Appointment_Id'
+            )
+                ->where('Patient_Id', '=', $request['Patient_Id'])
+                ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
+                ->orderBy('created_at', 'asc')
+                ->with(
+                    'doctor:id,FirstName,LastName,Title,ProfileImageUrl',
+                    'signator:id,FirstName,LastName,Title,ProfileImageUrl',
+                    'appointment:id,ScheduledTime'
+
+                )
+                ->get();
+
+
+            $gettallprogressnote=Progresssnote::select(
+                'id',
+                'Note_Type',
+                'Doctor_id',
+                'CreatedBy_Id',
+                'created_at',
+                'Appointment_Id'
+            )
+                ->where('Patient_Id', '=', $request['Patient_Id'])
+                ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
+                ->orderBy('created_at', 'asc')
+                ->with(
+                    'doctor:id,FirstName,LastName,Title,ProfileImageUrl',
+                    'doneby:id,FirstName,LastName,Title,ProfileImageUrl',
+                    'appointment:id,ScheduledTime'
+
+                )
+                ->get();
+
+
+
 
             $getallprocessnote = Processnote::select(
                 'id',
@@ -857,6 +904,55 @@ class NoteController extends Controller
                     ];
                 })
                 ->all();
+
+                $intakenoteAll=collect( $getallintakenote)
+                ->map(function ($item) {
+                    return [
+                        'id' => $item['id'],
+                        'Note_Type' => $item['Note_Type'],
+                        'DateTime' => Appointment::select('ScheduledTime')->where('id','=',$item['Appointment_Id'])->value('ScheduledTime'),
+                        'Doctor' =>
+                            $item['doctor']['Title'] .
+                            ' ' .
+                            $item['doctor']['FirstName'] .
+                            ' ' .
+                            $item['doctor']['LastName'],
+                        'CreatedBy' =>
+                            $item['signator']['Title'] .
+                            ' ' .
+                            $item['signator']['FirstName'] .
+                            ' ' .
+                            $item['signator']['LastName'],
+                        'DoctorImage' => $item['doctor']['ProfileImageUrl'],
+                        'CreatorImage' => $item['signator']['ProfileImageUrl'],
+                    ];
+                })
+                ->all();
+
+
+            $progressnoteAll = collect( $gettallprogressnote)
+            ->map(function ($item) {
+                return [
+                    'id' => $item['id'],
+                    'Note_Type' => $item['Note_Type'],
+                    'DateTime' => Appointment::select('ScheduledTime')->where('id','=',$item['Appointment_Id'])->value('ScheduledTime'),
+                    'Doctor' =>
+                        $item['doctor']['Title'] .
+                        ' ' .
+                        $item['doctor']['FirstName'] .
+                        ' ' .
+                        $item['doctor']['LastName'],
+                    'CreatedBy' =>
+                        $item['doneby']['Title'] .
+                        ' ' .
+                        $item['doneby']['FirstName'] .
+                        ' ' .
+                        $item['doneby']['LastName'],
+                    'DoctorImage' => $item['doctor']['ProfileImageUrl'],
+                    'CreatorImage' => $item['doneby']['ProfileImageUrl'],
+                ];
+            })
+            ->all();
 
             $treatmentplannoteAll = collect($getalltreatmentnote)
                 ->map(function ($item) {
@@ -966,11 +1062,13 @@ class NoteController extends Controller
                 return response()->json(
                     [
                         'data' => array_merge([
+                            $intakenoteAll,
                             $treatmentplannoteAll,
                             $contactnoteAll,
                             $consultationnoteAll,
                             $processnoteAll,
                             $miscellnoteAll,
+                            $progressnoteAll,
                         ]),
                     ],
                     200
@@ -982,13 +1080,125 @@ class NoteController extends Controller
     }
 
 
-    public function createprogressnote(Request $request)
+    public function saveprogressnote(Request $request)
     {
-
         $var =Auth::user()->roles->first()->name;
         if ( $var == 'Admin' || $var =='Clinician') {
 
-        return true;
+
+
+            $array = collect($request->all()['risk_assessment'])
+            ->map(function ($item) use ($request) {
+                return $item + [
+                    'Hospital_Id' => auth()->user()->Hospital_Id,
+                    'Patient_Id' => $request['Patient_Id'],
+                    'Visibility' => 'asigned_clinicians_only',
+                    'Status' => 'Active',
+                    'CreatedBy_Id' => auth()->user()->id,
+                ];
+            })
+            ->toArray();
+
+        if ($request['Patient_denies_all_areas_of_risk'] == 'no') {
+            foreach ($array as $key => $value) {
+                Areaofrisk::create($value);
+            }
+        }
+
+            $validator = Validator::make($request->all(), [
+                'Patient_Id' => 'required',
+                'Appointment_Id' => 'required',
+                'Orientation' => 'required',
+                'Diagnosis'=>'required|array',
+                'diagnostic_justification'=>'required',
+                'General_appearance' => 'required',
+                'Dress' => 'required',
+                'Motor_activity' => 'required',
+                'Interview_behavior' => 'required',
+                'Speech' => 'required',
+                'Mood' => 'required',
+                'Affect' => 'required',
+                'Insight' => 'required',
+                'Judgement' => 'required',
+                'Memory' => 'required',
+                'Attention' => 'required',
+                'Thought_process' => 'required',
+                'Thought_content' => 'required',
+                'Perception' => 'required',
+                'Functional_status' => 'required',
+                'Medications'=>'required',
+                'Symptom_description'=>'required',
+                'Objective_content'=>'required',
+                'Interventions_used'=>'required',
+                'Objective_progress'=>'required',
+                'Additional_notes'=>'required',
+                'Plan'=>'required',
+                'Recommendation'=>'required',
+                'Prescribed_frequency_treatment'=>'required',
+                'Patient_denies_all_areas_of_risk'=>'required',
+
+
+
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json(
+                    ['errors' => implode($validator->errors()->all())],
+                    422
+                );
+            }
+
+            $assignedDr = Patient::select('AssignedDoctor_Id')
+            ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
+            ->where('id', '=', $request['Patient_Id'])
+            ->value('AssignedDoctor_Id');
+
+
+            $progressnote=new Progresssnote();
+            $progressnote->Note_Type='Psychotherapy Progress Note';
+            $progressnote->Patient_Id= $request['Patient_Id'];
+            $progressnote->Hospital_Id = auth()->user()->Hospital_Id;
+            $progressnote->CreatedBy_Id=auth()->user()->id;
+            $progressnote->Visibility = 'asigned_clinicians_only';
+            $progressnote->Status = 'Active';
+            $progressnote->Appointment_Id=$request['Appointment_Id'];
+            $progressnote->Doctor_id=$assignedDr;
+            $progressnote->Orientation = $request['Orientation'];
+            $progressnote->GeneralAppearance = $request['General_appearance'];
+            $progressnote->Dress = $request['Dress'];
+            $progressnote->MotorActivity = $request['Motor_activity'];
+            $progressnote->InterviewBehavior = $request['Interview_behavior'];
+            $progressnote->Speech = $request['Speech'];
+            $progressnote->Mood = $request['Mood'];
+            $progressnote->Affect = $request['Affect'];
+            $progressnote->Insight = $request['Insight'];
+            $progressnote->Judgement = $request['Judgement'];
+            $progressnote->Memory = $request['Memory'];
+            $progressnote->Attention = $request['Attention'];
+            $progressnote->ThoughtProcess = $request['Thought_process'];
+            $progressnote->ThoughtContent = $request['Thought_content'];
+            $progressnote->Perception=$request['Perception'];
+            $progressnote->FunctionalStatus=$request['Functional_status'];
+            $progressnote->Diagnosis = json_encode($request['Diagnosis']);
+            $progressnote->DiagnosticJustification =$request['diagnostic_justification'];
+            $progressnote->Medications=$request['Medications'];
+            $progressnote->SymptomDescription=$request['Symptom_description'];
+            $progressnote->ObjectiveContent=$request['Objective_content'];
+            $progressnote->InterventionsUsed=$request['Interventions_used'];
+            $progressnote->ObjectiveProgress=$request['Objective_progress'];
+            $progressnote->AdditionalNotes=$request['Additional_notes'];
+            $progressnote->Plan=$request['Plan'];
+            $progressnote->Recommendation=$request['Recommendation'];
+            $progressnote->PrescribedFrequencyTreatment=$request['Prescribed_frequency_treatment'];
+            $progressnote->save();
+            return response()->json(
+                ['message' => 'Psychotherapy Progress Note created successfully'],
+                201
+            );
+
+
+
+
 
         }
 

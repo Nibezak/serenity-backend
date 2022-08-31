@@ -6,12 +6,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 
-class Pintakenote extends Model
+class Progresssnote extends Model
 {
     use HasFactory, Notifiable;
 
 
-    protected $table = 'pintakenote';
+    protected $table = 'progressnotes';
     protected $fillable = [
 
         'Note_Type',
@@ -21,10 +21,8 @@ class Pintakenote extends Model
         'Visibility',
         'Status',
         'Appointment_Id',
-        'Doctor_Id',
-        'Signator_Id',
+        'Doctor_id',
         'RiskAssessment',
-        'PresentingProblem',
         'Orientation',
         'GeneralAppearance',
         'Dress',
@@ -41,28 +39,17 @@ class Pintakenote extends Model
         'ThoughtContent',
         'Perception',
         'FunctionalStatus',
-        'ObjectiveContent',
-        'Identification',
-        'HistoryOfPresentProblem',
-        'PsychiatricHistory',
-        'TraumaHistory',
-        'FamilyPsychiatricHistory',
-        'MedicalConditionsHistory',
-        'CurrentMedications',
-        'SubstanceUse',
-        'FamilyHistory',
-        'SocialHistory',
-        'SpiritualFactors',
-        'DevelopmentalHistory',
-        'EducationalVocationalHistory',
-        'LegalHistory',
-        'Snap',
-        'OtherImportantInformation',
-        'Plan',
         'Diagnosis',
         'DiagnosticJustification',
-        'DateTimeScheduled',
-        'DateTimeOccured',
+        'Medications',
+        'SymptomDescription',
+        'ObjectiveContent',
+        'InterventionsUsed',
+        'ObjectiveProgress',
+        'AdditionalNotes',
+        'Plan',
+        'Recommendation',
+        'PrescribedFrequencyTreatment',
 
         ];
 
@@ -78,13 +65,16 @@ class Pintakenote extends Model
         }
         public function doctor()
         {
-            return $this->belongsTo('App\Models\User','Doctor_Id');
+            return $this->belongsTo('App\Models\User','Doctor_id');
         }
 
-        public function signator()
+        public function doneby()
         {
             return $this->belongsTo('App\Models\User','CreatedBy_Id');
         }
+
+
+
 
         public function patient()
         {

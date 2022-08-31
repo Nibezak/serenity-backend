@@ -12,7 +12,7 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Support\Facades\DB;
 use App\Mail\ForgotPasswordMail;
 use App\Models\Role;
-use Validator;
+use Illuminate\Support\Facades\Validator;
 use App\Models\Hospital;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
@@ -155,7 +155,7 @@ class AuthController extends Controller
 
         return new ForgotPasswordMail();
 
-       
+
 
         }
 
