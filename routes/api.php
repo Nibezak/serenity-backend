@@ -214,6 +214,8 @@ Route::group(
 
          Route::post('/Manager/create-progress-note', [NoteController::class, 'saveprogressnote']);
 
+         Route::post('/Manager/create-missed-apointment-note', [NoteController::class, 'savemissedappointmentnote']);
+
 
          Route::post('/Manager/get-all-notes', [NoteController::class, 'getallnotes']);
 
