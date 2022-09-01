@@ -11,6 +11,7 @@ use App\Models\PtreatmentPlan;
 use App\Models\Missedappointmentnote;
 use App\Models\NoteObjective;
 use App\Models\Miscnote;
+use App\Models\Terminationnote;
 use App\Models\Processnote;
 use App\Models\Consulationnote;
 use App\Models\Patient;
@@ -598,7 +599,7 @@ class NoteController extends Controller
 
             $validator = Validator::make($request->all(), [
                 'Patient_Id' => 'required',
-                'Presenting_problem' => 'required|string',
+                'Presenting_problem' => 'required',
                 'Appointment_Id' => 'required',
                 'Orientation' => 'required',
                 'General_appearance' => 'required',
@@ -770,6 +771,27 @@ class NoteController extends Controller
                     'appointment:id,ScheduledTime'
                 )
                 ->get();
+
+
+
+            $getallterminationnote=Terminationnote::select(
+                'id',
+                'Note_Type',
+                'Doctor_id',
+                'CreatedBy_Id',
+                'created_at',
+                'Appointment_Id'  )
+                ->where('Patient_Id', '=', $request['Patient_Id'])
+                ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
+                ->orderBy('created_at', 'asc')
+                ->with(
+                    'doctor:id,FirstName,LastName,Title,ProfileImageUrl',
+                    'doneby:id,FirstName,LastName,Title,ProfileImageUrl',
+                    'appointment:id,ScheduledTime'
+                )
+                ->get();
+
+
 
 
 
@@ -965,6 +987,38 @@ class NoteController extends Controller
                 })
                 ->all();
 
+                $terminationnoteAll=collect($getallterminationnote)
+                ->map(function ($item) {
+                    return [
+                        'id' => $item['id'],
+                        'Note_Type' => $item['Note_Type'],
+                        'DateTime' => Appointment::select('ScheduledTime')
+                            ->where('id', '=', $item['Appointment_Id'])
+                            ->value('ScheduledTime'),
+                        'Doctor' =>
+                            $item['doctor']['Title'] .
+                            ' ' .
+                            $item['doctor']['FirstName'] .
+                            ' ' .
+                            $item['doctor']['LastName'],
+                        'CreatedBy' =>
+                            $item['doneby']['Title'] .
+                            ' ' .
+                            $item['doneby']['FirstName'] .
+                            ' ' .
+                            $item['doneby']['LastName'],
+                        'DoctorImage' => $item['doctor']['ProfileImageUrl'],
+                        'CreatorImage' => $item['doneby']['ProfileImageUrl'],
+                    ];
+
+
+
+                })
+                ->all();
+
+
+
+
 
 
             $progressnoteAll = collect($gettallprogressnote)
@@ -1108,6 +1162,7 @@ class NoteController extends Controller
                             $miscellnoteAll,
                             $progressnoteAll,
                             $missedappointmnoteAll,
+                            $terminationnoteAll,
                         ]),
                     ],
                     200
@@ -1233,6 +1288,8 @@ class NoteController extends Controller
         }
 
         return response()->json(['message' => 'Unauthorized user'], 401);
+
+
     }
 
     public function savemissedappointmentnote(Request $request)
@@ -1282,4 +1339,63 @@ class NoteController extends Controller
 
         return response()->json(['message' => 'Unauthorized user'], 401);
     }
+
+    public function saveterminationnote(Request $request){
+        $var = Auth::user()->roles->first()->name;
+        if ($var == 'Admin' || $var == 'Clinician') {
+
+            //Validate User Inputs
+            $validator = Validator::make($request->all(), [
+                'PatientId' => 'required',
+                'AppointmentId' => 'required',
+                'Reason' => 'required',
+                'Chief_complain' => 'required',
+                'Diagnosis'=>'required|array',
+                'Diagnostic_justification'=>'required',
+                'Treatment_modality_and_interventions'=>'required',
+                'Treatment_goals_and_outcome'=>'required',
+            ]);
+            if ($validator->fails()) {
+                // return response()->json($validator->errors()->toJson(), 400);
+
+                return response()->json(
+                    ['errors' => implode($validator->errors()->all())],
+                    422
+                );  }
+
+            $assignedDr = Patient::select('AssignedDoctor_Id')
+            ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
+            ->where('id', '=', $request['PatientId'])
+            ->value('AssignedDoctor_Id');
+
+            $terminatenote=new  Terminationnote();
+            $terminatenote->Note_Type='Psychotherapy Termination Note';
+            $terminatenote->Patient_Id=$request['PatientId'];
+            $terminatenote->Hospital_Id=auth()->user()->Hospital_Id;
+            $terminatenote->CreatedBy_Id=auth()->user()->id;
+            $terminatenote->Visibility='asigned_clinicians_only';
+            $terminatenote->Status='Active';
+            $terminatenote->Appointment_Id=$request['AppointmentId'];
+            $terminatenote->Doctor_id=$assignedDr;
+            $terminatenote->Reason=$request['Reason'];
+            $terminatenote->ChiefComplain=$request['Chief_complain'];
+            $terminatenote->Diagnosis=json_encode($request['Diagnosis']);
+            $terminatenote->diagnostic_justification=$request['Diagnostic_justification'];
+            $terminatenote->TreatmentModality=$request['Treatment_modality_and_interventions'];
+            $terminatenote->Outcome=$request['Treatment_goals_and_outcome'];
+            $terminatenote->save();
+            return response()->json(
+                [
+                    'message' =>
+                        'Psychotherapy Termination Note created successfully',
+                ],
+                201
+            );
+        }
+
+        return response()->json(['message' => 'Unauthorized user'], 401);
+
+    }
+
+
 }
