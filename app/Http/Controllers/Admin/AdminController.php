@@ -910,6 +910,7 @@ class AdminController extends Controller
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
                 'name' => 'required|unique:diagnosis',
+                'icd10'=>'required|unique:diagnosis',
             ]);
             if ($validator->fails()) {
                 // return response()->json($validator->errors()->toJson(), 400);
@@ -926,6 +927,7 @@ class AdminController extends Controller
             $diagnsosis->Hospital_Id = auth()->user()->Hospital_Id;
             $diagnsosis->CreatedBy_Id = auth()->user()->id;
             $diagnsosis->Status = 'Active';
+            $diagnsosis->icd10=$request['icd10'];
             $diagnsosis->save();
 
             return response()->json(
