@@ -576,11 +576,15 @@ class NoteController extends Controller
                 })
                 ->toArray();
 
-            if ($request['Patient_denies_all_areas_of_risk'] == 'no') {
+            if ($request['Patient_denies_all_areas_of_risk'] == true) {
                 foreach ($array as $key => $value) {
                     Areaofrisk::create($value);
+
+
                 }
             }
+
+
 
             // $vldtriskassment= Validator::make($request->all()['risk_assessment'], [
 
