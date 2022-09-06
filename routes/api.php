@@ -227,6 +227,12 @@ Route::group(
         ]);
 
 
+        Route::get('/Patient/Fetch-intake-notes/{key}', [
+            NoteController::class,
+            'getallintakenotes',
+        ]);
+
+
 
 
     }
