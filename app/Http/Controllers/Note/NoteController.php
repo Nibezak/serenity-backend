@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use App\Models\Treatmentstrategy;
 use App\Models\Frequencytreatment;
 use App\Models\PtreatmentPlan;
+use Illuminate\Support\Facades\DB;
 use App\Models\Missedappointmentnote;
 use App\Models\NoteObjective;
 use App\Models\Miscnote;
@@ -19,6 +20,7 @@ use App\Models\Progresssnote;
 use App\Models\Contactnote;
 use App\Models\Areaofrisk;
 use Carbon\Carbon;
+
 use App\Models\Pintakenote;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
@@ -1402,4 +1404,70 @@ class NoteController extends Controller
     }
 
 
+    public function getalltreatmentplannote($PatientID){
+
+        $var = Auth::user()->roles->first()->name;
+        if ($var == 'Admin' || $var == 'Clinician') {
+            //Validate User Inputs
+            $user = Patient::where('id', '=', $PatientID)
+                ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
+                ->first();
+            if ($user === null) {
+                // user doesn't exist
+                return response()->json(
+                    ['message' => 'This patient does not exists'],
+                    200
+                );
+            }
+
+
+   $treatmplannoteall= PtreatmentPlan::
+    select(   'id','Note_Type','Diagnosis_Id',   'Diagnositic_Justification', 'Presenting_Problem', 'Treatment_Goals',  'Objective_Id',  'Frequency_Treatment_Id',   'Patient_Id','CreatedBy_Id', 'Date', 'Time', 'Doctor_id',   'Treatmentstrategy_Id','created_at')
+    ->where('Patient_Id','=',$PatientID)
+    ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
+    ->with('doneby:id,Title,FirstName,LastName,profileimageUrl','patient:id,FirstName,LastName,profileimageUrl,PatientCode,MobilePhone','doctor:id,Title,FirstName,LastName,ProfileImageUrl')
+    ->orderBy('created_at', 'asc')
+    ->get();
+
+
+    return collect($treatmplannoteall)
+    ->map(function ($item) {
+
+    $objectivetreatmentplan=NoteObjective::select('id','content','EstimatedComplation','created_at','created_at')->where('id','=',$item['Objective_Id'])->get() ;
+        return [
+            // 'data' => collect($item)->except(['Diagnosis_Id','Objective_Id', 'Patient_Id','CreatedBy_Id','Doctor_id'])->toArray(),
+           'Treatment_PlanID'=>$item['id'],
+            'Note_Type' => $item['Note_Type'],
+            'Diagnositic_justification'=>$item['Diagnositic_Justification'],
+            'Presenting_problem'=>$item['Presenting_Problem'],
+            'Treatment_goals'=>$item['Treatment_Goals'],
+            'Date'=>$item['Date'],
+            'Time'=>$item['Time'],
+            'created_at'=>(new Carbon($item['created_at']))->diffForHumans(),
+            'Doctor' => $item['doctor']['Title'].' '.$item['doctor']['FirstName'].' '.$item['doctor']['LastName'],
+            'Creator' => $item['doneby']['Title'].' '.$item['doneby']['FirstName'].' '.$item['doneby']['LastName'],
+            'Patient'=>$item['patient']['FirstName'].' '.$item['doneby']['LastName'].' '.$item['doneby']['PatientCode'],
+            'Objective'=>$objectivetreatmentplan,
+            'Diagnosis'=>DB::table('diagnosis')->whereIn('id',explode(',',trim($item['Diagnosis_Id'], '[]')))->get(),
+            'treatment_strategy'=>DB::table('treatmentstrategy')->whereIn('id',explode(',',trim($item['Treatmentstrategy_Id'], '[]')))->get(),
+            'Frequency_treatment'=>DB::table('frequencytreatment')->whereIn('id',explode(',',trim($item['Frequency_Treatment_Id'], '[]')))->get(),
+
+
+        ];
+    })
+    ->all();
+
+
+
+
+
+
+   }
+  return response()->json(['message' => 'Unauthorized user '], 401);
+
+    }
+
+
+
 }
+
