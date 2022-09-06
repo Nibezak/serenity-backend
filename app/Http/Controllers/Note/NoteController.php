@@ -581,12 +581,8 @@ class NoteController extends Controller
             if ($request['Patient_denies_all_areas_of_risk'] == true) {
                 foreach ($array as $key => $value) {
                     Areaofrisk::create($value);
-
-
                 }
             }
-
-
 
             // $vldtriskassment= Validator::make($request->all()['risk_assessment'], [
 
@@ -745,12 +741,14 @@ class NoteController extends Controller
                 return response()->json(
                     ['errors' => implode($validator->errors()->all())],
                     422
-                );     }
+                );
+            }
 
             $recordpat = Patient::where(
                 'id',
                 '=',
-                $request['Patient_Id']  )->where('Hospital_Id', '=', auth()->user()->Hospital_Id);
+                $request['Patient_Id']
+            )->where('Hospital_Id', '=', auth()->user()->Hospital_Id);
 
             if (!$recordpat->exists()) {
                 return response()->json(
@@ -759,15 +757,17 @@ class NoteController extends Controller
                             'This Patient does not exists in our hospital',
                     ],
                     404
-                );   }
+                );
+            }
 
-            $getallmissedappointnote=Missedappointmentnote::select(
+            $getallmissedappointnote = Missedappointmentnote::select(
                 'id',
                 'Note_Type',
                 'Doctor_id',
                 'CreatedBy_Id',
                 'created_at',
-                'Appointment_Id'  )
+                'Appointment_Id'
+            )
                 ->where('Patient_Id', '=', $request['Patient_Id'])
                 ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
                 ->orderBy('created_at', 'asc')
@@ -778,15 +778,14 @@ class NoteController extends Controller
                 )
                 ->get();
 
-
-
-            $getallterminationnote=Terminationnote::select(
+            $getallterminationnote = Terminationnote::select(
                 'id',
                 'Note_Type',
                 'Doctor_id',
                 'CreatedBy_Id',
                 'created_at',
-                'Appointment_Id'  )
+                'Appointment_Id'
+            )
                 ->where('Patient_Id', '=', $request['Patient_Id'])
                 ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
                 ->orderBy('created_at', 'asc')
@@ -796,10 +795,6 @@ class NoteController extends Controller
                     'appointment:id,ScheduledTime'
                 )
                 ->get();
-
-
-
-
 
             $getallintakenote = Pintakenote::select(
                 'id',
@@ -807,7 +802,8 @@ class NoteController extends Controller
                 'Doctor_Id',
                 'CreatedBy_Id',
                 'created_at',
-                'Appointment_Id'  )
+                'Appointment_Id'
+            )
                 ->where('Patient_Id', '=', $request['Patient_Id'])
                 ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
                 ->orderBy('created_at', 'asc')
@@ -818,16 +814,14 @@ class NoteController extends Controller
                 )
                 ->get();
 
-
-
-
             $gettallprogressnote = Progresssnote::select(
                 'id',
                 'Note_Type',
                 'Doctor_id',
                 'CreatedBy_Id',
                 'created_at',
-                'Appointment_Id' )
+                'Appointment_Id'
+            )
                 ->where('Patient_Id', '=', $request['Patient_Id'])
                 ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
                 ->orderBy('created_at', 'asc')
@@ -843,7 +837,8 @@ class NoteController extends Controller
                 'Note_Type',
                 'DateTime_Scheduled',
                 'Doctor_Id',
-                'CreatedBy_Id' )
+                'CreatedBy_Id'
+            )
                 ->where('Patient_Id', '=', $request['Patient_Id'])
                 ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
                 ->orderBy('DateTime_Scheduled', 'asc')
@@ -858,7 +853,8 @@ class NoteController extends Controller
                 'Note_Type',
                 'DateTime_Scheduled',
                 'Doctor_Id',
-                'CreatedBy_Id' )
+                'CreatedBy_Id'
+            )
                 ->where('Patient_Id', '=', $request['Patient_Id'])
                 ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
                 ->orderBy('DateTime_Scheduled', 'asc')
@@ -873,7 +869,8 @@ class NoteController extends Controller
                 'Note_Type',
                 'DateTime',
                 'Doctor_Id',
-                'CreatedBy_Id' )
+                'CreatedBy_Id'
+            )
                 ->where('Patient_Id', '=', $request['Patient_Id'])
                 ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
                 ->orderBy('DateTime', 'asc')
@@ -888,7 +885,8 @@ class NoteController extends Controller
                 'Note_Type',
                 'DateTime',
                 'Doctor_Id',
-                'CreatedBy_Id'   )
+                'CreatedBy_Id'
+            )
                 ->where('Patient_Id', '=', $request['Patient_Id'])
                 ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
                 ->orderBy('DateTime', 'asc')
@@ -904,7 +902,8 @@ class NoteController extends Controller
                 'Date',
                 'Time',
                 'Doctor_id',
-                'CreatedBy_Id'   )
+                'CreatedBy_Id'
+            )
                 ->where('Patient_Id', '=', $request['Patient_Id'])
                 ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
                 ->orderBy('Date', 'asc')
@@ -987,13 +986,10 @@ class NoteController extends Controller
                         'DoctorImage' => $item['doctor']['ProfileImageUrl'],
                         'CreatorImage' => $item['doneby']['ProfileImageUrl'],
                     ];
-
-
-
                 })
                 ->all();
 
-                $terminationnoteAll=collect($getallterminationnote)
+            $terminationnoteAll = collect($getallterminationnote)
                 ->map(function ($item) {
                     return [
                         'id' => $item['id'],
@@ -1016,16 +1012,8 @@ class NoteController extends Controller
                         'DoctorImage' => $item['doctor']['ProfileImageUrl'],
                         'CreatorImage' => $item['doneby']['ProfileImageUrl'],
                     ];
-
-
-
                 })
                 ->all();
-
-
-
-
-
 
             $progressnoteAll = collect($gettallprogressnote)
                 ->map(function ($item) {
@@ -1156,7 +1144,8 @@ class NoteController extends Controller
 
             if (
                 auth()->user()->id == $assignedDr ||
-                Auth::user()->roles->first()->name == 'Admin'  ) {
+                Auth::user()->roles->first()->name == 'Admin'
+            ) {
                 return response()->json(
                     [
                         'data' => array_merge([
@@ -1172,7 +1161,8 @@ class NoteController extends Controller
                         ]),
                     ],
                     200
-                );}
+                );
+            }
         }
 
         return response()->json(['errors' => 'Unauthorized user'], 401);
@@ -1294,8 +1284,6 @@ class NoteController extends Controller
         }
 
         return response()->json(['message' => 'Unauthorized user'], 401);
-
-
     }
 
     public function savemissedappointmentnote(Request $request)
@@ -1336,7 +1324,6 @@ class NoteController extends Controller
             $missednote->comments = $request['Comment'];
             $missednote->save();
 
-
             return response()->json(
                 ['message' => 'Missed Appointment Note created successfully'],
                 201
@@ -1346,20 +1333,20 @@ class NoteController extends Controller
         return response()->json(['message' => 'Unauthorized user'], 401);
     }
 
-    public function saveterminationnote(Request $request){
+    public function saveterminationnote(Request $request)
+    {
         $var = Auth::user()->roles->first()->name;
         if ($var == 'Admin' || $var == 'Clinician') {
-
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
                 'PatientId' => 'required',
                 'AppointmentId' => 'required',
                 'Reason' => 'required',
                 'Chief_complain' => 'required',
-                'Diagnosis'=>'required|array',
-                'Diagnostic_justification'=>'required',
-                'Treatment_modality_and_interventions'=>'required',
-                'Treatment_goals_and_outcome'=>'required',
+                'Diagnosis' => 'required|array',
+                'Diagnostic_justification' => 'required',
+                'Treatment_modality_and_interventions' => 'required',
+                'Treatment_goals_and_outcome' => 'required',
             ]);
             if ($validator->fails()) {
                 // return response()->json($validator->errors()->toJson(), 400);
@@ -1367,28 +1354,31 @@ class NoteController extends Controller
                 return response()->json(
                     ['errors' => implode($validator->errors()->all())],
                     422
-                );  }
+                );
+            }
 
             $assignedDr = Patient::select('AssignedDoctor_Id')
-            ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
-            ->where('id', '=', $request['PatientId'])
-            ->value('AssignedDoctor_Id');
+                ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
+                ->where('id', '=', $request['PatientId'])
+                ->value('AssignedDoctor_Id');
 
-            $terminatenote=new  Terminationnote();
-            $terminatenote->Note_Type='Psychotherapy Termination Note';
-            $terminatenote->Patient_Id=$request['PatientId'];
-            $terminatenote->Hospital_Id=auth()->user()->Hospital_Id;
-            $terminatenote->CreatedBy_Id=auth()->user()->id;
-            $terminatenote->Visibility='asigned_clinicians_only';
-            $terminatenote->Status='Active';
-            $terminatenote->Appointment_Id=$request['AppointmentId'];
-            $terminatenote->Doctor_id=$assignedDr;
-            $terminatenote->Reason=$request['Reason'];
-            $terminatenote->ChiefComplain=$request['Chief_complain'];
-            $terminatenote->Diagnosis=json_encode($request['Diagnosis']);
-            $terminatenote->diagnostic_justification=$request['Diagnostic_justification'];
-            $terminatenote->TreatmentModality=$request['Treatment_modality_and_interventions'];
-            $terminatenote->Outcome=$request['Treatment_goals_and_outcome'];
+            $terminatenote = new Terminationnote();
+            $terminatenote->Note_Type = 'Psychotherapy Termination Note';
+            $terminatenote->Patient_Id = $request['PatientId'];
+            $terminatenote->Hospital_Id = auth()->user()->Hospital_Id;
+            $terminatenote->CreatedBy_Id = auth()->user()->id;
+            $terminatenote->Visibility = 'asigned_clinicians_only';
+            $terminatenote->Status = 'Active';
+            $terminatenote->Appointment_Id = $request['AppointmentId'];
+            $terminatenote->Doctor_id = $assignedDr;
+            $terminatenote->Reason = $request['Reason'];
+            $terminatenote->ChiefComplain = $request['Chief_complain'];
+            $terminatenote->Diagnosis = json_encode($request['Diagnosis']);
+            $terminatenote->diagnostic_justification =
+                $request['Diagnostic_justification'];
+            $terminatenote->TreatmentModality =
+                $request['Treatment_modality_and_interventions'];
+            $terminatenote->Outcome = $request['Treatment_goals_and_outcome'];
             $terminatenote->save();
             return response()->json(
                 [
@@ -1400,52 +1390,69 @@ class NoteController extends Controller
         }
 
         return response()->json(['message' => 'Unauthorized user'], 401);
-
     }
 
- public function getallintakenotes($key){
-    $var = Auth::user()->roles->first()->name;
-    if ($var == 'Admin' || $var == 'Clinician') {
-        $user = Patient::where('id', '=', $key)
-        ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
-        ->first();
-    if ($user === null) {
-        // user doesn't exist
-        return response()->json(
-            ['message' => 'This patient does not exists'],
-            200
-        );
+    public function getallintakenotes($key)
+    {
+        $var = Auth::user()->roles->first()->name;
+        if ($var == 'Admin' || $var == 'Clinician') {
+            $user = Patient::where('id', '=', $key)
+                ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
+                ->first();
+            if ($user === null) {
+                // user doesn't exist
+                return response()->json(
+                    ['message' => 'This patient does not exists'],
+                    200
+                );
+            }
+
+            $intakeallpat = Pintakenote::where('Patient_Id', '=', $key)
+                ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
+                ->with(
+                    'signator:id,Title,FirstName,LastName,profileimageUrl',
+                    'patient:id,FirstName,LastName,profileimageUrl,PatientCode,MobilePhone',
+                    'appointment'
+                )
+                ->get()
+                ->makeHidden([
+                    'Hospital_Id',
+                    'Signator_Id',
+                    'Patient_Id',
+                    'Appointment_Id',
+                    'CreatedBy_Id',
+                    'Doctor_id',
+                    'id',
+                    'Diagnosis',
+                    'RiskAssessment',
+                ]);
+
+            return collect($intakeallpat)
+                ->map(function ($item) {
+                    return [
+                        'IntakeID' => $item['id'],
+                        'Note' => $item,
+                        'Done_By' =>
+                            $item['signator']['Title'] .
+                            ' ' .
+                            $item['signator']['FirstName'] .
+                            ' ' .
+                            $item['signator']['LastName'],
+                        'Diagnosis' => DB::table('diagnosis')
+                            ->whereIn(
+                                'id',
+                                explode(',', trim($item['Diagnosis'], '[]'))
+                            )
+                            ->get(),
+                    ];
+                })
+                ->all();
+        }
+        return response()->json(['message' => 'Unauthorized user '], 401);
     }
 
-    $intakeallpat=Pintakenote::where('Patient_Id','=',$key)
-    ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
-    ->with('doneby:id,Title,FirstName,LastName,profileimageUrl','patient:id,FirstName,LastName,profileimageUrl,PatientCode,MobilePhone','appointment')
-    ->get()->makeHidden(['Hospital_Id','Signator_Id','Patient_Id','Appointment_Id','CreatedBy_Id','Doctor_id','id','Diagnosis','RiskAssessment'])
-    ;
-
-   return collect($intakeallpat)
-   ->map(function ($item) {
-       return [
-           'IntakeID' => $item['id'],
-           'Note' => $item,
-           'Done_By' =>
-               $item['doneby']['Title'] .
-               ' ' .
-               $item['doneby']['FirstName'] .
-               ' ' .
-               $item['doneby']['LastName'],
-            'Diagnosis'=>DB::table('diagnosis')->whereIn('id',explode(',',trim($item['Diagnosis'], '[]')))->get(),
-       ];
-   })
-   ->all();
-
-
-   }
-   return response()->json(['message' => 'Unauthorized user '], 401);
- }
-
-    public function getalltreatmentplannote($PatientID){
-
+    public function getalltreatmentplannote($PatientID)
+    {
         $var = Auth::user()->roles->first()->name;
         if ($var == 'Admin' || $var == 'Clinician') {
             //Validate User Inputs
@@ -1460,54 +1467,104 @@ class NoteController extends Controller
                 );
             }
 
+            $treatmplannoteall = PtreatmentPlan::select(
+                'id',
+                'Note_Type',
+                'Diagnosis_Id',
+                'Diagnositic_Justification',
+                'Presenting_Problem',
+                'Treatment_Goals',
+                'Objective_Id',
+                'Frequency_Treatment_Id',
+                'Patient_Id',
+                'CreatedBy_Id',
+                'Date',
+                'Time',
+                'Doctor_id',
+                'Treatmentstrategy_Id',
+                'created_at'
+            )
+                ->where('Patient_Id', '=', $PatientID)
+                ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
+                ->with(
+                    'doneby:id,Title,FirstName,LastName,profileimageUrl',
+                    'patient:id,FirstName,LastName,profileimageUrl,PatientCode,MobilePhone',
+                    'doctor:id,Title,FirstName,LastName,ProfileImageUrl'
+                )
+                ->orderBy('created_at', 'asc')
+                ->get();
 
-   $treatmplannoteall= PtreatmentPlan::
-    select(   'id','Note_Type','Diagnosis_Id',   'Diagnositic_Justification', 'Presenting_Problem', 'Treatment_Goals',  'Objective_Id',  'Frequency_Treatment_Id',   'Patient_Id','CreatedBy_Id', 'Date', 'Time', 'Doctor_id',   'Treatmentstrategy_Id','created_at')
-    ->where('Patient_Id','=',$PatientID)
-    ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
-    ->with('doneby:id,Title,FirstName,LastName,profileimageUrl','patient:id,FirstName,LastName,profileimageUrl,PatientCode,MobilePhone','doctor:id,Title,FirstName,LastName,ProfileImageUrl')
-    ->orderBy('created_at', 'asc')
-    ->get();
-
-
-    return collect($treatmplannoteall)
-    ->map(function ($item) {
-
-    $objectivetreatmentplan=NoteObjective::select('id','content','EstimatedComplation','created_at','created_at')->where('id','=',$item['Objective_Id'])->get() ;
-        return [
-            // 'data' => collect($item)->except(['Diagnosis_Id','Objective_Id', 'Patient_Id','CreatedBy_Id','Doctor_id'])->toArray(),
-           'Treatment_PlanID'=>$item['id'],
-            'Note_Type' => $item['Note_Type'],
-            'Diagnositic_justification'=>$item['Diagnositic_Justification'],
-            'Presenting_problem'=>$item['Presenting_Problem'],
-            'Treatment_goals'=>$item['Treatment_Goals'],
-            'Date'=>$item['Date'],
-            'Time'=>$item['Time'],
-            'created_at'=>(new Carbon($item['created_at']))->diffForHumans(),
-            'Doctor' => $item['doctor']['Title'].' '.$item['doctor']['FirstName'].' '.$item['doctor']['LastName'],
-            'Creator' => $item['doneby']['Title'].' '.$item['doneby']['FirstName'].' '.$item['doneby']['LastName'],
-            'Patient'=>$item['patient']['FirstName'].' '.$item['doneby']['LastName'].' '.$item['doneby']['PatientCode'],
-            'Objective'=>$objectivetreatmentplan,
-            'Diagnosis'=>DB::table('diagnosis')->whereIn('id',explode(',',trim($item['Diagnosis_Id'], '[]')))->get(),
-            'treatment_strategy'=>DB::table('treatmentstrategy')->whereIn('id',explode(',',trim($item['Treatmentstrategy_Id'], '[]')))->get(),
-            'Frequency_treatment'=>DB::table('frequencytreatment')->whereIn('id',explode(',',trim($item['Frequency_Treatment_Id'], '[]')))->get(),
-
-
-        ];
-    })
-    ->all();
-
-
-
-
-
-
-   }
-  return response()->json(['message' => 'Unauthorized user '], 401);
-
+            return collect($treatmplannoteall)
+                ->map(function ($item) {
+                    $objectivetreatmentplan = NoteObjective::select(
+                        'id',
+                        'content',
+                        'EstimatedComplation',
+                        'created_at',
+                        'created_at'
+                    )
+                        ->where('id', '=', $item['Objective_Id'])
+                        ->get();
+                    return [
+                        // 'data' => collect($item)->except(['Diagnosis_Id','Objective_Id', 'Patient_Id','CreatedBy_Id','Doctor_id'])->toArray(),
+                        'Treatment_PlanID' => $item['id'],
+                        'Note_Type' => $item['Note_Type'],
+                        'Diagnositic_justification' =>
+                            $item['Diagnositic_Justification'],
+                        'Presenting_problem' => $item['Presenting_Problem'],
+                        'Treatment_goals' => $item['Treatment_Goals'],
+                        'Date' => $item['Date'],
+                        'Time' => $item['Time'],
+                        'created_at' => (new Carbon(
+                            $item['created_at']
+                        ))->diffForHumans(),
+                        'Doctor' =>
+                            $item['doctor']['Title'] .
+                            ' ' .
+                            $item['doctor']['FirstName'] .
+                            ' ' .
+                            $item['doctor']['LastName'],
+                        'Creator' =>
+                            $item['doneby']['Title'] .
+                            ' ' .
+                            $item['doneby']['FirstName'] .
+                            ' ' .
+                            $item['doneby']['LastName'],
+                        'Patient' =>
+                            $item['patient']['FirstName'] .
+                            ' ' .
+                            $item['doneby']['LastName'] .
+                            ' ' .
+                            $item['doneby']['PatientCode'],
+                        'Objective' => $objectivetreatmentplan,
+                        'Diagnosis' => DB::table('diagnosis')
+                            ->whereIn(
+                                'id',
+                                explode(',', trim($item['Diagnosis_Id'], '[]'))
+                            )
+                            ->get(),
+                        'treatment_strategy' => DB::table('treatmentstrategy')
+                            ->whereIn(
+                                'id',
+                                explode(
+                                    ',',
+                                    trim($item['Treatmentstrategy_Id'], '[]')
+                                )
+                            )
+                            ->get(),
+                        'Frequency_treatment' => DB::table('frequencytreatment')
+                            ->whereIn(
+                                'id',
+                                explode(
+                                    ',',
+                                    trim($item['Frequency_Treatment_Id'], '[]')
+                                )
+                            )
+                            ->get(),
+                    ];
+                })
+                ->all();
+        }
+        return response()->json(['message' => 'Unauthorized user '], 401);
     }
-
-
-
 }
-
