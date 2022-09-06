@@ -1403,6 +1403,46 @@ class NoteController extends Controller
 
     }
 
+ public function getallintakenotes($key){
+    $var = Auth::user()->roles->first()->name;
+    if ($var == 'Admin' || $var == 'Clinician') {
+        $user = Patient::where('id', '=', $key)
+        ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
+        ->first();
+    if ($user === null) {
+        // user doesn't exist
+        return response()->json(
+            ['message' => 'This patient does not exists'],
+            200
+        );
+    }
+
+    $intakeallpat=Pintakenote::where('Patient_Id','=',$key)
+    ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
+    ->with('doneby:id,Title,FirstName,LastName,profileimageUrl','patient:id,FirstName,LastName,profileimageUrl,PatientCode,MobilePhone','appointment')
+    ->get()->makeHidden(['Hospital_Id','Signator_Id','Patient_Id','Appointment_Id','CreatedBy_Id','Doctor_id','id','Diagnosis','RiskAssessment'])
+    ;
+
+   return collect($intakeallpat)
+   ->map(function ($item) {
+       return [
+           'IntakeID' => $item['id'],
+           'Note' => $item,
+           'Done_By' =>
+               $item['doneby']['Title'] .
+               ' ' .
+               $item['doneby']['FirstName'] .
+               ' ' .
+               $item['doneby']['LastName'],
+            'Diagnosis'=>DB::table('diagnosis')->whereIn('id',explode(',',trim($item['Diagnosis'], '[]')))->get(),
+       ];
+   })
+   ->all();
+
+
+   }
+   return response()->json(['message' => 'Unauthorized user '], 401);
+ }
 
     public function getalltreatmentplannote($PatientID){
 

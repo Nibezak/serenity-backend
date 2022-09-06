@@ -81,7 +81,7 @@ class Pintakenote extends Model
             return $this->belongsTo('App\Models\User','Doctor_Id');
         }
 
-        public function signator()
+        public function doneby()
         {
             return $this->belongsTo('App\Models\User','CreatedBy_Id');
         }
