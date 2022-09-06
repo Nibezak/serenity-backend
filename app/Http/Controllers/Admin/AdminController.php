@@ -831,6 +831,7 @@ class AdminController extends Controller
                     ->with([
                         'patient:id,email,FirstName,LastName,profileimageUrl,MobilePhone,PatientCode',
                         'appointmenttype:id,name',
+                        'doctor:id,Title,FirstName,LastName',
                     ])
                     ->orderBy('ScheduledTime', 'asc')
                     ->get(),

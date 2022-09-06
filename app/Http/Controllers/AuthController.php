@@ -253,6 +253,8 @@ class AuthController extends Controller
                             $HospitalnameLoggedin,
                         'token' => $checkauth,
                         'user' => Auth::user(),
+                        'Hospital_Name'=>$HospitalnameLoggedin,
+                        'User_Role'=>Auth::user()->roles->first()->display_name,
                     ],
                     200
                 );

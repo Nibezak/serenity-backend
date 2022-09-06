@@ -221,7 +221,10 @@ Route::group(
 
          Route::post('/Manager/get-all-notes', [NoteController::class, 'getallnotes']);
 
-
+         Route::get('/Patient/Fetch-treatmentplan-notes/{PatientID}', [
+            NoteController::class,
+            'getalltreatmentplannote',
+        ]);
 
 
 
