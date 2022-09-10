@@ -1425,6 +1425,9 @@ class NoteController extends Controller
                     'id',
                     'Diagnosis',
                     'RiskAssessment',
+                    'Status',
+                    'Visibility',
+                    'signator',
                 ]);
 
             return collect($intakeallpat)

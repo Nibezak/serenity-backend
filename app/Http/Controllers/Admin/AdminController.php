@@ -691,7 +691,7 @@ class AdminController extends Controller
 
             $sms = new TransferSms();
             if ($request['Location'] == 'online') {
-                $link = 'https://meet.jit.si/Letsreason-test';
+                $link = 'https://70.34.205.234/Letsreason-meet';
                 $appointment->link = $link;
 
                 $message =
@@ -702,14 +702,7 @@ class AdminController extends Controller
                     ' Your ' .
                     $typeApp[0]->name .
                     ' Appointment at  ' .
-                    $hospitalName[0]->PracticeName .
-                    ' Located at ' .
-                    $hospitalName[0]->District .
-                    ' ,' .
-                    $hospitalName[0]->Sector .
-                    ',' .
-                    $hospitalName[0]->Cell .
-                    ' with ' .
+                    $hospitalName[0]->PracticeName .' '.
                     $doctorData[0]->Title .
                     ' ' .
                     $doctorData[0]->FirstName .
