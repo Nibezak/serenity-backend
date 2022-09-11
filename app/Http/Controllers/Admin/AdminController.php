@@ -542,13 +542,13 @@ class AdminController extends Controller
         if (Auth::check()) {
             return response()->json(
                 [
-                    'data' => TypeAppointment
-                        // where(
-                        //     'hospital_Id',
-                        //     '=',
-                        //     auth()->user()->Hospital_Id
-                        // )
-                        ::with(['creator:id,FirstName,LastName'])
+                    'data' => TypeAppointment::
+                        where(
+                            'hospital_Id',
+                            '=',
+                            auth()->user()->Hospital_Id
+                        )
+                        ->with(['creator:id,FirstName,LastName'])
                         ->get(),
                 ],
                 200
