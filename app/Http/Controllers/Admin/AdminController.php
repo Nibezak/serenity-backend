@@ -691,7 +691,7 @@ class AdminController extends Controller
 
             $sms = new TransferSms();
             if ($request['Location'] == 'online') {
-                $link = 'https://70.34.205.234/Letsreason-meet';
+                $link = 'https://meet.letsreason.co/EMR-Session-test';
                 $appointment->link = $link;
 
                 $message =
@@ -702,7 +702,8 @@ class AdminController extends Controller
                     ' Your ' .
                     $typeApp[0]->name .
                     ' Appointment at  ' .
-                    $hospitalName[0]->PracticeName .' '.
+                    $hospitalName[0]->PracticeName .
+                    ' ' .
                     $doctorData[0]->Title .
                     ' ' .
                     $doctorData[0]->FirstName .
@@ -904,7 +905,7 @@ class AdminController extends Controller
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
                 'name' => 'required|unique:diagnosis',
-                'icd10'=>'required|unique:diagnosis',
+                'icd10' => 'required|unique:diagnosis',
             ]);
             if ($validator->fails()) {
                 // return response()->json($validator->errors()->toJson(), 400);
@@ -921,7 +922,7 @@ class AdminController extends Controller
             $diagnsosis->Hospital_Id = auth()->user()->Hospital_Id;
             $diagnsosis->CreatedBy_Id = auth()->user()->id;
             $diagnsosis->Status = 'Active';
-            $diagnsosis->icd10=$request['icd10'];
+            $diagnsosis->icd10 = $request['icd10'];
             $diagnsosis->save();
 
             return response()->json(
