@@ -192,7 +192,7 @@ class AuthController extends Controller
                     DB::Table('users')
                         ->where('email', '=', $request['email'])
                         ->update([
-                            'session' => 'true',
+                            'session' => true,
                         ]);
                     //Get messsage receiver telephone
                     $receiverPhone = User::select('telephone')
@@ -217,6 +217,16 @@ class AuthController extends Controller
                         'status' => 'Active',
                         'email' => $request['email'],
                     ]);
+
+
+                    if (Auth::user()->roles->first()->name == 'Admin') {
+                    DB::Table('users')
+                    ->where('email', '=', auth()->user()->email)
+                    ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
+                    ->update([
+                        'ConstantsIsCreated' => false,
+                    ]);
+                    }
 
                     return response()->json(
                         [
@@ -374,30 +384,63 @@ class AuthController extends Controller
     public function changepassword(Request $request)
     {
         if (Auth::Check()) {
+        if(Auth::user()->PasswordIsChanged ==false){
             $validator = Validator::make($request->all(), [
-                'password' => 'required',
                 'NewPassword' => 'required',
                 'password_confirmation' =>
                     'required_with:password|same:NewPassword|min:6',
             ]);
-
             if ($validator->fails()) {
                 return response()->json(
                     ['errors' => implode($validator->errors()->all())],
                     422
                 );
             }
+             }else{
+            $validator = Validator::make($request->all(), [
+                'password' => 'required',
+                'NewPassword' => 'required',
+                'password_confirmation' =>
+                    'required_with:password|same:NewPassword|min:6',
+            ]);
+            if ($validator->fails()) {
+                return response()->json(
+                    ['errors' => implode($validator->errors()->all())],
+                    422
+                );
+            }
+            }
 
-            if (Hash::check($request['password'], auth()->user()->password)) {
+
+            if ((Hash::check($request['password'], auth()->user()->password)) ||(Auth::user()->PasswordIsChanged ==false)) {
                 // Right password
                 $user = User::where('email', auth()->user()->email)->update([
                     'password' => bcrypt($request['NewPassword']),
+                    'PasswordIsChanged'=>true,
                 ]);
 
-                return response()->json(
-                    ['message' => 'Your password has been changed!'],
-                    200
-                );
+                 //get hospital name of loggedin User
+                 $HospitalnameLoggedin = Hospital::select('PracticeName')
+                 ->where('id', '=', Auth::user()->Hospital_Id)
+                 ->value('PracticeName');
+
+
+                 DB::Table('users')
+                 ->where('email', '=', $request['email'])
+                 ->update([
+                     'PasswordIsChanged' => true,
+                 ]);
+             return response()->json(
+                 [
+
+                     'message' =>'Your Password is changed Successfully',
+                     'token' => $request->bearerToken(),
+                     'user' => Auth::user(),
+                     'Hospital_Name'=>$HospitalnameLoggedin,
+                     'User_Role'=>Auth::user()->roles->first()->display_name,
+                 ],
+                 200
+             );
             } else {
                 // Wrong one
                 return response()->json(
@@ -515,6 +558,21 @@ class AuthController extends Controller
                     ->where('id', '=', Auth::user()->Hospital_Id)
                     ->value('PracticeName');
 
+                    if(Auth::user()->PasswordIsChanged == false){
+                        return response()->json(
+                            [
+                                'success' =>
+                                'Your account has been verified Successfully',
+                                 'PasswordIsChanged'=>false,
+                                'token' => $request->bearerToken(),
+                                'message' =>
+                                    'Hello '.Auth::user()->FirstName.', Please change your Account Password first, inorder to proceed to your dashboard',
+
+                            ],
+                            200
+                        );
+                    }
+
                 return response()->json(
                     [
                         'message' =>
@@ -524,8 +582,8 @@ class AuthController extends Controller
                             $HospitalnameLoggedin,
                         'token' => $request->bearerToken(),
                         'user' => Auth::user(),
-                        'success' =>
-                            'Your account has been verified Successfully',
+                         'Hospital_Name'=>$HospitalnameLoggedin,
+                        'User_Role'=>Auth::user()->roles->first()->display_name,
                     ],
                     200
                 );

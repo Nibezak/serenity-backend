@@ -52,6 +52,8 @@ class Patient extends Model
         'gender',
         'lastappoint',
         'nextappoint',
+        'Guardian_Name',
+        'Guardian_Phone',
 
     ];
 
