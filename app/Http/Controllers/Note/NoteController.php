@@ -56,6 +56,15 @@ class NoteController extends Controller
             $treatments->Status = 'Active';
             $treatments->save();
 
+
+                DB::Table('users')
+                ->where('email', '=', auth()->user()->email)
+                ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
+                ->update([
+                    'ConstantsIsCreated' => true,
+                ]);
+
+
             return response()->json(
                 ['message' => 'Successfully Created new Treatment Strategy '],
                 201

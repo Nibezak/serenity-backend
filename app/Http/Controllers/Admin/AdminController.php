@@ -258,9 +258,11 @@ class AdminController extends Controller
             $patient->Languages = $request['Languages'];
             $patient->Employment = $request['Employment'];
             $patient->profileimageUrl = 'https://i.imgur.com/BKB2EQi.png';
-            $patient->PatientCode = 'P' . strtoupper(Str::random(6));
+            $patient->PatientCode = 'P-' . Str::random(8);
             $patient->gender = $request['gender'];
             $patient->Createdby_Id = auth()->user()->id;
+            $patient->Guardian_Name=$request['Guardian_Name'];
+            $patient->Guardian_Phone=$request['GuardianPhone'];
             $patient->save();
 
             return response()->json(
@@ -511,7 +513,7 @@ class AdminController extends Controller
         if (Auth::user()->roles->first()->name == 'Admin') {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
-                'name' => 'required|unique:typeappointments',
+                'name' => 'required',
             ]);
             if ($validator->fails()) {
                 // return response()->json($validator->errors(), 422);
