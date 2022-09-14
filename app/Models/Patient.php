@@ -78,6 +78,8 @@ class Patient extends Model
     public function NextAppointment()
     {
         return $this->belongsTo('App\Models\Appointment','nextappoint');
+
     }
+   
 
 }

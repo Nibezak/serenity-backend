@@ -425,7 +425,7 @@ class AuthController extends Controller
                  ->value('PracticeName');
 
 
-                 
+
              return response()->json(
                  [
 
@@ -562,7 +562,7 @@ class AuthController extends Controller
                                  'PasswordIsChanged'=>false,
                                 'token' => $request->bearerToken(),
                                 'message' =>
-                                    'Hello '.Auth::user()->FirstName.', Please change your Account Password first, inorder to proceed to your dashboard',
+                                    'Hello '.Auth::user()->FirstName.', Please change your Account Password first,  to proceed to your dashboard',
 
                             ],
                             200
