@@ -360,7 +360,7 @@ class AdminController extends Controller
             if ($user === null) {
                 // user doesn't exist
                 return response()->json(
-                    ['message' => 'This patient does not exists'],
+                    ['message' => 'This patient does not exists in our hospital'],
                     404
                 );
             }
@@ -381,6 +381,7 @@ class AdminController extends Controller
             );
         }
         return response()->json(['message' => 'Unauthorized user '], 401);
+
     }
 
     public function viewourhospitaldoctor()
@@ -992,4 +993,42 @@ class AdminController extends Controller
         }
         return response()->json(['message' => 'Unauthorized user'], 401);
     }
+
+    public function editpatientprofile(Request $request,$PatientId){
+        if (Auth::check()) {
+     if (Patient::find($PatientId) === null) {
+         // user doesn't exist
+         return response()->json(
+             ['message' => 'This patient does not exists'],
+             404
+         );
+     }
+     $input = $request->all();
+
+     Patient::find($PatientId)->update($input);
+
+   if(  $request->hasFile('profileimageUrl')) {
+        $file = $request->file('profileimageUrl');
+        $fileName = $file->getClientOriginalName() ;
+        $destinationPath = public_path().'/Patient/Profile/Images' ;
+        $file->move($destinationPath,$fileName);
+
+        Patient::find($PatientId)->update(['profileimageUrl'=>$destinationPath.'/'.$fileName]);
+
+    }
+
+
+
+     return response()->json(
+        ['message' => 'Patient profile is updated successfully'],
+        200
+    );
+
+    }
+    return response()->json(['message' => 'Unauthorized user '], 401);
+
+
+
+    }
+
 }

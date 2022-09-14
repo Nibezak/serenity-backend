@@ -425,11 +425,7 @@ class AuthController extends Controller
                  ->value('PracticeName');
 
 
-                 DB::Table('users')
-                 ->where('email', '=', $request['email'])
-                 ->update([
-                     'PasswordIsChanged' => true,
-                 ]);
+                 
              return response()->json(
                  [
 

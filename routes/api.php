@@ -75,6 +75,13 @@ Route::group(
             'createnewpatient',
         ]);
 
+
+
+        Route::post('/patient/edit-profile/{PatientId}', [
+            AdminController::class,
+            'editpatientprofile',
+        ]);
+
         Route::get('/patient/our-patient', [
             AdminController::class,
             'fetchourActivepatients',
