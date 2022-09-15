@@ -10,6 +10,7 @@ use App\Models\TypeAppointment;
 use App\Models\Appointment;
 use App\Models\Role;
 use App\Models\Patient;
+use App\Models\Assigneddocotor;
 use App\Models\Diagnosis;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
@@ -62,6 +63,7 @@ class AdminController extends Controller
                 'Address' => 'required',
                 'RoleId' => 'required',
                 'Title' => 'required',
+
             ]);
             if ($validator->fails()) {
                 // return response()->json($validator->errors()->toJson(), 400);
@@ -98,6 +100,7 @@ class AdminController extends Controller
                 $user->IsAccountNonLocked = '1';
                 $user->session = '1';
                 $user->IsCredentialsNonExpired = '1';
+                $user->Speciality=$request['Speciality'];
                 $user->save();
 
                 $user->attachRole($role);
@@ -376,6 +379,8 @@ class AdminController extends Controller
                         ])
                         ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
                         ->get(),
+                        'PreviousAssignedDoctor'=>Assigneddocotor::where('Patient_Id','=',$id)->where('Hospital_Id','=',auth()->user()->Hospital_Id)->get(),
+                        'AllPatientNotes-debug-jargon-kokes'=>'Easy bro hhhh, consume the other exisiting get all note api at http://45.76.141.125/api/Note/Manager/get-all-notes   [POST METHOD,request is Patient_Id',
                 ],
                 200
             );
@@ -413,8 +418,8 @@ class AdminController extends Controller
         ) {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
-                'Doctor_Id' => 'required',
-                'PatientId' => 'required',
+                'Doctor_Id' => 'required|exists:users,id',
+                'PatientId' => 'required|exists:patients,id',
             ]);
             if ($validator->fails()) {
                 // return response()->json($validator->errors()->toJson(), 400);
@@ -436,12 +441,43 @@ class AdminController extends Controller
                 )->first();
 
                 if (!is_null($check)) {
+
+                    $record = Assigneddocotor::select('AssignedBy_Id','Date')->where(['Hospital_Id' => auth()->user()->Hospital_Id])
+                   ->where('Patient_Id','=',$request['PatientId'])
+                   ->where('Doctor_Id','=',$request['Doctor_Id']);
+                    if ($record->exists()) {
+                        // $record->delete();
+                        $doneby=$record->get()[0]['AssignedBy_Id'];
+                        $doneAt=$record->get()[0]['Date'];
+                        $PatInfo=Patient::find($request['PatientId']);
+                        $drInfo=User::find($request['Doctor_Id']);
+                        $userInfo=User::find($doneby);
+                        return response()->json(
+                            [
+                                'message' =>
+                                $drInfo->Title.' '.$drInfo->FirstName.' '.$drInfo->LastName.' is already assigned to this patient '.$PatInfo->FirstName.' '.$PatInfo->LastName.' , Done by '.$userInfo['Title'].' '.$userInfo['FirstName'].' '.$userInfo['LastName']. ' At '.Carbon::parse($doneAt)->diffForHumans(),
+                            ],
+                            200
+                        );
+
+                    }
+
+                    $dr=new Assigneddocotor();
+                    $dr->Hospital_Id=auth()->user()->Hospital_Id;
+                    $dr->Doctor_Id=$request['Doctor_Id'];
+                    $dr->Patient_Id=$request['PatientId'];
+                    $dr->AssignedBy_Id=auth()->user()->id;
+                    $dr->Date=Carbon::now()->toDateTimeString();
+                    $dr->Status='On Treatment';
+                    $dr->save();
+
                     $result = DB::Table('patients')
                         ->where('id', '=', $request['PatientId'])
                         ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
                         ->update([
                             'AssignedDoctor_Id' => $request['Doctor_Id'],
                         ]);
+
                     return $result = [
                         'message' =>
                             'Patient is assigned to Doctor successfully !! ',
@@ -456,9 +492,9 @@ class AdminController extends Controller
             return response()->json(
                 [
                     'message' =>
-                        'Patient is Inactive,Please Pay or consult Letsreason Admin for consultation or other support ',
+                        'Patient is Inactive or dormant or have not payed, Please consult Hospital Admin or Finance officer for support ',
                 ],
-                201
+                200
             );
         }
         return response()->json(['message' => 'Unauthorized user'], 401);
@@ -1001,8 +1037,7 @@ class AdminController extends Controller
          return response()->json(
              ['message' => 'This patient does not exists'],
              404
-         );
-     }
+         ); }
      $input = $request->all();
 
      Patient::find($PatientId)->update($input);
@@ -1013,16 +1048,13 @@ class AdminController extends Controller
         $destinationPath = public_path().'/Patient/Profile/Images' ;
         $file->move($destinationPath,$fileName);
 
-        Patient::find($PatientId)->update(['profileimageUrl'=>$destinationPath.'/'.$fileName]);
-
-    }
+        Patient::find($PatientId)->update(['profileimageUrl'=>$destinationPath.'/'.$fileName]);  }
 
 
 
      return response()->json(
         ['message' => 'Patient profile is updated successfully'],
-        200
-    );
+        200 );
 
     }
     return response()->json(['message' => 'Unauthorized user '], 401);
