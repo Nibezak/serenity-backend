@@ -1048,7 +1048,7 @@ class AdminController extends Controller
         $destinationPath = public_path().'/Patient/Profile/Images' ;
         $file->move($destinationPath,$fileName);
 
-        Patient::find($PatientId)->update(['profileimageUrl'=>$destinationPath.'/'.$fileName]);  }
+        Patient::find($PatientId)->update(['profileimageUrl'=>'http://45.76.141.125/Patient/Profile/Images/'.$fileName]);  }
 
 
 
