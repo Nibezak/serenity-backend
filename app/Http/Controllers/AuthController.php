@@ -218,7 +218,6 @@ class AuthController extends Controller
                         'email' => $request['email'],
                     ]);
 
-
                     if (Auth::user()->roles->first()->name == 'Admin') {
                     DB::Table('users')
                     ->where('email', '=', auth()->user()->email)

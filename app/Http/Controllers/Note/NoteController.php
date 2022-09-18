@@ -1,11 +1,12 @@
 <?php
 
 namespace App\Http\Controllers\Note;
-
+use Tymon\JWTAuth\Facades\JWTAuth;
 use App\Http\Controllers\Controller;
 use App\Models\Appointment;
 use Illuminate\Http\Request;
 use App\Models\Treatmentstrategy;
+use App\Models\Hospital;
 use App\Models\Frequencytreatment;
 use App\Models\PtreatmentPlan;
 use Illuminate\Support\Facades\DB;
@@ -38,7 +39,7 @@ class NoteController extends Controller
         if (Auth::user()->roles->first()->name == 'Admin') {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
-                'name' => 'required|unique:treatmentstrategy',
+                'name' => 'required',
             ]);
             if ($validator->fails()) {
                 // return response()->json($validator->errors()->toJson(), 400);
@@ -56,6 +57,11 @@ class NoteController extends Controller
             $treatments->Status = 'Active';
             $treatments->save();
 
+               //get hospital name of loggedin User
+               $HospitalnameLoggedin = Hospital::select('PracticeName')
+               ->where('id', '=', Auth::user()->Hospital_Id)
+               ->value('PracticeName');
+
 
                 DB::Table('users')
                 ->where('email', '=', auth()->user()->email)
@@ -66,7 +72,17 @@ class NoteController extends Controller
 
 
             return response()->json(
-                ['message' => 'Successfully Created new Treatment Strategy '],
+                ['message' => 'Successfully Created new Treatment Strategy ',
+
+                'token' => $request->bearerToken(),
+                'user' => Auth::user(),
+                'Hospital_Name'=>$HospitalnameLoggedin,
+                'User_Role'=>Auth::user()->roles->first()->display_name,
+                'Constants_Is_Created'=>Auth::user()->ConstantsIsCreated,
+
+                ],
+
+
                 201
             );
         }
