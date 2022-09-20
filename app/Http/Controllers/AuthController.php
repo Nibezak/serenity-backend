@@ -220,7 +220,7 @@ class AuthController extends Controller
 
                     if ((Auth::user()->roles->first()->name == 'Admin') && (Auth::user()->ConstantsIsCreated ==false)) {
 
-                
+
                     DB::Table('users')
                     ->where('email', '=', auth()->user()->email)
                     ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
