@@ -76,6 +76,12 @@ Route::group(
         ]);
 
 
+        Route::post('/roles/get-hospital-roles', [
+            AdminController::class,
+            'gethospitalroles',
+        ]);
+
+
 
         Route::post('/patient/edit-profile/{PatientId}', [
             AdminController::class,

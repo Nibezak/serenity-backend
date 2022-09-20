@@ -29,7 +29,14 @@ class Hospital extends Model
     'Village',
     'TinNumber',
     'logo',
+    'Doneby',
+    'IsClinician',
+    'IsReceptionist',
+    'IsFinance',
+
 
     ];
+
+
 
 }

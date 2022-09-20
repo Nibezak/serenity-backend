@@ -57,12 +57,6 @@ class NoteController extends Controller
             $treatments->Status = 'Active';
             $treatments->save();
 
-               //get hospital name of loggedin User
-               $HospitalnameLoggedin = Hospital::select('PracticeName')
-               ->where('id', '=', Auth::user()->Hospital_Id)
-               ->value('PracticeName');
-
-
                 DB::Table('users')
                 ->where('email', '=', auth()->user()->email)
                 ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
@@ -74,10 +68,6 @@ class NoteController extends Controller
             return response()->json(
                 ['message' => 'Successfully Created new Treatment Strategy ',
 
-                'token' => $request->bearerToken(),
-                'user' => Auth::user(),
-                'Hospital_Name'=>$HospitalnameLoggedin,
-                'User_Role'=>Auth::user()->roles->first()->display_name,
                 'Constants_Is_Created'=>Auth::user()->ConstantsIsCreated,
 
                 ],
@@ -247,8 +237,8 @@ class NoteController extends Controller
         if ($var == 'Admin' || $var == 'Clinician') {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
-                'PatientId' => 'required',
-                'AppointmentID' => 'required',
+                'PatientId' => 'required|exists:patients,id',
+                // 'AppointmentID' => 'required',
                 'NoteContent' => 'required',
             ]);
             if ($validator->fails()) {
@@ -265,11 +255,16 @@ class NoteController extends Controller
                 ->where('id', '=', $request['PatientId'])
                 ->value('AssignedDoctor_Id');
 
-            $datimescheduled = Appointment::select('ScheduledTime')
+
+               $datimescheduled = Appointment::select('ScheduledTime')
                 ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
                 ->where('id', '=', $request['AppointmentID'])
                 ->where('Patient_Id', '=', $request['PatientId'])
                 ->value('ScheduledTime');
+                $idappointment= $request['AppointmentID'];
+
+
+
 
             $miscnote = new Miscnote();
             $miscnote->Note_Type = 'Miscellaneous Note';
@@ -282,7 +277,7 @@ class NoteController extends Controller
             $miscnote->Visibility = 'assigned clinician only';
             $miscnote->Status = 'Active';
             $miscnote->CreatedBy_Id = auth()->user()->id;
-            $miscnote->Appoint_Id = $request['AppointmentID'];
+            $miscnote->Appoint_Id =$request['AppointmentID'];
             $miscnote->save();
             return response()->json(
                 [

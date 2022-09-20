@@ -203,17 +203,48 @@ class AdminController extends Controller
         if (Auth::check()) {
             // $myRoleId = json_decode(Auth::user()->roles->first()['Clinician'], true);
 
+          $HospitalStaffRoles=Hospital::select('IsClinician','IsReceptionist','IsFinance')
+          ->where('Doneby','=',Auth::user()->id)
+          ->where('id','=',auth()->user()->Hospital_Id)->get();
+
+          $row= $HospitalStaffRoles[0]['IsClinician'].','.$HospitalStaffRoles[0]['IsReceptionist'].','.$HospitalStaffRoles[0]['IsFinance'];
+           $idsArr = explode(',',$row);
+
             return response()->json(
                 [
-                    'data' => Role::select('id', 'display_name')
-                        ->get()
-                        ->except('110'),
+                    'data' => DB::table('roles')->select('id', 'display_name')->whereIn('id',$idsArr)->get()->except('110'),
                 ],
                 200
             );
         }
         return response()->json(['message' => 'Unauthorized user'], 401);
     }
+
+    //get hospital roles
+    public function gethospitalroles(Request $request){
+
+        if (Auth::user()->roles->first()->name == 'Admin') {
+
+            DB::Table('hospital')
+            ->where('id', '=', auth()->user()->Hospital_Id)
+            ->update([
+                'DoneBy' => Auth::user()->id,
+                'IsClinician' =>$request['clinicianId'] ,
+                'IsReceptionist' => $request['receptionId'],
+                'IsFinance' =>  $request['financeId'],
+
+            ]);
+            return response()->json(['message' => 'Successfully saved your hospital Staff roles'], 201);
+
+
+
+        }
+        return response()->json(['errors' => 'Unauthorized user'], 401);
+
+
+
+    }
+
 
     //register new patient
     public function createnewpatient(Request $request)
@@ -1063,4 +1094,7 @@ class AdminController extends Controller
 
     }
 
+
+
 }
+
