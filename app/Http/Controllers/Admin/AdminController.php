@@ -10,6 +10,9 @@ use App\Models\TypeAppointment;
 use App\Models\Appointment;
 use App\Models\Role;
 use App\Models\Patient;
+use App\Models\Pintakenote;
+use App\Models\PtreatmentPlan;
+use App\Models\Progresssnote;
 use App\Models\Assigneddocotor;
 use App\Models\Diagnosis;
 use Illuminate\Validation\Rule;
@@ -200,7 +203,7 @@ class AdminController extends Controller
     //Fetch hospitall staff roles
     public function retrieveRoles()
     {
-        if (Auth::check()) {
+        if (Auth::user()->roles->first()->name == 'Admin') {
             // $myRoleId = json_decode(Auth::user()->roles->first()['Clinician'], true);
 
           $HospitalStaffRoles=Hospital::select('IsClinician','IsReceptionist','IsFinance')
@@ -210,9 +213,14 @@ class AdminController extends Controller
           $row= $HospitalStaffRoles[0]['IsClinician'].','.$HospitalStaffRoles[0]['IsReceptionist'].','.$HospitalStaffRoles[0]['IsFinance'];
            $idsArr = explode(',',$row);
 
+        //    DB::table('roles')->select('id', 'display_name')->whereIn('id',$idsArr)->get()->except('110'),
+ 
             return response()->json(
                 [
-                    'data' => DB::table('roles')->select('id', 'display_name')->whereIn('id',$idsArr)->get()->except('110'),
+                    'data' =>  Role::select('id', 'display_name')
+                    ->get()
+                    ->except('110'),
+
                 ],
                 200
             );
@@ -397,7 +405,17 @@ class AdminController extends Controller
                     ['message' => 'This patient does not exists in our hospital'],
                     404
                 );
-            }
+            };
+
+     $diagnosisIntake=Pintakenote::select('Diagnosis')->where('Patient_Id','=',$id)->get();
+     $diagnosistreatmentplan=PtreatmentPlan::select('Diagnosis_Id')->where('Patient_Id','=',$id)->get();
+     $diagnosisprogressnote=Progresssnote::select('Diagnosis')->where('Patient_Id','=',$id)->get();
+
+
+
+
+
+
 
             return response()->json(
                 [
@@ -411,7 +429,7 @@ class AdminController extends Controller
                         ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
                         ->get(),
                         'PreviousAssignedDoctor'=>Assigneddocotor::where('Patient_Id','=',$id)->where('Hospital_Id','=',auth()->user()->Hospital_Id)->get(),
-                        'AllPatientNotes-debug-jargon-kokes'=>'Easy bro hhhh, consume the other exisiting get all note api at http://45.76.141.125/api/Note/Manager/get-all-notes   [POST METHOD,request is Patient_Id',
+                        'All_diagnosis'=>$diagnosisIntake.$diagnosistreatmentplan.$diagnosisprogressnote,
                 ],
                 200
             );

@@ -6,6 +6,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Super\SuperDashboardController;
 use App\Http\Controllers\Note\NoteController;
+use App\Http\Controllers\PrescriptionController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -78,7 +79,7 @@ Route::group(
 
         Route::post('/roles/get-hospital-roles', [
             AdminController::class,
-            'gethospitalroles',
+            'savehospitalroles',
         ]);
 
 
@@ -264,3 +265,21 @@ Route::group(
         ]);
     }
 );
+
+
+
+Route::group(
+    [
+        'middleware' => 'api',
+        'prefix' => 'prescription',
+    ],
+    function ($router) {
+
+         Route::post('/patient/create', [PrescriptionController::class, 'saveprescription']);
+         Route::get('/drug/all', [PrescriptionController::class, 'getalldrugs']);
+
+
+    }
+);
+
+
