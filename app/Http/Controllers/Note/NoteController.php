@@ -1590,4 +1590,108 @@ class NoteController extends Controller
         }
         return response()->json(['message' => 'Unauthorized user '], 401);
     }
+
+    public function fetchnotedetailsbyid(Request $request){
+        $var = Auth::user()->roles->first()->name;
+        if ($var == 'Admin' || $var == 'Clinician') {
+            //Validate User Inputs
+            $validator = Validator::make($request->all(), [
+                // 'Patient_Id' => 'required|exists:patients,id',
+                'Note_Type' =>  'required',
+                'Note_Id' => 'required'
+            ]);
+            if ($validator->fails()) {
+                // return response()->json($validator->errors()->toJson(), 400);
+
+                return response()->json(
+                    ['errors' => implode($validator->errors()->all())],
+                    422
+                );
+            }
+
+       if($request['Note_Type']=='Psychotherapy Intake Note'){
+       return response()->json(['data' =>
+       Pintakenote::find($request['Note_Id'])
+
+       ], 200);
+       }else
+       if($request['Note_Type']=='Psychotherapy Treatment Plan'){
+        return response()->json(['data' =>
+        PtreatmentPlan::find($request['Note_Id'])
+
+        ], 200);
+        }
+        else
+       if($request['Note_Type']=='Contact Note'){
+        return response()->json(['data' =>
+        Contactnote::find($request['Note_Id'])
+
+        ], 200);
+        }
+
+        else
+       if($request['Note_Type']=='Consultation Note'){
+        return response()->json(['data' =>
+        Consulationnote::find($request['Note_Id'])
+
+        ], 200);
+        }
+
+        else
+        if($request['Note_Type']=='Psychotherapy Process Note'){
+         return response()->json(['data' =>
+         Processnote::find($request['Note_Id'])
+
+         ], 200);
+         }
+
+         else
+        if($request['Note_Type']=='Miscellaneous Note'){
+         return response()->json(['data' =>
+         Miscnote::find($request['Note_Id'])
+
+         ], 200);
+         }
+
+         else
+        if($request['Note_Type']=='Psychotherapy Progress Note'){
+         return response()->json(['data' =>
+         Progresssnote::find($request['Note_Id'])
+
+         ], 200);
+         }
+
+         else
+        if($request['Note_Type']=='Missed Appointment Note'){
+         return response()->json(['data' =>
+         Missedappointmentnote::find($request['Note_Id'])
+
+         ], 200);
+         }
+
+         else
+         if($request['Note_Type']=='Psychotherapy Termination Note'){
+          return response()->json(['data' =>
+          Terminationnote::find($request['Note_Id'])
+
+          ], 200);
+          } else{
+
+            return response()->json(['data' =>
+           'OOPS Something went wrong it is not our side, we are fixing it As soon as possible !!!'
+
+            ], 200);
+
+          }
+
+
+
+
+
+        }
+
+        return response()->json(['message' => 'Unauthorized user'], 401);
+
+    }
+
 }

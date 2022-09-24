@@ -179,6 +179,13 @@ Route::group(
         'prefix' => 'Note',
     ],
     function ($router) {
+
+        Route::post('/get-note-details-by-id', [
+            NoteController::class,
+            'fetchnotedetailsbyid',
+        ]);
+
+
         Route::post('/Manager/create-treatment-strategy', [
             NoteController::class,
             'createtreatmentstrategy',
