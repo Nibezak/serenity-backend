@@ -428,16 +428,16 @@ class AdminController extends Controller
                         ])
                         ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
                         ->get(),
-                        'PreviousAssignedDoctor'=>
-                        collect(Assigneddocotor::where('Patient_Id','=',$id)->where('Hospital_Id','=',auth()->user()->Hospital_Id)->get())
-                        ->map(function ($item) {
-                            return [
-                                'Assigned_At' =>$item['Date'],
-                                'doctor' => User::where('id','=',$item['Doctor_Id'])->where('Hospital_Id','=',auth()->user()->Hospital_Id)->get(),
-                              ];
-                        })
-                        ->all()
-                        ,
+                        // 'PreviousAssignedDoctor'=>
+                        // collect(Assigneddocotor::where('Patient_Id','=',$id)->where('Hospital_Id','=',auth()->user()->Hospital_Id)->get())
+                        // ->map(function ($item) {
+                        //     return [
+                        //         'Assigned_At' =>$item['Date'],
+                        //         'doctor' => User::where('id','=',$item['Doctor_Id'])->where('Hospital_Id','=',auth()->user()->Hospital_Id)->get(),
+                        //       ];
+                        // })
+                        // ->all()
+                        // ,
                         'All_diagnosis'=>str_replace(array( '[', ']' ), '',$diagnosisIntake[0]['Diagnosis'].$diagnosistreatmentplan[0]['Diagnosis'].$diagnosisprogressnote[0]['Diagnosis']),
                 ],
                 200
