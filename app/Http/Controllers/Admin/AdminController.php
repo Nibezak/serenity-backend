@@ -439,7 +439,7 @@ class AdminController extends Controller
                         })
                         ->all()
                         ,
-                        'All_diagnosis'=>str_replace(array( '[', ']' ), '',$diagnosisIntake[0]['Diagnosis'].$diagnosistreatmentplan[0]['Diagnosis'].$diagnosisprogressnote[0]['Diagnosis']),
+                        // 'All_diagnosis'=>str_replace(array( '[', ']' ), '',$diagnosisIntake[0]['Diagnosis'].$diagnosistreatmentplan[0]['Diagnosis'].$diagnosisprogressnote[0]['Diagnosis']),
                 ],
                 200
             );
