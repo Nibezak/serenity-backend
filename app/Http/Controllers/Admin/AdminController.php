@@ -439,7 +439,7 @@ class AdminController extends Controller
                         })
                         ->all()
                         ,
-                         'All_diagnosis'=>str_replace(array( '[', ']' ), '',$diagnosisIntake.$diagnosistreatmentplan.$diagnosisprogressnote),
+                         'Diagnosis'=>$diagnosisIntake.$diagnosistreatmentplan.$diagnosisprogressnote,
 
 
                 ],
