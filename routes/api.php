@@ -285,6 +285,8 @@ Route::group(
          Route::post('/patient/create', [PrescriptionController::class, 'saveprescription']);
          Route::get('/drug/all', [PrescriptionController::class, 'getalldrugs']);
 
+         Route::get('/patient/all/{PatientId}', [PrescriptionController::class, 'getallpatientprescription']);
+
 
     }
 );
