@@ -17,7 +17,7 @@ class Prescription extends Model
     'Hospital_Id',
     'Doctor_Id',
     'Diagnosis',
-    'Drug_Id',
+    'Drugs',
     'Medical_Advices',
     'Description',
     'RecordedBy_Id',

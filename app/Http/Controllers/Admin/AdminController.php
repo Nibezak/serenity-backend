@@ -407,9 +407,9 @@ class AdminController extends Controller
                 );
             };
 
-     $diagnosisIntake=Pintakenote::select('Diagnosis')->where('Patient_Id','=',$id)->get();
-     $diagnosistreatmentplan=PtreatmentPlan::select('Diagnosis_Id')->where('Patient_Id','=',$id)->get();
-     $diagnosisprogressnote=Progresssnote::select('Diagnosis')->where('Patient_Id','=',$id)->get();
+     $diagnosisIntake=Pintakenote::select('Diagnosis')->where('Patient_Id','=',$id)->value('Diagnosis');
+     $diagnosistreatmentplan=PtreatmentPlan::select('Diagnosis_Id')->where('Patient_Id','=',$id)->value('Diagnosis_Id');
+     $diagnosisprogressnote=Progresssnote::select('Diagnosis')->where('Patient_Id','=',$id)->value('Diagnosis');
 
 
 
@@ -439,7 +439,9 @@ class AdminController extends Controller
                         })
                         ->all()
                         ,
-                        // 'All_diagnosis'=>$diagnosisIntake[0]['Diagnosis'].$diagnosistreatmentplan[0]['Diagnosis'].$diagnosisprogressnote[0]['Diagnosis'],
+                         'All_diagnosis'=>str_replace(array( '[', ']' ), '',$diagnosisIntake.$diagnosistreatmentplan.$diagnosisprogressnote),
+
+
                 ],
                 200
             );

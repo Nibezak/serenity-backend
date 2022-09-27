@@ -18,7 +18,7 @@ class CreatePrescriptionsTable extends Migration
             $table->unsignedBigInteger('Patient_Id')->nullable();
             $table->unsignedBigInteger('Hospital_Id')->nullable();
             $table->unsignedBigInteger('Doctor_Id')->nullable();
-            $table->unsignedBigInteger('Drug_Id')->nullable();
+            $table->json('Drugs')->nullable();
             $table->unsignedBigInteger('RecordedBy_Id')->nullable();
             $table->string('Medical_Advices')->nullable();
             $table->string('Description')->nullable();
@@ -50,13 +50,6 @@ class CreatePrescriptionsTable extends Migration
             ->foreign('RecordedBy_Id')
             ->references('id')
             ->on('users')
-            ->onDelete('cascade');
-
-
-            $table
-            ->foreign('Drug_Id')
-            ->references('id')
-            ->on('drugs')
             ->onDelete('cascade');
 
 

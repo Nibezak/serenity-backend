@@ -49,7 +49,6 @@ class PrescriptionController extends Controller
             //validate inputs
             $validator = Validator::make($request->all(), [
                 'Patient_Id' => 'required|exists:patients,id',
-                'DrugId'=> 'required|exists:drugs,id',
                 'MedicalAdvices'=>'required',
                 'Description'=>'required',
             ]);
@@ -72,14 +71,16 @@ class PrescriptionController extends Controller
 
            $presc->Patient_Id=$request['Patient_Id'];
            $presc->Hospital_Id=auth()->user()->Hospital_Id;
-           $presc->Doctor_Id=$assignedDr;
+           $presc->Doctor_Id=auth()->user()->id;
            $presc->Diagnosis=json_encode($request['Diagnosis']);
-           $presc->Drug_Id=$request['DrugId'];
+           $presc->Drugs=json_encode($request['Drugs']);
            $presc->Medical_Advices=$request['MedicalAdvices'];
            $presc->Description=$request['Description'];
            $presc->RecordedBy_Id=auth()->user()->id;
            $presc->save();
            $patinfo = Patient::select('MobilePhone','FirstName','LastName')->find($request['Patient_Id']);
+
+
 
            return response()->json(
             [
@@ -87,7 +88,6 @@ class PrescriptionController extends Controller
             ],
             201
         );
-
 
 
         }
@@ -155,11 +155,41 @@ class PrescriptionController extends Controller
     public function getalldrugs(){
         return response()->json(
             [
-                'drugs' =>
+                'data' =>
                 Drug::all(),
             ],
             200
         );
+    }
+
+    public function getallpatientprescription($PatientId){
+
+
+        return response()->json(
+            [
+                'data' =>
+
+                collect(Prescription::where('Patient_Id','=',$PatientId)->where('Hospital_Id','=',auth()->user()->Hospital_Id)->get())
+                ->map(function ($item) {
+
+                    $dr =User::where('id','=',$item['RecordedBy_Id'])->where('Hospital_Id','=',auth()->user()->Hospital_Id)->get();
+                    return [
+                        'Prescription_Id' =>$item['id'],
+                        'doctor' => $dr[0]['Title'].' '.$dr[0]['FirstName'].' '.$dr[0]['LastName'],
+                        'Medical_Advices'=>$item['Medical_Advices'],
+                        'Description'=>$item['Description'],
+                        'Drugs'=>str_replace(array( '[', ']' ), '',$item['Drugs']),
+                        'Diagnosis'=>str_replace(array( '[', ']' ), '',$item['Diagnosis']),
+                        'created_at'=>$item['created_at'],
+                        'updated_at'=>$item['updated_at'],
+                      ];
+                })
+                ->all()
+
+            ],
+            200
+        );
+
     }
 
 
