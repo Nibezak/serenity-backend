@@ -45,7 +45,7 @@ class PrescriptionController extends Controller
     {
         //
 
-        if (Auth::user()->roles->first()->name == 'Admin') {
+        if (Auth::user()->roles->first()->name == 'Clinician') {
             //validate inputs
             $validator = Validator::make($request->all(), [
                 'Patient_Id' => 'required|exists:patients,id',
