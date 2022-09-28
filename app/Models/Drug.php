@@ -18,6 +18,7 @@ class Drug extends Model
     'weight',
     'recordedby',
     'Pharmacy',
+    'Location',
     ];
 
 
