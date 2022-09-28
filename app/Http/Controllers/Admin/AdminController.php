@@ -407,13 +407,9 @@ class AdminController extends Controller
                 );
             };
 
-     $diagnosisIntake=json_decode(Pintakenote::select('Diagnosis')->where('Patient_Id','=',$id)->value('Diagnosis'),true);
-     $diagnosistreatmentplan=json_decode(PtreatmentPlan::select('Diagnosis_Id')->where('Patient_Id','=',$id)->value('Diagnosis_Id'),true);
-     $diagnosisprogressnote=json_decode(Progresssnote::select('Diagnosis')->where('Patient_Id','=',$id)->value('Diagnosis'),true);
-
-
-
-
+            $diagnosisIntake=Pintakenote::select('Diagnosis')->where('Patient_Id','=',$id)->value('Diagnosis');
+            $diagnosistreatmentplan=PtreatmentPlan::select('Diagnosis_Id')->where('Patient_Id','=',$id)->value('Diagnosis_Id');
+            $diagnosisprogressnote=Progresssnote::select('Diagnosis')->where('Patient_Id','=',$id)->value('Diagnosis');
 
 
 
@@ -439,8 +435,7 @@ class AdminController extends Controller
                         })
                         ->all()
                         ,
-                         'Diagnosis'=>array_merge($diagnosisIntake,$diagnosistreatmentplan,$diagnosisprogressnote),
-
+                        'Diagnosis'=>$diagnosisIntake.$diagnosistreatmentplan.$diagnosisprogressnote,
 
                 ],
                 200
