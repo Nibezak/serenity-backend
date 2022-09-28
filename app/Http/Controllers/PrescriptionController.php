@@ -164,7 +164,7 @@ class PrescriptionController extends Controller
 
     public function getallpatientprescription($PatientId){
 
-        if (Auth::user()->roles->first()->name == 'Admin') {
+        if (Auth::user()->roles->first()->name == 'Clinician') {
         return response()->json(
             [
                 'data' =>
