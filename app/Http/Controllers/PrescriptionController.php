@@ -164,7 +164,7 @@ class PrescriptionController extends Controller
 
     public function getallpatientprescription($PatientId){
 
-
+        if (Auth::user()->roles->first()->name == 'Admin') {
         return response()->json(
             [
                 'data' =>
@@ -176,10 +176,10 @@ class PrescriptionController extends Controller
                     return [
                         'Prescription_Id' =>$item['id'],
                         'doctor' => $dr[0]['Title'].' '.$dr[0]['FirstName'].' '.$dr[0]['LastName'],
-                        'Medical_Advices'=>$item['Medical_Advices'],
+                        'Medical_Advices'=>json_decode($item['Medical_Advices'],true),
                         'Description'=>$item['Description'],
-                        'Drugs'=>$item['Drugs'],
-                        'Diagnosis'=>$item['Diagnosis'],
+                        'Drugs'=>json_decode($item['Drugs'],true),
+                        'Diagnosis'=>json_decode($item['Diagnosis'],true),
                         'created_at'=>$item['created_at'],
                         'updated_at'=>$item['updated_at'],
                       ];
@@ -189,6 +189,10 @@ class PrescriptionController extends Controller
             ],
             200
         );
+
+    }
+    return response()->json(['message' => 'Unauthorized user'], 200);
+
 
     }
 

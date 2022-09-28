@@ -407,9 +407,9 @@ class AdminController extends Controller
                 );
             };
 
-     $diagnosisIntake=Pintakenote::select('Diagnosis')->where('Patient_Id','=',$id)->value('Diagnosis');
-     $diagnosistreatmentplan=PtreatmentPlan::select('Diagnosis_Id')->where('Patient_Id','=',$id)->value('Diagnosis_Id');
-     $diagnosisprogressnote=Progresssnote::select('Diagnosis')->where('Patient_Id','=',$id)->value('Diagnosis');
+     $diagnosisIntake=json_decode(Pintakenote::select('Diagnosis')->where('Patient_Id','=',$id)->value('Diagnosis'),true);
+     $diagnosistreatmentplan=json_decode(PtreatmentPlan::select('Diagnosis_Id')->where('Patient_Id','=',$id)->value('Diagnosis_Id'),true);
+     $diagnosisprogressnote=json_decode(Progresssnote::select('Diagnosis')->where('Patient_Id','=',$id)->value('Diagnosis'),true);
 
 
 
@@ -439,7 +439,7 @@ class AdminController extends Controller
                         })
                         ->all()
                         ,
-                         'Diagnosis'=>preg_replace('""', '',$diagnosisIntake.$diagnosistreatmentplan.$diagnosisprogressnote),
+                         'Diagnosis'=>array_merge($diagnosisIntake,$diagnosistreatmentplan,$diagnosisprogressnote),
 
 
                 ],
@@ -665,10 +665,10 @@ class AdminController extends Controller
                 'AppointmentType_Id' => 'required',
                 'Patient_Id' => 'required',
                 'Location' => 'required',
-                'ScheduledTime' => 'required',
+                'Schedule' => 'required',
                 'Duration' => 'required',
                 'Frequency' => 'required',
-                'AppointmentAlert' => 'required',
+                'AppointmentNote' => 'required',
             ]);
             if ($validator->fails()) {
                 // return response()->json($validator->errors(), 422);
@@ -781,13 +781,14 @@ class AdminController extends Controller
             $appointment->Patient_Id = $request['Patient_Id'];
             $appointment->Doctor_Id = $AssignedDoctorId;
             $appointment->Location = $request['Location'];
-            $appointment->ScheduledTime = $request['ScheduledTime'];
+            $appointment->ScheduledTime = $request['Schedule'];
             $appointment->Duration = $request['Duration'];
             $appointment->Frequency = $request['Frequency'];
             $appointment->CreatedBy_Id = auth()->user()->id;
             $appointment->Status = 'Active';
-            $appointment->AppointmentAlert = $request['AppointmentAlert'];
+            $appointment->AppointmentAlert = $request['AppointmentNote'];
             $appointment->Hospital_Id = auth()->user()->Hospital_Id;
+            $appointment->calendarGridType=$request['calendarGridType'];
 
             $sms = new TransferSms();
             if ($request['Location'] == 'online') {
@@ -810,7 +811,7 @@ class AdminController extends Controller
                     ' ' .
                     $doctorData[0]->LastName .
                     ' has been scheduled successfully , Date: ' .
-                    $request['ScheduledTime'] .
+                    $request['Schedule'] .
                     ' Location: ' .
                     $request['Location'] .
                     ' and Video Link is:  ' .
@@ -840,44 +841,46 @@ class AdminController extends Controller
                     ' ' .
                     $doctorData[0]->LastName .
                     ' has been scheduled successfully , Date: ' .
-                    $request['ScheduledTime'] .
+                    $request['Schedule'] .
                     ' Venue: ' .
                     $request['Location'];
 
-                $sms->sendSMS($patData[0]->MobilePhone, $msg);
+                 $sms->sendSMS($patData[0]->MobilePhone, $msg);
 
                 $appointment->link = 'null';
             }
 
-            $appointment->save();
+             $appointment->save();
 
-            $PatientnextAppointment = Appointment::select('id', 'ScheduledTime')
-                ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
-                ->where('Patient_Id', '=', $request['Patient_Id'])
-                ->whereDate('ScheduledTime', '>', Carbon::now())
-                ->orderBy('ScheduledTime', 'ASC')
-                ->first();
-            $PatientlastAppointment = Appointment::select('id', 'ScheduledTime')
-                ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
-                ->where('Patient_Id', '=', $request['Patient_Id'])
-                ->whereDate('ScheduledTime', '<', Carbon::now())
-                ->orderBy('ScheduledTime', 'DESC')
-                ->first();
-            if ($PatientlastAppointment == null) {
-                DB::Table('patients')
-                    ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
-                    ->where('id', '=', $request['Patient_Id'])
-                    ->update([
-                        'lastappoint' => $appointment->id,
-                    ]);
-            }
+            // $PatientnextAppointment = Appointment::select('id', 'ScheduledTime')
+            //     ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
+            //     ->where('Patient_Id', '=', $request['Patient_Id'])
+            //     ->whereDate('ScheduledTime', '>', Carbon::now())
+            //     ->orderBy('ScheduledTime', 'ASC')
+            //     ->first();
 
-            DB::Table('patients')
-                ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
-                ->where('id', '=', $request['Patient_Id'])
-                ->update([
-                    'nextappoint' => $PatientnextAppointment->id,
-                ]);
+
+            // $PatientlastAppointment = Appointment::select('id', 'ScheduledTime')
+            //     ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
+            //     ->where('Patient_Id', '=', $request['Patient_Id'])
+            //     ->whereDate('ScheduledTime', '<', Carbon::now())
+            //     ->orderBy('ScheduledTime', 'DESC')
+            //     ->first();
+            // if ($PatientlastAppointment == null) {
+            //     DB::Table('patients')
+            //         ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
+            //         ->where('id', '=', $request['Patient_Id'])
+            //         ->update([
+            //             'lastappoint' => $appointment->id,
+            //         ]);
+            // }
+
+            // DB::Table('patients')
+            //     ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
+            //     ->where('id', '=', $request['Patient_Id'])
+            //     ->update([
+            //         // 'nextappoint' => $PatientnextAppointment->id,
+            //     ]);
 
             if ($appointment) {
                 return response()->json(
@@ -892,14 +895,14 @@ class AdminController extends Controller
                     ],
                     201
                 );
-            }
+            }else{
             return response()->json(
                 [
                     'message' =>
                         'Ooops Something went wrong on our side, we are fixing it ASAP',
                 ],
                 401
-            );
+            );}
         }
         return response()->json(['message' => 'Unauthorized user'], 401);
     }

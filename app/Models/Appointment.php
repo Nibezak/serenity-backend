@@ -25,11 +25,12 @@ class Appointment extends Model
     'Hospital_Id',
     'Status',
     'link',
+    'calendarGridType',
 
 
     ];
 
-    
+
 
     public function appointmenttype()
     {
