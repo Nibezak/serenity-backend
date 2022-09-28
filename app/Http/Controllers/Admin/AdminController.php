@@ -439,7 +439,7 @@ class AdminController extends Controller
                         })
                         ->all()
                         ,
-                         'Diagnosis'=>$diagnosisIntake.$diagnosistreatmentplan.$diagnosisprogressnote,
+                         'Diagnosis'=>preg_replace('""', '',$diagnosisIntake.$diagnosistreatmentplan.$diagnosisprogressnote),
 
 
                 ],
