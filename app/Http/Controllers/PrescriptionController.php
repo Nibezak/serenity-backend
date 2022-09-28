@@ -178,8 +178,8 @@ class PrescriptionController extends Controller
                         'doctor' => $dr[0]['Title'].' '.$dr[0]['FirstName'].' '.$dr[0]['LastName'],
                         'Medical_Advices'=>$item['Medical_Advices'],
                         'Description'=>$item['Description'],
-                        'Drugs'=>str_replace(array( '[', ']' ), '',$item['Drugs']),
-                        'Diagnosis'=>str_replace(array( '[', ']' ), '',$item['Diagnosis']),
+                        'Drugs'=>$item['Drugs'],
+                        'Diagnosis'=>$item['Diagnosis'],
                         'created_at'=>$item['created_at'],
                         'updated_at'=>$item['updated_at'],
                       ];

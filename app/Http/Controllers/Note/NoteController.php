@@ -528,16 +528,14 @@ class NoteController extends Controller
         if ($var == 'Admin' || $var == 'Clinician') {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
-                'Note_Type' => 'required',
+
                 'Diagnosis_Id' => 'required|array',
                 'AppointmentId' => 'required',
                 'PatientId' => 'required',
                 'DateTime_Scheduled' => 'required',
                 'DateTime_Occured' => 'required',
-                'Visibility' => 'required',
                 'diagnostic_justification' => 'required',
                 'Note_Content' => 'required',
-                'Signator_Id' => 'required',
             ]);
             if ($validator->fails()) {
                 // return response()->json($validator->errors()->toJson(), 400);
@@ -554,27 +552,27 @@ class NoteController extends Controller
                 ->value('AssignedDoctor_Id');
 
             $consnote = new Consulationnote();
-            $consnote->Note_Type = $request['Note_Type'];
+            $consnote->Note_Type = "Consultation Note";
             $consnote->Hospital_Id = auth()->user()->Hospital_Id;
             $consnote->Patient_Id = $request['PatientId'];
             $consnote->Doctor_Id = $assignedDr;
             $consnote->Appointment_Id = $request['AppointmentId'];
             $consnote->DateTime_Scheduled = $request['DateTime_Scheduled'];
             $consnote->DateTime_Occured = $request['DateTime_Occured'];
-            $consnote->Visibility = $request['Visibility'];
+            $consnote->Visibility = "Assigned Doctor Only";
             $consnote->Status = 'Active';
             $consnote->CreatedBy_Id = auth()->user()->id;
             $consnote->Diagnsosis_Id = json_encode($request['Diagnosis_Id']);
             $consnote->diagnostic_justification =
                 $request['diagnostic_justification'];
             $consnote->Note_Content = $request['Note_Content'];
-            $consnote->Signator_Id = $request['Signator_Id'];
+            $consnote->Signator_Id = auth()->user()->id;
             $consnote->save();
 
             return response()->json(
                 [
                     'message' =>
-                        'Successfully created a new ' . $request['Note_Type'],
+                        'Successfully created a new ' ,
                 ],
                 201
             );
