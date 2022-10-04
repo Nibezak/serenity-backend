@@ -342,23 +342,77 @@ class AdminController extends Controller
                 200
             );
         } elseif ($var == 'Clinician') {
+
+        $datapat=Patient::where(
+            'Hospital_Id',
+            '=',
+            auth()->user()->Hospital_Id
+        )
+            ->where('AssignedDoctor_Id', '=', auth()->user()->id)
+            ->where('Status', '=', 'Active')
+            ->with([
+                'doctor:id,Title,FirstName,LastName,telephone',
+                'LastAppointment',
+                'NextAppointment',
+                'doneby:id,FirstName,LastName,email,telephone,ProfileImageUrl',
+            ])
+            ->orderBy('created_at', 'desc')
+            ->get();
             return response()->json(
                 [
-                    'data' => Patient::where(
-                        'Hospital_Id',
-                        '=',
-                        auth()->user()->Hospital_Id
-                    )
-                        ->where('AssignedDoctor_Id', '=', auth()->user()->id)
-                        ->where('Status', '=', 'Active')
-                        ->with([
-                            'doctor:id,Title,FirstName,LastName,telephone',
-                            'LastAppointment',
-                            'NextAppointment',
-                            'doneby:id,FirstName,LastName,email,telephone,ProfileImageUrl',
-                        ])
-                        ->orderBy('created_at', 'desc')
-                        ->get(),
+                    'data' =>
+
+                    collect($datapat)
+                ->map(function ($item) {
+                    return [
+                        'id'=>$item['id'],
+                        'PatientCode' => $item['PatientCode'],
+                        'FirstName' =>$item['FirstName'],
+                        'LastName' =>$item['LastName'],
+                        'MobilePhone'=>$item['MobilePhone'],
+                        'email'=>$item['email'],
+                        'Status'=>$item['Status'],
+                        'doctor' =>$item['doctor'],
+                        'HomePhone'=>$item['HomePhone'],
+                        'WorkPhone'=>$item['WorkPhone'],
+                        'Dob'=>$item['Dob'],
+                        'GenderIdentity'=>$item['GenderIdentity'],
+                        'AccountNumber'=>$item['AccountNumber'],
+                        'Address'=>$item['Address'],
+                        'BloodType'=>$item['BloodType'],
+                        'Height'=>$item['Height'],
+                        'Weight'=>$item['Weight'],
+                        'MartialStatus'=>$item['MartialStatus'],
+                        'AdministrativeSex'=>$item['AdministrativeSex'],
+                        'SexualOrientation'=>$item['SexualOrientation'],
+                        'Employment'=>$item['Employment'],
+                        'Languages'=>$item['Languages'],
+                        'Createdby_Id'=>$item['Createdby_Id'],
+                        'Nationality'=>$item['Nationality'],
+                        'SSN'=>$item['SSN'],
+                        'Province'=>$item['Province'],
+                        'District'=>$item['District'],
+                        'Sector'=>$item['Sector'],
+                        'Cell'=>$item['Cell'],
+                        'Village'=>$item['Village'],
+                        'StreetCode'=>$item['StreetCode'],
+                        'Hospital_Id'=>$item['Hospital_Id'],
+                        'AssignedDoctor_Id'=>$item['AssignedDoctor_Id'],
+                        'created_at'=>$item['created_at'],
+                        'updated_at'=>$item['updated_at'],
+                        'profileimageUrl'=>$item['profileimageUrl'],
+                        'PatientCode'=>$item['PatientCode'],
+                        'gender'=>$item['gender'],
+                        'Guardian_Name'=>$item['Guardian_Name'],
+                        'Guardian_Phone'=>$item['Guardian_Phone'],
+                        'last_appointment' =>$item['last_appointment'],
+                        'next_appointment' =>$item['next_appointment'],
+                        'doneby' =>$item['doneby'],
+                        'all_patient_appointment'=>Appointment::where('Patient_Id','=',$item['id'])->where('Hospital_Id','=',auth()->user()->Hospital_Id)->get()->first(),
+
+                      ];
+                })
+                ->all(),
                 ],
                 200
             );
