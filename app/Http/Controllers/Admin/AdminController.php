@@ -787,7 +787,7 @@ class AdminController extends Controller
 
             $sms = new TransferSms();
             if ($request['Location'] == 'online') {
-                $link = 'https://meet.letsreason.co/EMR-Session-test';
+                $link = 'https://194.233.167.134/Letsreason-session';
                 $appointment->link = $link;
 
                 $message =
