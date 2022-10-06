@@ -204,18 +204,8 @@ class AdminController extends Controller
     public function retrieveRoles()
     {
         if (Auth::user()->roles->first()->name == 'Admin') {
-            // $myRoleId = json_decode(Auth::user()->roles->first()['Clinician'], true);
 
-          $HospitalStaffRoles=Hospital::select('IsClinician','IsReceptionist','IsFinance')
-          ->where('Doneby','=',Auth::user()->id)
-          ->where('id','=',auth()->user()->Hospital_Id)->get();
-
-          $row= $HospitalStaffRoles[0]['IsClinician'].','.$HospitalStaffRoles[0]['IsReceptionist'].','.$HospitalStaffRoles[0]['IsFinance'];
-           $idsArr = explode(',',$row);
-
-        //    DB::table('roles')->select('id', 'display_name')->whereIn('id',$idsArr)->get()->except('110'),
-
-            return response()->json(
+         return response()->json(
                 [
                     'data' =>  Role::select('id', 'display_name')
                     ->get()
