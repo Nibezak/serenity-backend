@@ -238,7 +238,6 @@ class NoteController extends Controller
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
                 'PatientId' => 'required|exists:patients,id',
-                'IsAppointment' => 'required',
                 'NoteContent' => 'required',
             ]);
             if ($validator->fails()) {
@@ -266,7 +265,7 @@ class NoteController extends Controller
             $miscnote->Visibility = 'assigned clinician only';
             $miscnote->Status = 'Active';
             $miscnote->CreatedBy_Id = auth()->user()->id;
-            if($request['IsAppointment']==true){
+            if($request->has('AppointmentId')) {
                 $datimescheduled = Appointment::select('ScheduledTime')
                 ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
                 ->where('id', '=', $request['AppointmentID'])
@@ -433,8 +432,7 @@ class NoteController extends Controller
         if ($var == 'Admin' || $var == 'Clinician') {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
-                'PatientId' => 'required',
-                'IsAppointment' => 'required',
+                'PatientId' => 'required|exists:patients,id',
                 'ProcessNote' => 'required',
             ]);
             if ($validator->fails()) {
@@ -461,7 +459,7 @@ class NoteController extends Controller
             $procnote->Visibility = 'Assigned_Clinician_Only';
             $procnote->Status = 'Active';
             $procnote->CreatedBy_Id = auth()->user()->id;
-            if($request['IsAppointment'] == true){
+            if($request->has('AppointmentId')) {
                 $datetimescheduled = Appointment::select('ScheduledTime')
                 ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
                 ->where('id', '=', $request['AppointmentId'])
@@ -534,7 +532,7 @@ class NoteController extends Controller
             $validator = Validator::make($request->all(), [
 
                 'Diagnosis_Id' => 'required|array',
-                'IsAppointment' => 'required',
+
                 'PatientId' => 'required',
                 'diagnostic_justification' => 'required',
                 'Note_Content' => 'required',
@@ -558,13 +556,15 @@ class NoteController extends Controller
             $consnote->Hospital_Id = auth()->user()->Hospital_Id;
             $consnote->Patient_Id = $request['PatientId'];
             $consnote->Doctor_Id = $assignedDr;
-            if($request['IsAppointment'] ==true){
+
+
+            if($request->has('AppointmentId')) {
             $consnote->Appointment_Id = $request['AppointmentId'];
-            $consnote->DateTime_Scheduled = $request['DateTime_Scheduled'];
-            $consnote->DateTime_Occured = $request['DateTime_Occured'];
-            }
+            $consnote->DateTime_Scheduled = date('Y-m-d H:i:s');;
+            $consnote->DateTime_Occured = date('Y-m-d H:i:s');;
+            }else{
             $consnote->DateTime_Scheduled=date('Y-m-d H:i:s');
-            $consnote->DateTime_Occured=date('Y-m-d H:i:s');
+            $consnote->DateTime_Occured=date('Y-m-d H:i:s');}
 
             $consnote->Visibility = "Assigned Doctor Only";
             $consnote->Status = 'Active';
@@ -627,7 +627,6 @@ class NoteController extends Controller
             $validator = Validator::make($request->all(), [
                 'Patient_Id' => 'required',
                 'Presenting_problem' => 'required',
-                'IsAppointment' => 'required',
                 'Orientation' => 'required',
                 'General_appearance' => 'required',
                 'Dress' => 'required',
@@ -691,7 +690,7 @@ class NoteController extends Controller
             $intake->PresentingProblem = $request['Presenting_problem'];
             $intake->Note_Type = 'Psychotherapy Intake Note';
 
-             if($request['IsAppointment'] == true){
+            if($request->has('AppointmentId')) {
                 $DAtcheduled = Appointment::select('ScheduledTime')
                 ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
                 ->where('id', '=', $request['Appointment_Id'])
@@ -1223,7 +1222,6 @@ class NoteController extends Controller
 
             $validator = Validator::make($request->all(), [
                 'Patient_Id' => 'required',
-                'IsAppointment' => 'required',
                 'Orientation' => 'required',
                 'Diagnosis' => 'required|array',
                 'diagnostic_justification' => 'required',
@@ -1273,7 +1271,7 @@ class NoteController extends Controller
             $progressnote->CreatedBy_Id = auth()->user()->id;
             $progressnote->Visibility = 'asigned_clinicians_only';
             $progressnote->Status = 'Active';
-            if($request['IsAppointment'] == true){
+            if($request->has('AppointmentId')) {
             $progressnote->Appointment_Id = $request['Appointment_Id'];
             }
             $progressnote->Doctor_id = $assignedDr;
@@ -1326,7 +1324,6 @@ class NoteController extends Controller
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
                 'PatientId' => 'required',
-                'IsAppointment' => 'required',
                 'Reason' => 'required',
                 'Comment' => 'required',
             ]);
@@ -1351,7 +1348,7 @@ class NoteController extends Controller
             $missednote->CreatedBy_Id = auth()->user()->id;
             $missednote->Visibility = 'asigned_clinicians_only';
             $missednote->Status = 'Active';
-            if($request['IsAppointment'] == true){
+            if($request->has('AppointmentId')) {
             $missednote->Appointment_Id = $request['AppointmentId'];
             }
             $missednote->Doctor_Id = $assignedDr;
@@ -1375,7 +1372,6 @@ class NoteController extends Controller
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
                 'PatientId' => 'required',
-                'IsAppointment' => 'required',
                 'Reason' => 'required',
                 'Chief_complain' => 'required',
                 'Diagnosis' => 'required|array',
@@ -1404,7 +1400,7 @@ class NoteController extends Controller
             $terminatenote->CreatedBy_Id = auth()->user()->id;
             $terminatenote->Visibility = 'asigned_clinicians_only';
             $terminatenote->Status = 'Active';
-            if($request['IsAppointment'] ==true){
+            if($request->has('AppointmentId')) {
             $terminatenote->Appointment_Id = $request['AppointmentId'];
             }
             $terminatenote->Doctor_id = $assignedDr;
