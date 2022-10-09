@@ -57,21 +57,19 @@ class NoteController extends Controller
             $treatments->Status = 'Active';
             $treatments->save();
 
-                DB::Table('users')
+            DB::Table('users')
                 ->where('email', '=', auth()->user()->email)
                 ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
                 ->update([
                     'ConstantsIsCreated' => true,
                 ]);
 
-
             return response()->json(
-                ['message' => 'Successfully Created new Treatment Strategy ',
+                [
+                    'message' => 'Successfully Created new Treatment Strategy ',
 
-                'Constants_Is_Created'=>Auth::user()->ConstantsIsCreated,
-
+                    'Constants_Is_Created' => Auth::user()->ConstantsIsCreated,
                 ],
-
 
                 201
             );
@@ -154,11 +152,11 @@ class NoteController extends Controller
         if ($var == 'Admin' || $var == 'Clinician') {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
-                'Diagnosis_Id' => 'required|array',
+                'Diagnosis_Id' => 'required',
                 'Presenting_Problem' => 'required',
                 'Treatment_Goals' => 'required',
                 'Frequency_Treatment_Id' => 'required|array',
-                'Patient_Id' => 'required',
+                'Patient_Id' => 'required|exists:patients,id',
                 'Treatmentstrategy_Id' => 'required|array',
                 'Objective_content' => 'required',
                 'EstimatedCompletion' => 'required',
@@ -196,9 +194,7 @@ class NoteController extends Controller
             $ptreatmentplan->Note_type = 'Psychotherapy Treatment Plan';
             $ptreatmentplan->Diagnositic_Justification =
                 $request['Diagnositic_Justification'];
-            $ptreatmentplan->Diagnosis_Id = json_encode(
-                $request['Diagnosis_Id']
-            );
+            $ptreatmentplan->Diagnosis_Id = json_encode($request['Diagnosis_Id']);
 
             $ptreatmentplan->Presenting_Problem =
                 $request['Presenting_Problem'];
@@ -254,7 +250,6 @@ class NoteController extends Controller
                 ->where('id', '=', $request['PatientId'])
                 ->value('AssignedDoctor_Id');
 
-
             $miscnote = new Miscnote();
             $miscnote->Note_Type = 'Miscellaneous Note';
             $miscnote->Hospital_Id = auth()->user()->Hospital_Id;
@@ -265,17 +260,17 @@ class NoteController extends Controller
             $miscnote->Visibility = 'assigned clinician only';
             $miscnote->Status = 'Active';
             $miscnote->CreatedBy_Id = auth()->user()->id;
-            if($request->has('AppointmentId')) {
+            if ($request->has('AppointmentId')) {
                 $datimescheduled = Appointment::select('ScheduledTime')
-                ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
-                ->where('id', '=', $request['AppointmentID'])
-                ->where('Patient_Id', '=', $request['PatientId'])
-                ->value('ScheduledTime');
-            $miscnote->Appoint_Id =$request['AppointmentID'];
+                    ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
+                    ->where('id', '=', $request['AppointmentID'])
+                    ->where('Patient_Id', '=', $request['PatientId'])
+                    ->value('ScheduledTime');
+                $miscnote->Appoint_Id = $request['AppointmentID'];
 
-            $miscnote->DateTime = $datimescheduled;
+                $miscnote->DateTime = $datimescheduled;
             }
-            $miscnote->DateTime=date('Y-m-d H:i:s');
+            $miscnote->DateTime = date('Y-m-d H:i:s');
             $miscnote->save();
             return response()->json(
                 [
@@ -331,7 +326,6 @@ class NoteController extends Controller
         if ($var == 'Admin' || $var == 'Clinician') {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
-
                 'PatientId' => 'required',
                 'Contact_name' => 'required',
                 'Relationship_to_patient' => 'required',
@@ -379,8 +373,7 @@ class NoteController extends Controller
 
             return response()->json(
                 [
-                    'message' =>
-                        'Successfully created new Contact Note',
+                    'message' => 'Successfully created new Contact Note',
                 ],
                 201
             );
@@ -444,8 +437,6 @@ class NoteController extends Controller
                 );
             }
 
-
-
             $assignedDr = Patient::select('AssignedDoctor_Id')
                 ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
                 ->where('id', '=', $request['PatientId'])
@@ -459,20 +450,19 @@ class NoteController extends Controller
             $procnote->Visibility = 'Assigned_Clinician_Only';
             $procnote->Status = 'Active';
             $procnote->CreatedBy_Id = auth()->user()->id;
-            if($request->has('AppointmentId')) {
+            if ($request->has('AppointmentId')) {
                 $datetimescheduled = Appointment::select('ScheduledTime')
-                ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
-                ->where('id', '=', $request['AppointmentId'])
-                ->where('Patient_Id', '=', $request['PatientId'])
-                ->value('ScheduledTime');
-            $procnote->Appointment_Id = $request['AppointmentId'];
+                    ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
+                    ->where('id', '=', $request['AppointmentId'])
+                    ->where('Patient_Id', '=', $request['PatientId'])
+                    ->value('ScheduledTime');
+                $procnote->Appointment_Id = $request['AppointmentId'];
 
-            $procnote->DateTime_Scheduled = $datetimescheduled;
-            $procnote->DateTime_Occured = $datetimescheduled;
-
+                $procnote->DateTime_Scheduled = $datetimescheduled;
+                $procnote->DateTime_Occured = $datetimescheduled;
             }
-            $procnote->DateTime_Scheduled=date('Y-m-d H:i:s');
-            $procnote->DateTime_Occured=date('Y-m-d H:i:s');
+            $procnote->DateTime_Scheduled = date('Y-m-d H:i:s');
+            $procnote->DateTime_Occured = date('Y-m-d H:i:s');
             $procnote->ProcessNote = $request['ProcessNote'];
             $procnote->save();
 
@@ -530,7 +520,6 @@ class NoteController extends Controller
         if ($var == 'Admin' || $var == 'Clinician') {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
-
                 'Diagnosis_Id' => 'required|array',
 
                 'PatientId' => 'required',
@@ -552,21 +541,21 @@ class NoteController extends Controller
                 ->value('AssignedDoctor_Id');
 
             $consnote = new Consulationnote();
-            $consnote->Note_Type = "Consultation Note";
+            $consnote->Note_Type = 'Consultation Note';
             $consnote->Hospital_Id = auth()->user()->Hospital_Id;
             $consnote->Patient_Id = $request['PatientId'];
             $consnote->Doctor_Id = $assignedDr;
 
+            if ($request->has('AppointmentId')) {
+                $consnote->Appointment_Id = $request['AppointmentId'];
+                $consnote->DateTime_Scheduled = date('Y-m-d H:i:s');
+                $consnote->DateTime_Occured = date('Y-m-d H:i:s');
+            } else {
+                $consnote->DateTime_Scheduled = date('Y-m-d H:i:s');
+                $consnote->DateTime_Occured = date('Y-m-d H:i:s');
+            }
 
-            if($request->has('AppointmentId')) {
-            $consnote->Appointment_Id = $request['AppointmentId'];
-            $consnote->DateTime_Scheduled = date('Y-m-d H:i:s');;
-            $consnote->DateTime_Occured = date('Y-m-d H:i:s');;
-            }else{
-            $consnote->DateTime_Scheduled=date('Y-m-d H:i:s');
-            $consnote->DateTime_Occured=date('Y-m-d H:i:s');}
-
-            $consnote->Visibility = "Assigned Doctor Only";
+            $consnote->Visibility = 'Assigned Doctor Only';
             $consnote->Status = 'Active';
             $consnote->CreatedBy_Id = auth()->user()->id;
             $consnote->Diagnsosis_Id = json_encode($request['Diagnosis_Id']);
@@ -578,8 +567,7 @@ class NoteController extends Controller
 
             return response()->json(
                 [
-                    'message' =>
-                        'Successfully created a new Consulation note ' ,
+                    'message' => 'Successfully created a new Consulation note ',
                 ],
                 201
             );
@@ -676,8 +664,6 @@ class NoteController extends Controller
                 ->where('id', '=', $request['Patient_Id'])
                 ->value('AssignedDoctor_Id');
 
-
-
             $intake = new Pintakenote();
 
             $intake->Patient_id = $request['Patient_Id'];
@@ -690,17 +676,17 @@ class NoteController extends Controller
             $intake->PresentingProblem = $request['Presenting_problem'];
             $intake->Note_Type = 'Psychotherapy Intake Note';
 
-            if($request->has('AppointmentId')) {
+            if ($request->has('AppointmentId')) {
                 $DAtcheduled = Appointment::select('ScheduledTime')
-                ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
-                ->where('id', '=', $request['Appointment_Id'])
-                ->where('Patient_Id', '=', $request['Patient_Id'])
-                ->value('ScheduledTime');
-            $intake->Appointment_Id = $request['Appointment_Id'];
+                    ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
+                    ->where('id', '=', $request['Appointment_Id'])
+                    ->where('Patient_Id', '=', $request['Patient_Id'])
+                    ->value('ScheduledTime');
+                $intake->Appointment_Id = $request['Appointment_Id'];
 
-            $intake->DateTimeScheduled = $DAtcheduled;
-            $intake->DateTimeOccured = $DAtcheduled;
-             }
+                $intake->DateTimeScheduled = $DAtcheduled;
+                $intake->DateTimeOccured = $DAtcheduled;
+            }
 
             $intake->Orientation = $request['Orientation'];
             $intake->GeneralAppearance = $request['General_appearance'];
@@ -1271,8 +1257,8 @@ class NoteController extends Controller
             $progressnote->CreatedBy_Id = auth()->user()->id;
             $progressnote->Visibility = 'asigned_clinicians_only';
             $progressnote->Status = 'Active';
-            if($request->has('AppointmentId')) {
-            $progressnote->Appointment_Id = $request['Appointment_Id'];
+            if ($request->has('AppointmentId')) {
+                $progressnote->Appointment_Id = $request['Appointment_Id'];
             }
             $progressnote->Doctor_id = $assignedDr;
             $progressnote->Orientation = $request['Orientation'];
@@ -1348,8 +1334,8 @@ class NoteController extends Controller
             $missednote->CreatedBy_Id = auth()->user()->id;
             $missednote->Visibility = 'asigned_clinicians_only';
             $missednote->Status = 'Active';
-            if($request->has('AppointmentId')) {
-            $missednote->Appointment_Id = $request['AppointmentId'];
+            if ($request->has('AppointmentId')) {
+                $missednote->Appointment_Id = $request['AppointmentId'];
             }
             $missednote->Doctor_Id = $assignedDr;
             $missednote->Reason = $request['Reason'];
@@ -1400,8 +1386,8 @@ class NoteController extends Controller
             $terminatenote->CreatedBy_Id = auth()->user()->id;
             $terminatenote->Visibility = 'asigned_clinicians_only';
             $terminatenote->Status = 'Active';
-            if($request->has('AppointmentId')) {
-            $terminatenote->Appointment_Id = $request['AppointmentId'];
+            if ($request->has('AppointmentId')) {
+                $terminatenote->Appointment_Id = $request['AppointmentId'];
             }
             $terminatenote->Doctor_id = $assignedDr;
             $terminatenote->Reason = $request['Reason'];
@@ -1604,14 +1590,15 @@ class NoteController extends Controller
         return response()->json(['message' => 'Unauthorized user '], 401);
     }
 
-    public function fetchnotedetailsbyid(Request $request){
+    public function fetchnotedetailsbyid(Request $request)
+    {
         $var = Auth::user()->roles->first()->name;
         if ($var == 'Admin' || $var == 'Clinician') {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
                 // 'Patient_Id' => 'required|exists:patients,id',
-                'Note_Type' =>  'required',
-                'Note_Id' => 'required'
+                'Note_Type' => 'required',
+                'Note_Id' => 'required',
             ]);
             if ($validator->fails()) {
                 // return response()->json($validator->errors()->toJson(), 400);
@@ -1622,89 +1609,68 @@ class NoteController extends Controller
                 );
             }
 
-       if($request['Note_Type']=='Psychotherapy Intake Note'){
-       return response()->json(['data' =>
-       Pintakenote::find($request['Note_Id'])
-
-       ], 200);
-       }else
-       if($request['Note_Type']=='Psychotherapy Treatment Plan'){
-        return response()->json(['data' =>
-        PtreatmentPlan::find($request['Note_Id'])
-
-        ], 200);
-        }
-        else
-       if($request['Note_Type']=='Contact Note'){
-        return response()->json(['data' =>
-        Contactnote::find($request['Note_Id'])
-
-        ], 200);
-        }
-
-        else
-       if($request['Note_Type']=='Consultation Note'){
-        return response()->json(['data' =>
-        Consulationnote::find($request['Note_Id'])
-
-        ], 200);
-        }
-
-        else
-        if($request['Note_Type']=='Psychotherapy Process Note'){
-         return response()->json(['data' =>
-         Processnote::find($request['Note_Id'])
-
-         ], 200);
-         }
-
-         else
-        if($request['Note_Type']=='Miscellaneous Note'){
-         return response()->json(['data' =>
-         Miscnote::find($request['Note_Id'])
-
-         ], 200);
-         }
-
-         else
-        if($request['Note_Type']=='Psychotherapy Progress Note'){
-         return response()->json(['data' =>
-         Progresssnote::find($request['Note_Id'])
-
-         ], 200);
-         }
-
-         else
-        if($request['Note_Type']=='Missed Appointment Note'){
-         return response()->json(['data' =>
-         Missedappointmentnote::find($request['Note_Id'])
-
-         ], 200);
-         }
-
-         else
-         if($request['Note_Type']=='Psychotherapy Termination Note'){
-          return response()->json(['data' =>
-          Terminationnote::find($request['Note_Id'])
-
-          ], 200);
-          } else{
-
-            return response()->json(['data' =>
-           'OOPS Something went wrong it is not our side, we are fixing it As soon as possible !!!'
-
-            ], 200);
-
-          }
-
-
-
-
-
+            if ($request['Note_Type'] == 'Psychotherapy Intake Note') {
+                return response()->json(
+                    ['data' => Pintakenote::find($request['Note_Id'])],
+                    200
+                );
+            } elseif ($request['Note_Type'] == 'Psychotherapy Treatment Plan') {
+                return response()->json(
+                    ['data' => PtreatmentPlan::find($request['Note_Id'])],
+                    200
+                );
+            } elseif ($request['Note_Type'] == 'Contact Note') {
+                return response()->json(
+                    ['data' => Contactnote::find($request['Note_Id'])],
+                    200
+                );
+            } elseif ($request['Note_Type'] == 'Consultation Note') {
+                return response()->json(
+                    ['data' => Consulationnote::find($request['Note_Id'])],
+                    200
+                );
+            } elseif ($request['Note_Type'] == 'Psychotherapy Process Note') {
+                return response()->json(
+                    ['data' => Processnote::find($request['Note_Id'])],
+                    200
+                );
+            } elseif ($request['Note_Type'] == 'Miscellaneous Note') {
+                return response()->json(
+                    ['data' => Miscnote::find($request['Note_Id'])],
+                    200
+                );
+            } elseif ($request['Note_Type'] == 'Psychotherapy Progress Note') {
+                return response()->json(
+                    ['data' => Progresssnote::find($request['Note_Id'])],
+                    200
+                );
+            } elseif ($request['Note_Type'] == 'Missed Appointment Note') {
+                return response()->json(
+                    [
+                        'data' => Missedappointmentnote::find(
+                            $request['Note_Id']
+                        ),
+                    ],
+                    200
+                );
+            } elseif (
+                $request['Note_Type'] == 'Psychotherapy Termination Note'
+            ) {
+                return response()->json(
+                    ['data' => Terminationnote::find($request['Note_Id'])],
+                    200
+                );
+            } else {
+                return response()->json(
+                    [
+                        'data' =>
+                            'OOPS Something went wrong it is not our side, we are fixing it As soon as possible !!!',
+                    ],
+                    200
+                );
+            }
         }
 
         return response()->json(['message' => 'Unauthorized user'], 401);
-
     }
-
 }

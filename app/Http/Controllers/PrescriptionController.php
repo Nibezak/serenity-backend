@@ -43,9 +43,9 @@ class PrescriptionController extends Controller
      */
     public function saveprescription( Request $request)
     {
-        //
 
-        if (Auth::user()->roles->first()->name == 'Clinician') {
+        $var = Auth::user()->roles->first()->name;
+        if ($var == 'Admin' || $var == 'Clinician') {
             //validate inputs
             $validator = Validator::make($request->all(), [
                 'Patient_Id' => 'required|exists:patients,id',

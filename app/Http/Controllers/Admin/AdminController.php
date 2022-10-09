@@ -451,10 +451,23 @@ class AdminController extends Controller
                 );
             };
 
-            $diagnosisIntake=Pintakenote::select('Diagnosis')->where('Patient_Id','=',$id)->value('Diagnosis');
-            $diagnosistreatmentplan=PtreatmentPlan::select('Diagnosis_Id')->where('Patient_Id','=',$id)->value('Diagnosis_Id');
-            $diagnosisprogressnote=Progresssnote::select('Diagnosis')->where('Patient_Id','=',$id)->value('Diagnosis');
+            $diagnosisIntake=Pintakenote::select('Diagnosis')->where('Patient_Id','=',$id)->where('Hospital_Id','=',auth()->user()->Hospital_Id)->get();
+            $diagnosistreatmentplan=PtreatmentPlan::select('Diagnosis_Id')->where('Patient_Id','=',$id)->where('Hospital_Id','=',auth()->user()->Hospital_Id)->get();
+            $diagnosisprogressnote=Progresssnote::select('Diagnosis')->where('Patient_Id','=',$id)->where('Hospital_Id','=',auth()->user()->Hospital_Id)->get();
 
+
+            $intake = "";
+            $treatment="";
+            $progress="";
+            foreach($diagnosisIntake as $key => $value ){
+                $intake .= $value['Diagnosis'].",";
+            }
+            foreach($diagnosistreatmentplan as $key => $value2 ){
+                $treatment .= $value2['Diagnosis_Id'].",";
+            }
+            foreach($diagnosisprogressnote as $key => $value3 ){
+                $progress .= $value3['Diagnosis'].",";
+            }
 
 
             return response()->json(
@@ -479,13 +492,13 @@ class AdminController extends Controller
                         })
                         ->all()
                         ,
-                        'Diagnosis'=>$diagnosisIntake.$diagnosistreatmentplan.$diagnosisprogressnote,
+                        'Diagnosis'=>implode(',', array_unique(explode(',', str_replace( array('[',']','"') , ''  ,$intake.$treatment.$progress)))),
 
                 ],
                 200
             );
         }
-        return response()->json(['message' => 'Unauthorized user '], 401);
+        // return response()->json(['message' => 'Unauthorized user '], 401);
 
     }
 
