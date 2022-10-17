@@ -27,6 +27,7 @@ class Terminationnote extends Model
         'diagnostic_justification',
         'TreatmentModality',
         'Outcome',
+        'Session_Id',
 
     ];
 

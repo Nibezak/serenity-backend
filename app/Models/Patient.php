@@ -80,6 +80,10 @@ class Patient extends Model
         return $this->belongsTo('App\Models\Appointment','nextappoint');
 
     }
-   
+
+
+
+
+
 
 }

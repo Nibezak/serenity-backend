@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Hospital;
+use App\Models\Insurance;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\TypeAppointment;
@@ -11,10 +12,12 @@ use App\Models\Appointment;
 use App\Models\Role;
 use App\Models\Patient;
 use App\Models\Pintakenote;
+use App\Models\PatientInsurance;
 use App\Models\PtreatmentPlan;
 use App\Models\Progresssnote;
 use App\Models\Assigneddocotor;
 use App\Models\Diagnosis;
+use App\Models\Session;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -296,6 +299,23 @@ class AdminController extends Controller
             $patient->Guardian_Name=$request['Guardian_Name'];
             $patient->Guardian_Phone=$request['GuardianPhone'];
             $patient->save();
+            if ($request->has('insurance')) {
+
+                PatientInsurance::insert(collect($request['insurance'])
+            ->map(function ($item)  use ($patient){
+                return [
+                    'InsuranceCode' => $item['InsuranceCode'],
+                    'Name' => $item['Name'],
+                    'Compliment' => $item['Compliment'],
+                    'CreatedBy_Id' => $patient->Createdby_Id,
+                    'Patient_Id' => $patient->id,
+                    'created_at'=>$patient->created_at,
+                    'updated_at'=>$patient->updated_at,
+                 ];
+            })
+            ->all());
+
+            }
 
             return response()->json(
                 [
@@ -533,10 +553,9 @@ class AdminController extends Controller
             $validator = Validator::make($request->all(), [
                 'Doctor_Id' => 'required|exists:users,id',
                 'PatientId' => 'required|exists:patients,id',
+                'Insurance_Id' =>'required|exists:patientinsurance,id'
             ]);
             if ($validator->fails()) {
-                // return response()->json($validator->errors()->toJson(), 400);
-
                 return response()->json(
                     ['errors' => implode($validator->errors()->all())],
                     422
@@ -575,6 +594,7 @@ class AdminController extends Controller
 
                     }
 
+
                     $dr=new Assigneddocotor();
                     $dr->Hospital_Id=auth()->user()->Hospital_Id;
                     $dr->Doctor_Id=$request['Doctor_Id'];
@@ -583,6 +603,15 @@ class AdminController extends Controller
                     $dr->Date=Carbon::now()->toDateTimeString();
                     $dr->Status='On Treatment';
                     $dr->save();
+
+
+                    $sess=new Session();
+                    $sess->StartedBy_Id=auth()->user()->id;
+                    $sess->hospital_Id=auth()->user()->Hospital_Id;
+                    $sess->Patient_Id=$request['PatientId'];
+                    $sess->Doctor_Id=$request['Doctor_Id'];
+                    $sess->Insurance_Id=$request['Insurance_Id'];
+                    $sess->save();
 
                     $result = DB::Table('patients')
                         ->where('id', '=', $request['PatientId'])
@@ -593,8 +622,9 @@ class AdminController extends Controller
 
                     return $result = [
                         'message' =>
-                            'Patient is assigned to Doctor successfully !! ',
+                            'Patient is assigned to Doctor and session is started successfully !!  ',
                         'success' => true,
+                        'Session_Id'=>$sess->id,
                     ];
                 } else {
                     return $result = [
@@ -664,6 +694,10 @@ class AdminController extends Controller
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
                 'name' => 'required',
+                'amount'=>'required',
+                'description'=>'required',
+                'currency'=>'required',
+
             ]);
             if ($validator->fails()) {
                 // return response()->json($validator->errors(), 422);
@@ -673,16 +707,26 @@ class AdminController extends Controller
                     422
                 );
             }
+            if(TypeAppointment::where('Hospital_Id','=',auth()->user()->Hospital_Id)->where('name','=',$request['name'])->exists()){
+
+                return response()->json(
+                    ['message' => 'This service exists in our hospital'],
+                    200
+                );
+            }
 
             $service = new TypeAppointment();
 
             $service->name = $request['name'];
+            $service->Description=$request['description'];
+            $service->Currency=$request['currency'];
+            $service->Amount=$request['amount'];
             $service->createdBy_Id = auth()->user()->id;
             $service->hospital_Id = auth()->user()->Hospital_Id;
             $service->save();
 
             return response()->json(
-                ['message' => 'Created a new Appointment type !!'],
+                ['message' => 'Created a new hospital service successfully !!'],
                 201
             );
         }
@@ -715,17 +759,18 @@ class AdminController extends Controller
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
                 'AppointmentType_Id' => 'required',
-                'Patient_Id' => 'required',
+                'Patient_Id' => 'required|exists:patients,id',
                 'Location' => 'required',
-                'Schedule' => 'required',
+                'start' => 'required',
+                'end' => 'required',
                 'Duration' => 'required',
                 'Frequency' => 'required',
-                'AppointmentNote' => 'required',
+                'title' => 'required',
+                'Session_Id'=>'required|exists:sessions,id',
             ]);
             if ($validator->fails()) {
-                // return response()->json($validator->errors(), 422);
 
-                return response()->json(
+              return response()->json(
                     ['errors' => implode($validator->errors()->all())],
                     422
                 );
@@ -833,14 +878,17 @@ class AdminController extends Controller
             $appointment->Patient_Id = $request['Patient_Id'];
             $appointment->Doctor_Id = $AssignedDoctorId;
             $appointment->Location = $request['Location'];
-            $appointment->ScheduledTime = $request['Schedule'];
+            $appointment-> start= $request['start'];
+            $appointment-> end= $request['end'];
+            $appointment-> title= $request['title'];
             $appointment->Duration = $request['Duration'];
             $appointment->Frequency = $request['Frequency'];
             $appointment->CreatedBy_Id = auth()->user()->id;
             $appointment->Status = 'Active';
-            $appointment->AppointmentAlert = $request['AppointmentNote'];
             $appointment->Hospital_Id = auth()->user()->Hospital_Id;
             $appointment->calendarGridType=$request['calendarGridType'];
+            $appointment->Session_Id=$request['Session_Id'];
+
 
             $sms = new TransferSms();
             if ($request['Location'] == 'online') {
@@ -904,35 +952,7 @@ class AdminController extends Controller
 
              $appointment->save();
 
-            // $PatientnextAppointment = Appointment::select('id', 'ScheduledTime')
-            //     ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
-            //     ->where('Patient_Id', '=', $request['Patient_Id'])
-            //     ->whereDate('ScheduledTime', '>', Carbon::now())
-            //     ->orderBy('ScheduledTime', 'ASC')
-            //     ->first();
 
-
-            // $PatientlastAppointment = Appointment::select('id', 'ScheduledTime')
-            //     ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
-            //     ->where('Patient_Id', '=', $request['Patient_Id'])
-            //     ->whereDate('ScheduledTime', '<', Carbon::now())
-            //     ->orderBy('ScheduledTime', 'DESC')
-            //     ->first();
-            // if ($PatientlastAppointment == null) {
-            //     DB::Table('patients')
-            //         ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
-            //         ->where('id', '=', $request['Patient_Id'])
-            //         ->update([
-            //             'lastappoint' => $appointment->id,
-            //         ]);
-            // }
-
-            // DB::Table('patients')
-            //     ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
-            //     ->where('id', '=', $request['Patient_Id'])
-            //     ->update([
-            //         // 'nextappoint' => $PatientnextAppointment->id,
-            //     ]);
 
             if ($appointment) {
                 return response()->json(
@@ -1178,6 +1198,130 @@ class AdminController extends Controller
 
 
     }
+
+    public function saveinsurance(Request $request){
+
+        $var = Auth::user()->roles->first()->name;
+        if ($var == 'Admin' ) {
+
+            $validator = Validator::make($request->all(), [
+                'Insurance_name' => 'required',
+            ]);
+            if ($validator->fails()) {
+                 return response()->json(
+                    ['errors' => implode($validator->errors()->all())],
+                    422
+                );
+            }
+
+            if(Insurance::where('Hospital_Id','=',auth()->user()->Hospital_Id)->where('Name','=',$request['Insurance_name'])->exists()){
+                return response()->json(
+                    ['errors' => 'Sorry, This insurance is already registered in our hospital'],
+                    422
+                );
+            }
+
+            $insurance = new Insurance ();
+            $insurance -> CreatedBy_Id= auth()->user()->id;
+            $insurance -> Hospital_Id= auth()->user()->Hospital_Id;
+            $insurance -> Name = $request['Insurance_name'];
+            $insurance->save();
+
+            return response()->json(['message' => 'Successfully, Added new Insurance that works with our hospital'], 201);
+
+
+
+        }
+
+        return response()->json(['message' => 'Unauthorized user'], 401);
+
+
+    }
+
+
+public function fetchhospitalinsurance(){
+    if (!Auth::check()) {
+        return response()->json(
+            [
+                'message' => 'Unauthorized User',
+            ],
+            401
+        );
+    }
+    return response()->json(['data' =>Insurance::where('Hospital_Id','=',auth()->user()->Hospital_Id)->with('createdby:id,Title,FirstName,LastName,ProfileImageUrl,telephone') ->get() ->makeHidden(['CreatedBy_Id','Hospital_Id']) ], 200);
+
+
+
+}
+
+
+public function fetchpatientactivesession($PatientId){
+
+    $var = Auth::user()->roles->first()->name;
+    if ($var == 'Admin' || $var == 'Clinician') {
+
+        if (Patient::where('id','=',$PatientId)->where('Hospital_Id','=',auth()->user()->Hospital_Id)->exists()) {
+
+            $allpatientsession= Session::where('Patient_Id','=',$PatientId)
+            ->where('Hospital_Id','=',auth()->user()->Hospital_Id)
+            ->where('Status','=','Pending')->get()->makeHidden('Status');
+
+
+        return  collect($allpatientsession)
+        ->map(function ($item)  {
+
+        $insurer=PatientInsurance::where('id','=',$item['Insurance_Id'])->get();
+         $serviceapointtypeid=Appointment::where('Session_Id','=',$item['id'])->get();
+            return [
+            'Session_Id'=>$item['id'],
+            'Patient'=>$item['patient']['FirstName'].' '.$item['doctor']['LastName'],
+           'Doctor' =>
+                            $item['doctor']['Title'] .
+                            ' ' .
+                            $item['doctor']['FirstName'] .
+                            ' ' .
+                            $item['doctor']['LastName'],
+                        'CreatedBy' =>
+                            $item['doneby']['Title'] .
+                            ' ' .
+                            $item['doneby']['FirstName'] .
+                            ' ' .
+                            $item['doneby']['LastName'],
+                        'DoctorImage' => $item['doctor']['ProfileImageUrl'],
+                        'CreatorImage' => $item['doneby']['ProfileImageUrl'],
+                        'PatientImage' => $item['patient']['profileimageUrl'],
+             'Insurance_Name'=>$insurer[0]['Name'],
+             'Insurance_Code'=>$insurer[0]['InsuranceCode'],
+             'Insurance_Compliment'=>$insurer[0]['Compliment'],
+             'services'=>collect($serviceapointtypeid)
+             ->map(function ($item) {
+                 return [
+                     'Service_name' =>TypeAppointment::where('id','=',$item['AppointmentType_Id'])->value('name') ,
+
+                 ];
+             })
+             ->all()[0]['Service_name'],
+
+              'data'=>$this->fetchonepatient($item['patient']['id'])->original['data'],
+             'created_at'=>$item['created_at'],
+             'updated_at'=>$item['updated_at'],
+
+            ];
+        })
+        ->toArray();
+
+
+        }return response()->json(
+            ['message' => 'Patient does not exists in our hospital'],
+            200
+        );
+
+
+
+   }
+     return response()->json(['message' => 'Unauthorized user'], 401);
+
+}
 
 
 

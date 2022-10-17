@@ -161,6 +161,7 @@ class NoteController extends Controller
                 'Objective_content' => 'required',
                 'EstimatedCompletion' => 'required',
                 'Diagnositic_Justification' => 'required',
+                'Session_Id'=>'required|exists:sessions,id',
             ]);
             if ($validator->fails()) {
                 // return response()->json($validator->errors()->toJson(), 400);
@@ -214,6 +215,7 @@ class NoteController extends Controller
             $ptreatmentplan->Treatmentstrategy_Id = json_encode(
                 $request['Treatmentstrategy_Id']
             );
+            $ptreatmentplan->Session_Id=$request['Session_Id'];
             $ptreatmentplan->save();
 
             return response()->json(
@@ -235,6 +237,7 @@ class NoteController extends Controller
             $validator = Validator::make($request->all(), [
                 'PatientId' => 'required|exists:patients,id',
                 'NoteContent' => 'required',
+                'Session_Id'=>'required|exists:sessions,id',
             ]);
             if ($validator->fails()) {
                 // return response()->json($validator->errors()->toJson(), 400);
@@ -271,6 +274,7 @@ class NoteController extends Controller
                 $miscnote->DateTime = $datimescheduled;
             }
             $miscnote->DateTime = date('Y-m-d H:i:s');
+            $miscnote->Session_Id=$request['Session_Id'];
             $miscnote->save();
             return response()->json(
                 [
@@ -333,6 +337,7 @@ class NoteController extends Controller
                 'Reason_communication' => 'required',
                 'Time_spent' => 'required',
                 'Communication_details' => 'required',
+                'Session_Id'=>'required|exists:sessions,id',
             ]);
             if ($validator->fails()) {
                 // return response()->json($validator->errors()->toJson(), 400);
@@ -369,6 +374,7 @@ class NoteController extends Controller
             $contactnote->Visibility = 'Assigned_Clinicians_only';
             $contactnote->Status = 'Active';
             $contactnote->CreatedBy_Id = auth()->user()->id;
+            $contactnote->Session_Id=$request['Session_Id'];
             $contactnote->save();
 
             return response()->json(
@@ -427,6 +433,7 @@ class NoteController extends Controller
             $validator = Validator::make($request->all(), [
                 'PatientId' => 'required|exists:patients,id',
                 'ProcessNote' => 'required',
+                'Session_Id'=>'required|exists:sessions,id',
             ]);
             if ($validator->fails()) {
                 // return response()->json($validator->errors()->toJson(), 400);
@@ -464,6 +471,7 @@ class NoteController extends Controller
             $procnote->DateTime_Scheduled = date('Y-m-d H:i:s');
             $procnote->DateTime_Occured = date('Y-m-d H:i:s');
             $procnote->ProcessNote = $request['ProcessNote'];
+            $procnote->Session_Id=$request['Session_Id'];
             $procnote->save();
 
             return response()->json(
@@ -525,6 +533,7 @@ class NoteController extends Controller
                 'PatientId' => 'required',
                 'diagnostic_justification' => 'required',
                 'Note_Content' => 'required',
+                'Session_Id'=>'required|exists:sessions,id',
             ]);
             if ($validator->fails()) {
                 // return response()->json($validator->errors()->toJson(), 400);
@@ -563,6 +572,7 @@ class NoteController extends Controller
                 $request['diagnostic_justification'];
             $consnote->Note_Content = $request['Note_Content'];
             $consnote->Signator_Id = auth()->user()->id;
+            $consnote->Session_Id=$request['Session_Id'];
             $consnote->save();
 
             return response()->json(
@@ -597,20 +607,7 @@ class NoteController extends Controller
                 }
             }
 
-            // $vldtriskassment= Validator::make($request->all()['risk_assessment'], [
 
-            //         'Area_of_risk' => 'required|string',
-            //         'Patient_Id' => 'required',
-            //         'Level_risk'=>'required|string',
-            //         'Intent_act'=>'required|string',
-            //         'Plan_act'=>'required|string',
-            //         'Means_act'=>'required|string',
-            //         'Risks_factors'=>'required|string',
-            //         'Protective_factors'=>'required|string',
-            //         'Additional_details'=>'required|string',
-            // ]);
-
-            // return $vldtriskassment;
 
             $validator = Validator::make($request->all(), [
                 'Patient_Id' => 'required',
@@ -651,6 +648,7 @@ class NoteController extends Controller
                 'Plan' => 'required',
                 'Diagnosis' => 'required|array',
                 'Diagnostic_justification' => 'required',
+                'Session_Id'=>'required|exists:sessions,id',
             ]);
 
             if ($validator->fails()) {
@@ -732,6 +730,7 @@ class NoteController extends Controller
 
             $intake->DiagnosticJustification =
                 $request['Diagnostic_justification'];
+             $intake->Session_Id=$request['Session_Id'];
             $intake->save();
 
             return response()->json(
@@ -949,6 +948,7 @@ class NoteController extends Controller
                             $item['doneby']['LastName'],
                         'DoctorImage' => $item['doctor']['ProfileImageUrl'],
                         'CreatorImage' => $item['doneby']['ProfileImageUrl'],
+
                     ];
                 })
                 ->all();
@@ -1236,6 +1236,7 @@ class NoteController extends Controller
                 'Recommendation' => 'required',
                 'Prescribed_frequency_treatment' => 'required',
                 'Patient_denies_all_areas_of_risk' => 'required',
+                'Session_Id'=>'required|exists:sessions,id',
             ]);
 
             if ($validator->fails()) {
@@ -1290,6 +1291,8 @@ class NoteController extends Controller
             $progressnote->Recommendation = $request['Recommendation'];
             $progressnote->PrescribedFrequencyTreatment =
                 $request['Prescribed_frequency_treatment'];
+                $progressnote->Session_Id=$request['Session_Id'];
+
             $progressnote->save();
             return response()->json(
                 [
@@ -1312,6 +1315,7 @@ class NoteController extends Controller
                 'PatientId' => 'required',
                 'Reason' => 'required',
                 'Comment' => 'required',
+                'Session_Id'=>'required|exists:sessions,id',
             ]);
             if ($validator->fails()) {
                 // return response()->json($validator->errors()->toJson(), 400);
@@ -1340,6 +1344,7 @@ class NoteController extends Controller
             $missednote->Doctor_Id = $assignedDr;
             $missednote->Reason = $request['Reason'];
             $missednote->comments = $request['Comment'];
+            $missednote->Session_Id=$request['Session_Id'];
             $missednote->save();
 
             return response()->json(
@@ -1364,6 +1369,8 @@ class NoteController extends Controller
                 'Diagnostic_justification' => 'required',
                 'Treatment_modality_and_interventions' => 'required',
                 'Treatment_goals_and_outcome' => 'required',
+                'Session_Id'=>'required|exists:sessions,id',
+
             ]);
             if ($validator->fails()) {
                 // return response()->json($validator->errors()->toJson(), 400);
@@ -1398,6 +1405,7 @@ class NoteController extends Controller
             $terminatenote->TreatmentModality =
                 $request['Treatment_modality_and_interventions'];
             $terminatenote->Outcome = $request['Treatment_goals_and_outcome'];
+            $terminatenote->Session_Id=$request['Session_Id'];
             $terminatenote->save();
             return response()->json(
                 [

@@ -19,11 +19,6 @@ class CreateAppointmentsTable extends Migration
             $table->unsignedBigInteger('Patient_Id')->nullable();
             $table->unsignedBigInteger('Doctor_Id')->nullable();
             $table->unsignedBigInteger('AppointmentType_Id')->nullable();
-            $table->string('Duration');
-            $table->string('Frequency');
-            $table->string('Location');
-            $table->string('AppointmentAlert');
-            $table->string('ScheduledTime');
             $table->string('Status')->nullable();
             $table->unsignedBigInteger('CreatedBy_Id')->nullable();
             $table->unsignedBigInteger('Hospital_Id')->nullable();

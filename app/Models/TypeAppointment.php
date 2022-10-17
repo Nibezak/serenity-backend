@@ -15,6 +15,9 @@ class TypeAppointment extends Model
     'name',
     'createdBy_Id',
     'hospital_Id',
+    'Amount',
+    'Description',
+    'Currency',
     ];
 
 

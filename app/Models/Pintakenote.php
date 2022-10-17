@@ -63,6 +63,7 @@ class Pintakenote extends Model
         'DiagnosticJustification',
         'DateTimeScheduled',
         'DateTimeOccured',
+        'Session_Id',
 
         ];
 
