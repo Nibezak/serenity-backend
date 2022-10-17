@@ -167,6 +167,25 @@ Route::group(
             AdminController::class,
             'fetchdiagnosis',
         ]);
+
+
+        Route::post('/Hospital/register-insurance', [
+            AdminController::class,
+            'saveinsurance',
+        ]);
+
+        Route::get('/Hospital/fetch-insurance', [
+            AdminController::class,
+            'fetchhospitalinsurance',
+        ]);
+
+
+        Route::get('/patient/fetch-sessions/{PatientId}', [
+            AdminController::class,
+            'fetchpatientactivesession',
+        ]);
+
+
     }
 );
 

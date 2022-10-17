@@ -26,6 +26,10 @@ class Appointment extends Model
     'Status',
     'link',
     'calendarGridType',
+    'start',
+    'end',
+    'title',
+    'Session_Id',
 
 
     ];
