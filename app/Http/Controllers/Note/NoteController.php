@@ -14,6 +14,7 @@ use App\Models\Missedappointmentnote;
 use App\Models\NoteObjective;
 use App\Models\Miscnote;
 use App\Models\Terminationnote;
+use App\Models\Session;
 use App\Models\Processnote;
 use App\Models\Consulationnote;
 use App\Models\Patient;
@@ -1362,14 +1363,14 @@ class NoteController extends Controller
         if ($var == 'Admin' || $var == 'Clinician') {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
-                'PatientId' => 'required',
+                'PatientId' => 'required|exists:patients,id',
                 'Reason' => 'required',
                 'Chief_complain' => 'required',
                 'Diagnosis' => 'required|array',
                 'Diagnostic_justification' => 'required',
                 'Treatment_modality_and_interventions' => 'required',
                 'Treatment_goals_and_outcome' => 'required',
-                'Session_Id'=>'required|exists:sessions,id',
+                'SessionId'=>'required|exists:sessions,id',
 
             ]);
             if ($validator->fails()) {
@@ -1405,8 +1406,19 @@ class NoteController extends Controller
             $terminatenote->TreatmentModality =
                 $request['Treatment_modality_and_interventions'];
             $terminatenote->Outcome = $request['Treatment_goals_and_outcome'];
-            $terminatenote->Session_Id=$request['Session_Id'];
+            $terminatenote->Session_Id=$request['SessionId'];
             $terminatenote->save();
+
+
+            DB::Table('terminationnotes')
+            ->where('id', '=', auth()->user()->Hospital_Id)
+            ->where('Patient_Id','=',$request['PatientId'])
+            ->update([
+                'Status' => "Completed",
+
+            ]);
+
+
             return response()->json(
                 [
                     'message' =>
