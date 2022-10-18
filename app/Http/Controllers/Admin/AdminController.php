@@ -18,6 +18,7 @@ use App\Models\Progresssnote;
 use App\Models\Assigneddocotor;
 use App\Models\Diagnosis;
 use App\Models\Session;
+use App\Models\Department;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -69,6 +70,7 @@ class AdminController extends Controller
                 'Address' => 'required',
                 'RoleId' => 'required',
                 'Title' => 'required',
+                'DepartmentId'=>'required|exists:departments,id'
 
             ]);
             if ($validator->fails()) {
@@ -107,6 +109,8 @@ class AdminController extends Controller
                 $user->session = '1';
                 $user->IsCredentialsNonExpired = '1';
                 $user->Speciality=$request['Speciality'];
+                $user->Department_Id=$request['DepartmentId'];
+
                 $user->save();
 
                 $user->attachRole($role);
@@ -553,7 +557,8 @@ class AdminController extends Controller
             $validator = Validator::make($request->all(), [
                 'Doctor_Id' => 'required|exists:users,id',
                 'PatientId' => 'required|exists:patients,id',
-                'Insurance_Id' =>'required|exists:patientinsurance,id'
+                'Insurance_Id' =>'required|exists:patientinsurance,id',
+                'Service_Id' =>'required|exists:typeappointments,id',
             ]);
             if ($validator->fails()) {
                 return response()->json(
@@ -611,6 +616,7 @@ class AdminController extends Controller
                     $sess->Patient_Id=$request['PatientId'];
                     $sess->Doctor_Id=$request['Doctor_Id'];
                     $sess->Insurance_Id=$request['Insurance_Id'];
+                    $sess->Service_Id=$request['Service_Id'];
                     $sess->save();
 
                     $result = DB::Table('patients')
@@ -766,7 +772,6 @@ class AdminController extends Controller
                 'Duration' => 'required',
                 'Frequency' => 'required',
                 'title' => 'required',
-                'Session_Id'=>'required|exists:sessions,id',
             ]);
             if ($validator->fails()) {
 
@@ -887,8 +892,10 @@ class AdminController extends Controller
             $appointment->Status = 'Active';
             $appointment->Hospital_Id = auth()->user()->Hospital_Id;
             $appointment->calendarGridType=$request['calendarGridType'];
-            $appointment->Session_Id=$request['Session_Id'];
 
+            if($request['Session_Id']){
+            $appointment->Session_Id=$request['Session_Id'];
+            }
 
             $sms = new TransferSms();
             if ($request['Location'] == 'online') {
@@ -1322,6 +1329,57 @@ public function fetchpatientactivesession($PatientId){
      return response()->json(['message' => 'Unauthorized user'], 401);
 
 }
+
+
+    public function fetchinsurancepatient($PatientId){
+     
+      return PatientInsurance::where('Patient_Id','=',$PatientId)->get();
+
+     }
+
+
+
+
+public function savedepartment(Request $request){
+
+    $var = Auth::user()->roles->first()->name;
+    if ($var == 'Admin' ) {
+
+        $validator = Validator::make($request->all(), [
+            'Department_name' => 'required',
+        ]);
+        if ($validator->fails()) {
+             return response()->json(
+                ['errors' => implode($validator->errors()->all())],
+                422
+            );
+        }
+
+        if(Department::where('Hospital_Id','=',auth()->user()->Hospital_Id)->where('Name','=',$request['Department_name'])->exists()){
+            return response()->json(
+                ['errors' => 'Sorry, This Department is already registered in our hospital'],
+                422
+            );
+        }
+        $dpt = new Department ();
+        $dpt -> CreatedBy_Id= auth()->user()->id;
+        $dpt -> Hospital_Id= auth()->user()->Hospital_Id;
+        $dpt -> Name = $request['Department_name'];
+        $dpt->save();
+        return response()->json(['message' => 'Successfully, Added new Department '], 201);
+
+    }
+    return response()->json(['message' => 'Unauthorized user'], 401);
+
+
+   }
+
+
+  public function fetchdepartment(){
+
+  return Department::where('Hospital_Id','=',auth()->user()->Hospital_Id)->get();
+
+  }
 
 
 

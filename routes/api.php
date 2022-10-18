@@ -110,8 +110,6 @@ Route::group(
             'fetchonedoctor',
         ]);
 
-
-
         Route::post('/patient/Assign-Doctor', [
             AdminController::class,
             'assigndocotortopatient',
@@ -169,6 +167,17 @@ Route::group(
         ]);
 
 
+        Route::post('/Hospital/register-department', [
+            AdminController::class,
+            'savedepartment',
+        ]);
+
+
+        Route::get('/Hospital/view-department', [
+            AdminController::class,
+            'fetchdepartment',
+        ]);
+
         Route::post('/Hospital/register-insurance', [
             AdminController::class,
             'saveinsurance',
@@ -183,6 +192,12 @@ Route::group(
         Route::get('/patient/fetch-sessions/{PatientId}', [
             AdminController::class,
             'fetchpatientactivesession',
+        ]);
+
+
+        Route::get('/patient/view-insurance/{PatientId}', [
+            AdminController::class,
+            'fetchinsurancepatient',
         ]);
 
 
