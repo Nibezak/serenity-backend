@@ -1332,8 +1332,10 @@ public function fetchpatientactivesession($PatientId){
 
 
     public function fetchinsurancepatient($PatientId){
-     
-      return PatientInsurance::where('Patient_Id','=',$PatientId)->get();
+
+
+        return response()->json(['data' => PatientInsurance::where('Patient_Id','=',$PatientId)->get()], 200);
+
 
      }
 
