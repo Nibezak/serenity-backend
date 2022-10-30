@@ -19,6 +19,7 @@ class Session extends Model
     'Insurance_Id',
     'Status',
     'Service_Id',
+    'type',
     ];
 
     public function doneby()

@@ -557,7 +557,6 @@ class AdminController extends Controller
             $validator = Validator::make($request->all(), [
                 'Doctor_Id' => 'required|exists:users,id',
                 'PatientId' => 'required|exists:patients,id',
-                'Insurance_Id' =>'required|exists:patientinsurance,id',
                 'Service_Id' =>'required|exists:typeappointments,id',
             ]);
             if ($validator->fails()) {
@@ -615,7 +614,9 @@ class AdminController extends Controller
                     $sess->hospital_Id=auth()->user()->Hospital_Id;
                     $sess->Patient_Id=$request['PatientId'];
                     $sess->Doctor_Id=$request['Doctor_Id'];
+                    if($request->has('Insurance_Id')){
                     $sess->Insurance_Id=$request['Insurance_Id'];
+                    }
                     $sess->Service_Id=$request['Service_Id'];
                     $sess->save();
 
@@ -628,7 +629,7 @@ class AdminController extends Controller
 
                     return $result = [
                         'message' =>
-                            'Patient is assigned to Doctor and session is started successfully !!  ',
+                            'Patient is assigned to Doctor successfully !!  ',
                         'success' => true,
                         'Session_Id'=>$sess->id,
                     ];
@@ -648,6 +649,9 @@ class AdminController extends Controller
         }
         return response()->json(['message' => 'Unauthorized user'], 401);
     }
+
+
+  //activate patient
 
     public function activatepatient(Request $request)
     {
@@ -764,7 +768,6 @@ class AdminController extends Controller
         if (Auth::check()) {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
-                'AppointmentType_Id' => 'required',
                 'Patient_Id' => 'required|exists:patients,id',
                 'Location' => 'required',
                 'start' => 'required',
@@ -772,42 +775,16 @@ class AdminController extends Controller
                 'Duration' => 'required',
                 'Frequency' => 'required',
                 'title' => 'required',
+                'Doctor_Id' => 'required|exists:users,id',
+                'Service_Id' =>'required|exists:typeappointments,id',
+                'sessionType'=>'required'
+
             ]);
             if ($validator->fails()) {
 
               return response()->json(
                     ['errors' => implode($validator->errors()->all())],
                     422
-                );
-            }
-            $recordAppoint = TypeAppointment::where(
-                'id',
-                '=',
-                $request['AppointmentType_Id']
-            )->where('Hospital_Id', '=', auth()->user()->Hospital_Id);
-
-            if (!$recordAppoint->exists()) {
-                return response()->json(
-                    [
-                        'errors' =>
-                            'This Appointment type does not exists in our hospital',
-                    ],
-                    404
-                );
-            }
-            $recordpat = Patient::where(
-                'id',
-                '=',
-                $request['Patient_Id']
-            )->where('Hospital_Id', '=', auth()->user()->Hospital_Id);
-
-            if (!$recordpat->exists()) {
-                return response()->json(
-                    [
-                        'message' =>
-                            'This Patient does not exists in our hospital',
-                    ],
-                    404
                 );
             }
 
@@ -838,25 +815,9 @@ class AdminController extends Controller
                 );
             }
 
-            $recorddoct = User::where('id', '=', $AssignedDoctorId)->where(
-                'Hospital_Id',
-                '=',
-                auth()->user()->Hospital_Id
-            );
-
-            if (!$recorddoct->exists()) {
-                return response()->json(
-                    [
-                        'message' =>
-                            'This Doctor does not exists in our hospital',
-                    ],
-                    404
-                );
-            }
-
             $typeApp = TypeAppointment::select('name')
                 ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
-                ->where('id', '=', $request['AppointmentType_Id'])
+                ->where('id', '=', $request['Service_Id'])
                 ->get();
 
             $doctorData = User::select(
@@ -878,10 +839,23 @@ class AdminController extends Controller
                 ->where('id', '=', $doctorData[0]->Hospital_Id)
                 ->get();
 
+
+                $sess=new Session();
+                $sess->StartedBy_Id=auth()->user()->id;
+                $sess->hospital_Id=auth()->user()->Hospital_Id;
+                $sess->Patient_Id=$request['Patient_Id'];
+                $sess->Doctor_Id=$request['Doctor_Id'];
+                if($request->has('Insurance_Id')){
+                $sess->Insurance_Id=$request['Insurance_Id'];
+                }
+                $sess->Service_Id=$request['Service_Id'];
+                $sess->type=$request['sessionType'];
+                $sess->save();
+
             $appointment = new Appointment();
-            $appointment->AppointmentType_Id = $request['AppointmentType_Id'];
+            $appointment->AppointmentType_Id = $request['Service_Id'];
             $appointment->Patient_Id = $request['Patient_Id'];
-            $appointment->Doctor_Id = $AssignedDoctorId;
+            $appointment->Doctor_Id =$request['Doctor_Id'];
             $appointment->Location = $request['Location'];
             $appointment-> start= $request['start'];
             $appointment-> end= $request['end'];
@@ -892,14 +866,34 @@ class AdminController extends Controller
             $appointment->Status = 'Active';
             $appointment->Hospital_Id = auth()->user()->Hospital_Id;
             $appointment->calendarGridType=$request['calendarGridType'];
+            $appointment->Session_Id=$sess->id;
 
-            if($request['Session_Id']){
-            $appointment->Session_Id=$request['Session_Id'];
+
+            if ($request['sessionType'] == 'followUp') {
+
+
+                    $dr=new Assigneddocotor();
+                    $dr->Hospital_Id=auth()->user()->Hospital_Id;
+                    $dr->Doctor_Id=$request['Doctor_Id'];
+                    $dr->Patient_Id=$request['Patient_Id'];
+                    $dr->AssignedBy_Id=auth()->user()->id;
+                    $dr->Date=Carbon::now()->toDateTimeString();
+                    $dr->Status='Follow up Session';
+                    $dr->save();
+
+                    DB::Table('patients')
+                        ->where('id', '=', $request['Patient_Id'])
+                        ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
+                        ->update([
+                            'AssignedDoctor_Id' => $request['Doctor_Id'],
+                            'Status'=>'Active',
+                        ]);
+
             }
 
             $sms = new TransferSms();
             if ($request['Location'] == 'online') {
-                $link = 'https://194.233.167.134/Letsreason-session';
+                $link = 'https://meet.letsreason.co/EMR-Session-test';
                 $appointment->link = $link;
 
                 $message =
@@ -924,7 +918,7 @@ class AdminController extends Controller
                     ' and Video Link is:  ' .
                     $link;
 
-                $sms->sendSMS($patData[0]->MobilePhone, $message);
+                // $sms->sendSMS($patData[0]->MobilePhone, $message);
             } else {
                 $msg =
                     'Hello ' .
@@ -952,7 +946,7 @@ class AdminController extends Controller
                     ' Venue: ' .
                     $request['Location'];
 
-                 $sms->sendSMS($patData[0]->MobilePhone, $msg);
+            //  $sms->sendSMS($patData[0]->MobilePhone, $msg);
 
                 $appointment->link = 'null';
             }
@@ -1380,6 +1374,27 @@ public function savedepartment(Request $request){
   public function fetchdepartment(){
 
   return Department::where('Hospital_Id','=',auth()->user()->Hospital_Id)->get();
+
+  }
+
+
+  public function endpatientsession($sessionId){
+
+    if (
+        Auth::user()->roles->first()->name ==
+        ('Admin' || 'Clinician')
+    ) {
+
+    DB::Table('sessions')
+    ->where('id', '=', $sessionId)
+    ->update([
+        'Status' => 'Completed',
+    ]);
+   return  response()->json(['message' => 'Session is ended successfully'],200);
+
+
+}
+return response()->json(['message' => 'UnAuthorized User'],401);
 
   }
 

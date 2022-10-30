@@ -1409,9 +1409,8 @@ class NoteController extends Controller
             $terminatenote->Session_Id=$request['SessionId'];
             $terminatenote->save();
 
-
-            DB::Table('terminationnotes')
-            ->where('id', '=', auth()->user()->Hospital_Id)
+            DB::Table('sessions')
+            ->where('id', '=', $request['SessionId'])
             ->where('Patient_Id','=',$request['PatientId'])
             ->update([
                 'Status' => "Completed",
