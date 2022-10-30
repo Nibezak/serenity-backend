@@ -650,6 +650,9 @@ class AdminController extends Controller
         return response()->json(['message' => 'Unauthorized user'], 401);
     }
 
+
+  //activate patient
+
     public function activatepatient(Request $request)
     {
         if (
