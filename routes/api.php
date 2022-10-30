@@ -7,6 +7,10 @@ use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Super\SuperDashboardController;
 use App\Http\Controllers\Note\NoteController;
 use App\Http\Controllers\PrescriptionController;
+use App\Http\Controllers\BillingController;
+use App\Http\Controllers\Mobile\MAuthController;
+
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -201,6 +205,15 @@ Route::group(
         ]);
 
 
+
+
+        Route::post('/patient/end-session/{sessionId}', [
+            AdminController::class,
+            'endpatientsession',
+        ]);
+
+
+
     }
 );
 
@@ -326,3 +339,43 @@ Route::group(
 );
 
 
+
+Route::group(
+    [
+        'middleware' => 'api',
+        'prefix' => 'billing',
+    ],
+    function ($router) {
+
+         Route::get('/patient/all/{PatientId}', [BillingController::class, 'getallpatientbilling']);
+
+
+    }
+);
+
+
+
+
+
+
+
+
+
+// App endpoints here
+
+
+Route::group(
+    [
+        'middleware' => 'api',
+        'prefix' => 'app',
+    ],
+    function ($router) {
+
+         Route::post('/auth/login', [MAuthController::class, 'login']);
+         Route::get('/auth/logout', [AuthController::class, 'logout']);
+
+         Route::post('/patient/register', [MAuthController::class, 'savepatient']);
+
+
+    }
+);
