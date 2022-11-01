@@ -8,7 +8,9 @@ use App\Http\Controllers\Super\SuperDashboardController;
 use App\Http\Controllers\Note\NoteController;
 use App\Http\Controllers\PrescriptionController;
 use App\Http\Controllers\BillingController;
+use App\Http\Controllers\DoctorController;
 use App\Http\Controllers\Mobile\MAuthController;
+
 
 
 /*
@@ -356,6 +358,23 @@ Route::group(
 
 
 
+Route::group(
+    [
+        'middleware' => 'api',
+        'prefix' => 'doctor',
+    ],
+    function ($router) {
+
+         Route::post('/slot/set-availability', [DoctorController::class, 'setclinicianavailability']);
+         Route::get('/slot/get-availability/{Doctor_Id}', [DoctorController::class, 'getclinicianslotavailability']);
+
+
+    }
+);
+
+
+
+
 
 
 
@@ -371,7 +390,7 @@ Route::group(
     ],
     function ($router) {
 
-         Route::post('/auth/login', [MAuthController::class, 'login']);
+         Route::post('/auth/login', [AuthController::class, 'login']);
          Route::get('/auth/logout', [AuthController::class, 'logout']);
 
          Route::post('/patient/register', [MAuthController::class, 'savepatient']);

@@ -889,6 +889,12 @@ class AdminController extends Controller
                             'Status'=>'Active',
                         ]);
 
+                        // DB::Table('sessions')
+                        // ->where('id', '=', $sessionId)
+                        // ->update([
+                        //     'Status' => 'Completed',
+                        // ]);
+
             }
 
             $sms = new TransferSms();
