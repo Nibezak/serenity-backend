@@ -13,30 +13,21 @@ class DoctorController extends Controller
 
     public function setclinicianavailability(Request $request){
 
-        if (Auth::check()) {
+        if (Auth::check()) {    
 
+         $array = collect($request->all())
+                ->map(function ($item) use ($request) {
+                    return $item + [
+                        'Hospital_Id' => auth()->user()->Hospital_Id,
+                         'User_Id'=> auth()->user()->id,
+                        'Createdby_Id' => auth()->user()->id,
+                    ];
+                })
+                ->toArray();
 
-           //Validate User Inputs
-           $validator = Validator::make($request->all(), [
-            'start' => 'required',
-            'end' => 'required',
-            'day' => 'required',
-        ]);
-        if ($validator->fails()) {
-          return response()->json(
-                ['errors' => implode($validator->errors()->all())],
-                422
-            );
+         foreach ($array as $key => $value) {
+            Slot::create($value);
         }
-
-        $slot=new Slot();
-        $slot->start=$request['start'];
-        $slot->end=$request['end'];
-        $slot->day=$request['day'];
-        $slot->User_Id=auth()->user()->id;
-        $slot->Hospital_Id=auth()->user()->Hospital_Id;
-        $slot->Createdby_Id=auth()->user()->id;
-         $slot->save();
 
 
         return response()->json(['message' => 'Time Availability slot is saved successfully'], 201);
