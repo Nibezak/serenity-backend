@@ -50,6 +50,7 @@ class DoctorController extends Controller
     public function getclinicianslotavailability($Doctor_Id){
         return response()->json(['data' => Slot::where('Hospital_Id','=',auth()->user()->Hospital_Id)
         ->where('User_Id','=',$Doctor_Id)
+        ->with('owner','doneby')
         ->orderBy('start', 'asc')
         ->get()
         ], 200);

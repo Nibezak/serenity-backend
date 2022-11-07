@@ -1391,6 +1391,14 @@ public function savedepartment(Request $request){
         ('Admin' || 'Clinician')
     ) {
 
+        $ses = Session::where('id', '=', $sessionId)->first();
+        if ($ses === null) {
+            return response()->json(
+                ['errors' => 'Invalid session'],
+                422
+            );
+        }
+
     DB::Table('sessions')
     ->where('id', '=', $sessionId)
     ->update([
@@ -1403,6 +1411,55 @@ public function savedepartment(Request $request){
 return response()->json(['message' => 'UnAuthorized User'],401);
 
   }
+
+
+public function fetchdoctoractivesession($drId){
+
+
+    if (
+        Auth::user()->roles->first()->name ==
+        ('Admin' || 'Clinician')
+    ) {
+
+        $ses = Session::where('Hospital_Id', '=', auth()->user()->Hospital_Id)
+        ->where('Doctor_Id','=',$drId)
+        ->first();
+        if ($ses === null) {
+            return response()->json(
+                ['errors' => 'This doctor does not have any active session'],
+                422
+            );
+        }
+
+        return  Session::
+        where('Hospital_Id','=',auth()->user()->Hospital_Id)
+        ->where('Doctor_Id','=',$drId)
+        ->where('Status','=','Pending')
+        ->with('doneby','doctor','patient')
+        ->get();
+
+    }
+    return response()->json(['message' => 'UnAuthorized User'],401);
+
+}
+
+public function fetchallfollowupsession($dr){
+
+    if (
+        Auth::user()->roles->first()->name ==
+        ('Admin' || 'Clinician')
+    ) {
+return Session::
+ where('Hospital_Id','=',auth()->user()->Hospital_Id)
+->where('Doctor_Id','=',$dr)
+->where('type','=','followUp')
+->with('doneby','doctor','patient')
+->get();
+
+}
+return response()->json(['message' => 'UnAuthorized User'],401);
+
+}
 
 
 

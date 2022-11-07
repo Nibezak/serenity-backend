@@ -201,6 +201,12 @@ Route::group(
         ]);
 
 
+        Route::get('/doctor/fetch-sessions/{PatientId}', [
+            AdminController::class,
+            'fetchdoctoractivesession',
+        ]);
+
+
         Route::get('/patient/view-insurance/{PatientId}', [
             AdminController::class,
             'fetchinsurancepatient',
@@ -209,11 +215,14 @@ Route::group(
 
 
 
-        Route::post('/patient/end-session/{sessionId}', [
+        Route::post('/patient/end-session/{drId}', [
             AdminController::class,
             'endpatientsession',
         ]);
-
+        Route::get('/patient/session/Followup/{drId}', [
+            AdminController::class,
+            'fetchallfollowupsession',
+        ]);
 
 
     }
