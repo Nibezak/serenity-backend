@@ -206,6 +206,11 @@ Route::group(
             'fetchdoctoractivesession',
         ]);
 
+        Route::get('/doctor/fetch-session-by-id/{sessionId}', [
+            AdminController::class,
+            'fetchonesessionbyid',
+        ]);
+
 
         Route::get('/patient/view-insurance/{PatientId}', [
             AdminController::class,
