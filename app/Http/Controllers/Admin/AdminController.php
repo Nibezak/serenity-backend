@@ -1462,6 +1462,21 @@ return response()->json(['message' => 'UnAuthorized User'],401);
 }
 
 
+public function fetchonesessionbyid($sessionId){
+    if (
+        Auth::user()->roles->first()->name ==
+        ('Admin' || 'Clinician')
+    ) {
+
+        return Session::where('id','=',$sessionId)->with(['patient','doneby','insurance','doctor'])->get();
+    }
+    return response()->json(['message' => 'UnAuthorized User'],401);
+
+
+
+}
+
+
 
 }
 
