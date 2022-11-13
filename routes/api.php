@@ -230,6 +230,12 @@ Route::group(
         ]);
 
 
+        Route::get('/archive/sessions', [
+            AdminController::class,
+            'fetcharchivesessions',
+        ]);
+
+
     }
 );
 

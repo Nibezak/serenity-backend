@@ -1443,6 +1443,8 @@ public function fetchdoctoractivesession($drId){
 
 }
 
+
+
 public function fetchallfollowupsession($dr){
 
     if (
@@ -1453,12 +1455,29 @@ return Session::
  where('Hospital_Id','=',auth()->user()->Hospital_Id)
 ->where('Doctor_Id','=',$dr)
 ->where('type','=','followUp')
+->where('Status','=','Pending')
 ->with('doneby','doctor','patient')
 ->get();
 
 }
 return response()->json(['message' => 'UnAuthorized User'],401);
 
+}
+
+public function fetcharchivesessions(){
+    if (
+        Auth::user()->roles->first()->name ==
+        ('Admin' || 'Clinician')
+    ) {
+
+        return Session::
+        where('Hospital_Id','=',auth()->user()->Hospital_Id)
+       ->where('Status','=','Completed')
+       ->with('doneby','doctor','patient')
+       ->get();
+
+    }
+    return response()->json(['message' => 'UnAuthorized User'],401);
 }
 
 
