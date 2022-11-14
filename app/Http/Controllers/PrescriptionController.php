@@ -45,7 +45,7 @@ class PrescriptionController extends Controller
     {
 
         $var = Auth::user()->roles->first()->name;
-        if ($var == 'Admin' || $var == 'Clinician') {
+        if ($var == 'Admin' || $var == 'Clinician'||$var=='superAdmin') {
             //validate inputs
             $validator = Validator::make($request->all(), [
                 'Patient_Id' => 'required|exists:patients,id',
@@ -165,7 +165,7 @@ class PrescriptionController extends Controller
     public function getallpatientprescription($PatientId){
 
         $var = Auth::user()->roles->first()->name;
-        if ($var == 'Admin' || $var == 'Clinician') {
+        if ($var == 'Admin' || $var == 'Clinician'||$var=='superAdmin') {
         return response()->json(
             [
                 'data' =>

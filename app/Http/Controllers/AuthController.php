@@ -25,7 +25,7 @@ class AuthController extends Controller
      *
      * @return void
      */
-    
+
     public function __construct()
     {
         $this->middleware('jwt.verify', [
@@ -179,7 +179,7 @@ class AuthController extends Controller
         if ($checkauth) {
             if (
                 Auth::user()->roles->first()->name ==
-                ('Admin' || 'Clinician' || 'Reception' || 'Cashier')
+                ('Admin' || 'Clinician' || 'Reception' || 'Cashier'||'superAdmin')
             ) {
                 if (
                     User::select('IsAccountNonLocked')
@@ -215,7 +215,7 @@ class AuthController extends Controller
                         'email' => $request['email'],
                     ]);
 
-                    if ((Auth::user()->roles->first()->name == 'Admin') && (Auth::user()->ConstantsIsCreated ==false)) {
+                    if ((Auth::user()->roles->first()->name == ('Admin' || 'superAdmin' )) && (Auth::user()->ConstantsIsCreated ==false)) {
 
 
                     DB::Table('users')

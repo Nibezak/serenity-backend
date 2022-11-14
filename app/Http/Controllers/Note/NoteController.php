@@ -37,7 +37,7 @@ class NoteController extends Controller
 
     public function createtreatmentstrategy(Request $request)
     {
-        if (Auth::user()->roles->first()->name == 'Admin') {
+        if (Auth::user()->roles->first()->name == ('Admin' || 'superAdmin' )) {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
                 'name' => 'required',
@@ -99,7 +99,7 @@ class NoteController extends Controller
 
     public function createfrequencytreatment(Request $request)
     {
-        if (Auth::user()->roles->first()->name == 'Admin') {
+        if (Auth::user()->roles->first()->name == ('Admin' || 'superAdmin' )) {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
                 'name' => 'required|unique:frequencytreatment',
@@ -150,7 +150,7 @@ class NoteController extends Controller
     public function addptreatmentplan(Request $request)
     {
         $var = Auth::user()->roles->first()->name;
-        if ($var == 'Admin' || $var == 'Clinician') {
+        if ($var == 'Admin' || $var == 'Clinician'||$var=='superAdmin') {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
                 'Diagnosis_Id' => 'required',
@@ -233,7 +233,7 @@ class NoteController extends Controller
     public function createmiscellaneousnote(Request $request)
     {
         $var = Auth::user()->roles->first()->name;
-        if ($var == 'Admin' || $var == 'Clinician') {
+        if ($var == 'Admin' || $var == 'Clinician'||$var=='superAdmin') {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
                 'PatientId' => 'required|exists:patients,id',
@@ -291,7 +291,7 @@ class NoteController extends Controller
     public function fetchmiscnote(Request $request)
     {
         $var = Auth::user()->roles->first()->name;
-        if ($var == 'Admin' || $var == 'Clinician') {
+        if ($var == 'Admin' || $var == 'Clinician'||$var=='superAdmin') {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
                 'Patient_Id' => 'required|exists:miscnote',
@@ -328,7 +328,7 @@ class NoteController extends Controller
     public function createContactNote(Request $request)
     {
         $var = Auth::user()->roles->first()->name;
-        if ($var == 'Admin' || $var == 'Clinician') {
+        if ($var == 'Admin' || $var == 'Clinician'||$var =='superAdmin') {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
                 'PatientId' => 'required',
@@ -391,7 +391,7 @@ class NoteController extends Controller
     public function viewContactNote(Request $request)
     {
         $var = Auth::user()->roles->first()->name;
-        if ($var == 'Admin' || $var == 'Clinician') {
+        if ($var == 'Admin' || $var == 'Clinician'||$var =='superAdmin') {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
                 'Patient_Id' => 'required|exists:contactnote',
@@ -429,7 +429,7 @@ class NoteController extends Controller
     public function createProcessNote(Request $request)
     {
         $var = Auth::user()->roles->first()->name;
-        if ($var == 'Admin' || $var == 'Clinician') {
+        if ($var == 'Admin' || $var == 'Clinician'||$var =='superAdmin') {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
                 'PatientId' => 'required|exists:patients,id',
@@ -489,7 +489,7 @@ class NoteController extends Controller
     public function viewProcessNote(Request $request)
     {
         $var = Auth::user()->roles->first()->name;
-        if ($var == 'Admin' || $var == 'Clinician') {
+        if ($var == 'Admin' || $var == 'Clinician'||$var =='superAdmin') {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
                 'Patient_Id' => 'required|exists:processnote',
@@ -526,7 +526,7 @@ class NoteController extends Controller
     public function createConsulationnote(Request $request)
     {
         $var = Auth::user()->roles->first()->name;
-        if ($var == 'Admin' || $var == 'Clinician') {
+        if ($var == 'Admin' || $var == 'Clinician'||$var =='superAdmin') {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
                 'Diagnosis_Id' => 'required|array',
@@ -589,7 +589,7 @@ class NoteController extends Controller
     public function saveintakenote(Request $request)
     {
         $var = Auth::user()->roles->first()->name;
-        if ($var == 'Admin' || $var == 'Clinician') {
+        if ($var == 'Admin' || $var == 'Clinician'||$var=='superAdmin') {
             $array = collect($request->all()['risk_assessment'])
                 ->map(function ($item) use ($request) {
                     return $item + [
@@ -746,7 +746,7 @@ class NoteController extends Controller
     public function getallnotes(Request $request)
     {
         $var = Auth::user()->roles->first()->name;
-        if ($var == 'Admin' || $var == 'Clinician') {
+        if ($var == 'Admin' || $var == 'Clinician'||$var == 'superAdmin') {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
                 'Patient_Id' => 'required',
@@ -1161,7 +1161,7 @@ class NoteController extends Controller
 
             if (
                 auth()->user()->id == $assignedDr ||
-                Auth::user()->roles->first()->name == 'Admin'
+                Auth::user()->roles->first()->name == ('Admin' || 'superAdmin' )
             ) {
                 return response()->json(
                     [
@@ -1188,7 +1188,7 @@ class NoteController extends Controller
     public function saveprogressnote(Request $request)
     {
         $var = Auth::user()->roles->first()->name;
-        if ($var == 'Admin' || $var == 'Clinician') {
+        if ($var == 'Admin' || $var == 'Clinician'|| $var=='superAdmin') {
             $array = collect($request->all()['risk_assessment'])
                 ->map(function ($item) use ($request) {
                     return $item + [
@@ -1310,7 +1310,7 @@ class NoteController extends Controller
     public function savemissedappointmentnote(Request $request)
     {
         $var = Auth::user()->roles->first()->name;
-        if ($var == 'Admin' || $var == 'Clinician') {
+        if ($var == 'Admin' || $var == 'Clinician'||$var=='superAdmin') {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
                 'PatientId' => 'required',
@@ -1360,7 +1360,7 @@ class NoteController extends Controller
     public function saveterminationnote(Request $request)
     {
         $var = Auth::user()->roles->first()->name;
-        if ($var == 'Admin' || $var == 'Clinician') {
+        if ($var == 'Admin' || $var == 'Clinician'||$var=='superAdmin') {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
                 'PatientId' => 'required|exists:patients,id',
@@ -1433,7 +1433,7 @@ class NoteController extends Controller
     public function getallintakenotes($key)
     {
         $var = Auth::user()->roles->first()->name;
-        if ($var == 'Admin' || $var == 'Clinician') {
+        if ($var == 'Admin' || $var == 'Clinician'||$var=='superAdmin') {
             $user = Patient::where('id', '=', $key)
                 ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
                 ->first();
@@ -1495,7 +1495,7 @@ class NoteController extends Controller
     public function getalltreatmentplannote($PatientID)
     {
         $var = Auth::user()->roles->first()->name;
-        if ($var == 'Admin' || $var == 'Clinician') {
+        if ($var == 'Admin' || $var == 'Clinician'||$var=='superAdmin') {
             //Validate User Inputs
             $user = Patient::where('id', '=', $PatientID)
                 ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
@@ -1612,7 +1612,7 @@ class NoteController extends Controller
     public function fetchnotedetailsbyid(Request $request)
     {
         $var = Auth::user()->roles->first()->name;
-        if ($var == 'Admin' || $var == 'Clinician') {
+        if ($var == 'Admin' || $var == 'Clinician'||$var =='superAdmin') {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
                 // 'Patient_Id' => 'required|exists:patients,id',
