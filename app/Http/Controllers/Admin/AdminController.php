@@ -60,7 +60,8 @@ class AdminController extends Controller
      */
     public function createNewUser(Request $request)
     {
-        if (Auth::user()->roles->first()->name == 'Admin') {
+        if (Auth::user()->roles->first()->name ==  ('Admin' || 'superAdmin' )
+        ) {
             //validate inputs
             $validator = Validator::make($request->all(), [
                 'FirstName' => 'required',
@@ -175,7 +176,7 @@ class AdminController extends Controller
     //Get all our hospital staff
     public function fetchourstaff()
     {
-        if (!Auth::user()->roles->first()->name == 'Admin') {
+        if (!Auth::user()->roles->first()->name == ('Admin' || 'superAdmin' )) {
             return response()->json(
                 [
                     'errors' => 'Unauthorized User',
@@ -210,7 +211,7 @@ class AdminController extends Controller
     //Fetch hospitall staff roles
     public function retrieveRoles()
     {
-        if (Auth::user()->roles->first()->name == 'Admin') {
+        if (Auth::user()->roles->first()->name == ('Admin' || 'superAdmin' )) {
 
          return response()->json(
                 [
@@ -228,7 +229,7 @@ class AdminController extends Controller
     //get hospital roles
     public function gethospitalroles(Request $request){
 
-        if (Auth::user()->roles->first()->name == 'Admin') {
+        if (Auth::user()->roles->first()->name == ('Admin' || 'superAdmin' )) {
 
             DB::Table('hospital')
             ->where('id', '=', auth()->user()->Hospital_Id)
@@ -338,7 +339,7 @@ class AdminController extends Controller
     public function fetchourActivepatients()
     {
         $var = Auth::user()->roles->first()->name;
-        if ($var == 'Admin' || $var == 'Reception') {
+        if ($var == 'Admin' || $var == 'Reception'||$var=='superAdmin') {
             return response()->json(
                 [
                     'data' => Patient::where('AssignedDoctor_Id', '=', null)
@@ -437,7 +438,7 @@ class AdminController extends Controller
     public function fetchourAllpatients()
     {
         $var = Auth::user()->roles->first()->name;
-        if ($var == 'Admin') {
+        if ($var == 'Admin' ||$var=='superAdmin') {
             return response()->json(
                 [
                     'data' => Patient::where(
@@ -551,7 +552,7 @@ class AdminController extends Controller
     {
         if (
             Auth::user()->roles->first()->name ==
-            ('Admin' || 'Reception' || 'Cashier')
+            ('Admin' || 'Reception' || 'Cashier'||'superAdmin')
         ) {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
@@ -657,7 +658,7 @@ class AdminController extends Controller
     {
         if (
             Auth::user()->roles->first()->name ==
-            ('Admin' || 'Reception' || 'Cashier')
+            ('Admin' || 'Reception' || 'Cashier'||'superAdmin')
         ) {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
@@ -700,7 +701,7 @@ class AdminController extends Controller
 
     public function addhospitalservice(Request $request)
     {
-        if (Auth::user()->roles->first()->name == 'Admin') {
+        if (Auth::user()->roles->first()->name == ('Admin' || 'superAdmin' )) {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
                 'name' => 'required',
@@ -1083,7 +1084,7 @@ class AdminController extends Controller
 
     public function creatediagnosis(Request $request)
     {
-        if (Auth::user()->roles->first()->name == 'Admin') {
+        if (Auth::user()->roles->first()->name == ('Admin' || 'superAdmin' )) {
             //Validate User Inputs
             $validator = Validator::make($request->all(), [
                 'name' => 'required|unique:diagnosis',
@@ -1118,7 +1119,7 @@ class AdminController extends Controller
     public function fetchdiagnosis()
     {
         $var = Auth::user()->roles->first()->name;
-        if ($var == 'Admin' || $var == 'Clinician') {
+        if ($var == 'Admin' || $var == 'Clinician'||'superAdmin') {
             return response()->json(
                 [
                     'data' => Diagnosis
@@ -1209,7 +1210,7 @@ class AdminController extends Controller
     public function saveinsurance(Request $request){
 
         $var = Auth::user()->roles->first()->name;
-        if ($var == 'Admin' ) {
+        if ($var == ('Admin' || 'superAdmin' ) ) {
 
             $validator = Validator::make($request->all(), [
                 'Insurance_name' => 'required',
@@ -1265,7 +1266,7 @@ public function fetchhospitalinsurance(){
 public function fetchpatientactivesession($PatientId){
 
     $var = Auth::user()->roles->first()->name;
-    if ($var == 'Admin' || $var == 'Clinician') {
+    if ($var == 'Admin' || $var == 'Clinician'||$var=='superAdmin') {
 
         if (Patient::where('id','=',$PatientId)->where('Hospital_Id','=',auth()->user()->Hospital_Id)->exists()) {
 
@@ -1345,7 +1346,7 @@ public function fetchpatientactivesession($PatientId){
 public function savedepartment(Request $request){
 
     $var = Auth::user()->roles->first()->name;
-    if ($var == 'Admin' ) {
+    if ($var == 'Admin' || $var=='superAdmin') {
 
         $validator = Validator::make($request->all(), [
             'Department_name' => 'required',
@@ -1388,7 +1389,7 @@ public function savedepartment(Request $request){
 
     if (
         Auth::user()->roles->first()->name ==
-        ('Admin' || 'Clinician')
+        ('Admin' || 'Clinician'||'superAdmin')
     ) {
 
         $ses = Session::where('id', '=', $sessionId)->first();
@@ -1418,7 +1419,7 @@ public function fetchdoctoractivesession($drId){
 
     if (
         Auth::user()->roles->first()->name ==
-        ('Admin' || 'Clinician')
+        ('Admin' || 'Clinician'||'superAdmin')
     ) {
 
         $ses = Session::where('Hospital_Id', '=', auth()->user()->Hospital_Id)
@@ -1449,7 +1450,7 @@ public function fetchallfollowupsession($dr){
 
     if (
         Auth::user()->roles->first()->name ==
-        ('Admin' || 'Clinician')
+        ('Admin' || 'Clinician'||'superAdmin')
     ) {
 return Session::
  where('Hospital_Id','=',auth()->user()->Hospital_Id)
@@ -1467,7 +1468,7 @@ return response()->json(['message' => 'UnAuthorized User'],401);
 public function fetcharchivesessions(){
     if (
         Auth::user()->roles->first()->name ==
-        ('Admin' || 'Clinician')
+        ('Admin' || 'Clinician'||'superAdmin')
     ) {
 
         return Session::
@@ -1484,7 +1485,7 @@ public function fetcharchivesessions(){
 public function fetchonesessionbyid($sessionId){
     if (
         Auth::user()->roles->first()->name ==
-        ('Admin' || 'Clinician')
+        ('Admin' || 'Clinician'||'superAdmin')
     ) {
 
         return Session::where('id','=',$sessionId)->with(['patient','doneby','insurance','doctor'])->get();
