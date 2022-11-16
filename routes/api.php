@@ -10,6 +10,7 @@ use App\Http\Controllers\PrescriptionController;
 use App\Http\Controllers\BillingController;
 use App\Http\Controllers\DoctorController;
 use App\Http\Controllers\Mobile\MAuthController;
+use App\Http\Controllers\HospitalController;
 
 
 
@@ -62,7 +63,20 @@ Route::group(
 );
 
 
+Route::group(
+    ['prefix'=>'mobile'],
+    function ($route){
+    Route::post('register',[AuthController::class, 'mobileRegister']);
+    Route::post('login',[AuthController::class, 'mobileLogin']);
+    Route::post('validate-OTP',[AuthController::class, 'validateOtpMobile']);
+    Route::get('get_profile',[AuthController::class, 'getProfile']);
+    Route::get('get_hospitals',[HospitalController::class, 'getHospitals']);
+    Route::get('get_doctors',[HospitalController::class, 'getAvailableDoctors']);
+    Route::get('get_disorders',[HospitalController::class, 'getAllDisorders']);
 
+
+    }
+);
 
 
 
@@ -414,7 +428,6 @@ Route::group(
          Route::get('/auth/logout', [AuthController::class, 'logout']);
 
          Route::post('/patient/register', [MAuthController::class, 'savepatient']);
-
 
     }
 );

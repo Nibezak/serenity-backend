@@ -336,7 +336,6 @@ return [
 
             // The user won't be able to edit the role and the permissions assigned.
             'not_editable' => [],
-
             // The user won't be able to delete the role.
             'not_deletable' => [],
         ],

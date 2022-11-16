@@ -49,5 +49,4 @@ class Session extends Model
 
 
 
-
 }

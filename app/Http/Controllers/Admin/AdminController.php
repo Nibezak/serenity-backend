@@ -900,7 +900,7 @@ class AdminController extends Controller
 
             $sms = new TransferSms();
             if ($request['Location'] == 'online') {
-                $link = 'https://meet.letsreason.co/EMR-Session-test';
+                $link = 'https://meet.letsreason.co/EMR-Session-test/'.$sess->id;
                 $appointment->link = $link;
 
                 $message =
@@ -1483,14 +1483,14 @@ public function fetcharchivesessions(){
 
 
 public function fetchonesessionbyid($sessionId){
-    if (
-        Auth::user()->roles->first()->name ==
-        ('Admin' || 'Clinician'||'superAdmin')
-    ) {
+    // if (
+    //     Auth::user()->roles->first()->name ==
+    //     ('Admin' || 'Clinician'||'superAdmin')
+    // ) {
 
         return Session::where('id','=',$sessionId)->with(['patient','doneby','insurance','doctor'])->get();
-    }
-    return response()->json(['message' => 'UnAuthorized User'],401);
+    // }
+    // return response()->json(['message' => 'UnAuthorized User'],401);
 
 
 

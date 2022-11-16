@@ -10,7 +10,6 @@ use Illuminate\Http\Request;
 class DoctorController extends Controller
 {
     //
-
     public function setclinicianavailability(Request $request)
     {
         if (Auth::check()) {
@@ -30,14 +29,11 @@ class DoctorController extends Controller
                                 ];
                             })
                             ->toArray();
-
                         foreach ($array as $keyy => $valuee) {
                             Slot::create($valuee);
                         }
-
                 }
             }
-
             return response()->json(
                 ['message' => 'Time Availability slot is saved successfully'],
                 201
