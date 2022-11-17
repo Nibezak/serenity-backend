@@ -50,6 +50,7 @@ class Progresssnote extends Model
         'Plan',
         'Recommendation',
         'PrescribedFrequencyTreatment',
+        'Session_Id'
 
         ];
 

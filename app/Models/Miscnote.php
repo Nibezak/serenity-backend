@@ -23,6 +23,7 @@ class Miscnote extends Model
     'Status',
     'CreatedBy_Id',
     'Appoint_Id',
+    'Session_Id'
 
     ];
 

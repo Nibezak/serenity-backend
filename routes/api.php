@@ -73,6 +73,11 @@ Route::group(
     Route::get('get_hospitals',[HospitalController::class, 'getHospitals']);
     Route::get('get_doctors',[HospitalController::class, 'getAvailableDoctors']);
     Route::get('get_disorders',[HospitalController::class, 'getAllDisorders']);
+    // Route::get('create_appointment',[AdminController::class,'createappointment']);
+    Route::post('Hospital/create-appointment', [AdminController::class,'createappointment']);
+
+// );
+
 
 
     }

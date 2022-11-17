@@ -19,6 +19,12 @@ use App\Models\Assigneddocotor;
 use App\Models\Diagnosis;
 use App\Models\Session;
 use App\Models\Department;
+use App\Models\Contactnote;
+use App\Models\Consulationnote;
+use App\Models\Terminationnote;
+use App\Models\Missedappointmentnote;
+use App\Models\Miscnote;
+use App\Models\Processnote;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -775,10 +781,10 @@ class AdminController extends Controller
                 'end' => 'required',
                 'Duration' => 'required',
                 'Frequency' => 'required',
-                'title' => 'required',
+                // 'title' => 'required',
                 'Doctor_Id' => 'required|exists:users,id',
                 'Service_Id' =>'required|exists:typeappointments,id',
-                'sessionType'=>'required'
+                // 'sessionType'=>'required'
 
             ]);
             if ($validator->fails()) {
@@ -788,7 +794,7 @@ class AdminController extends Controller
                     422
                 );
             }
-
+// $doctorData = User::find($request['Doctor_Id']);
             $patData = Patient::select(
                 'FirstName',
                 'LastName',
@@ -796,30 +802,30 @@ class AdminController extends Controller
                 'email'
             )
                 ->where('id', '=', $request['Patient_Id'])
-                ->get();
+                ->first();
 
-            $AssignedDoctorId = Patient::select('AssignedDoctor_Id')
-                ->where('id', '=', $request['Patient_Id'])
-                ->value('AssignedDoctor_Id');
+            // $AssignedDoctorId = Patient::select('AssignedDoctor_Id')
+            //     ->where('id', '=', $request['Patient_Id'])
+            //     ->value('AssignedDoctor_Id');
 
-            if ($AssignedDoctorId == null) {
-                return response()->json(
-                    [
-                        'message' =>
-                            'Sorry Patient ' .
-                            $patData[0]->FirstName .
-                            ' ' .
-                            $patData[0]->LastName .
-                            ' does not have assigned doctor, please first assign the patient with the doctor first',
-                    ],
-                    404
-                );
-            }
+            // if ($AssignedDoctorId == null) {
+            //     return response()->json(
+            //         [
+            //             'message' =>
+            //                 'Sorry Patient ' .
+            //                 $patData[0]->FirstName .
+            //                 ' ' .
+            //                 $patData[0]->LastName .
+            //                 ' does not have assigned doctor, please first assign the patient with the doctor first',
+            //         ],
+            //         404
+            //     );
+            // }
 
             $typeApp = TypeAppointment::select('name')
-                ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
+                // ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
                 ->where('id', '=', $request['Service_Id'])
-                ->get();
+                ->first();
 
             $doctorData = User::select(
                 'FirstName',
@@ -827,8 +833,8 @@ class AdminController extends Controller
                 'Title',
                 'Hospital_Id'
             )
-                ->where('id', '=', $AssignedDoctorId)
-                ->get();
+                ->where('id', '=', $request['Doctor_Id'])
+                ->first();
 
             $hospitalName = Hospital::select(
                 'PracticeName',
@@ -837,9 +843,8 @@ class AdminController extends Controller
                 'Cell',
                 'Village'
             )
-                ->where('id', '=', $doctorData[0]->Hospital_Id)
-                ->get();
-
+                ->where('id', '=', $doctorData->Hospital_Id)
+                ->first();
 
                 $sess=new Session();
                 $sess->StartedBy_Id=auth()->user()->id;
@@ -869,55 +874,49 @@ class AdminController extends Controller
             $appointment->calendarGridType=$request['calendarGridType'];
             $appointment->Session_Id=$sess->id;
 
+            // if ($request['sessionType'] == 'followUp') {
+            //         $dr=new Assigneddocotor();
+            //         $dr->Hospital_Id=auth()->user()->Hospital_Id;
+            //         $dr->Doctor_Id=$request['Doctor_Id'];
+            //         $dr->Patient_Id=$request['Patient_Id'];
+            //         $dr->AssignedBy_Id=auth()->user()->id;
+            //         $dr->Date=Carbon::now()->toDateTimeString();
+            //         $dr->Status='Follow up Session';
+            //         $dr->save();
 
-            if ($request['sessionType'] == 'followUp') {
-
-
-                    $dr=new Assigneddocotor();
-                    $dr->Hospital_Id=auth()->user()->Hospital_Id;
-                    $dr->Doctor_Id=$request['Doctor_Id'];
-                    $dr->Patient_Id=$request['Patient_Id'];
-                    $dr->AssignedBy_Id=auth()->user()->id;
-                    $dr->Date=Carbon::now()->toDateTimeString();
-                    $dr->Status='Follow up Session';
-                    $dr->save();
-
-                    DB::Table('patients')
-                        ->where('id', '=', $request['Patient_Id'])
-                        ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
-                        ->update([
-                            'AssignedDoctor_Id' => $request['Doctor_Id'],
-                            'Status'=>'Active',
-                        ]);
-
-                        // DB::Table('sessions')
-                        // ->where('id', '=', $sessionId)
-                        // ->update([
-                        //     'Status' => 'Completed',
-                        // ]);
-
-            }
+            //         DB::Table('patients')
+            //             ->where('id', '=', $request['Patient_Id'])
+            //             ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
+            //             ->update([
+            //                 'AssignedDoctor_Id' => $request['Doctor_Id'],
+            //                 'Status'=>'Active',
+            //             ]);
+            //             DB::Table('sessions')
+            //             ->where('id', '=', $sessionId)
+            //             ->update([
+            //                 'Status' => 'Completed',
+            //             ]);
+            // }
 
             $sms = new TransferSms();
             if ($request['Location'] == 'online') {
-                $link = 'https://meet.letsreason.co/EMR-Session-test/'.$sess->id;
+                $link = 'https://meet.letsreason.co/EMR-Session-test/'.MD5($sess->id);
                 $appointment->link = $link;
-
                 $message =
                     'Hello ' .
-                    $patData[0]->FirstName .
+                    $patData->FirstName .
                     ' ' .
-                    $patData[0]->LastName .
+                    $patData->LastName .
                     ' Your ' .
-                    $typeApp[0]->name .
+                    $typeApp->name .
                     ' Appointment at  ' .
-                    $hospitalName[0]->PracticeName .
+                    $hospitalName->PracticeName .
                     ' ' .
-                    $doctorData[0]->Title .
+                    $doctorData->Title .
                     ' ' .
-                    $doctorData[0]->FirstName .
+                    $doctorData->FirstName .
                     ' ' .
-                    $doctorData[0]->LastName .
+                    $doctorData->LastName .
                     ' has been scheduled successfully , Date: ' .
                     $request['Schedule'] .
                     ' Location: ' .
@@ -929,48 +928,42 @@ class AdminController extends Controller
             } else {
                 $msg =
                     'Hello ' .
-                    $patData[0]->FirstName .
+                    $patData->FirstName .
                     ' ' .
-                    $patData[0]->LastName .
+                    $patData->LastName .
                     ' Your ' .
-                    $typeApp[0]->name .
+                    $typeApp->name .
                     ' Appointment at  ' .
-                    $hospitalName[0]->PracticeName .
+                    $hospitalName->PracticeName .
                     ' Located at ' .
-                    $hospitalName[0]->District .
+                    $hospitalName->District .
                     ' ,' .
-                    $hospitalName[0]->Sector .
+                    $hospitalName->Sector .
                     ',' .
-                    $hospitalName[0]->Cell .
+                    $hospitalName->Cell .
                     ' with ' .
-                    $doctorData[0]->Title .
+                    $doctorData->Title .
                     ' ' .
-                    $doctorData[0]->FirstName .
+                    $doctorData->FirstName .
                     ' ' .
-                    $doctorData[0]->LastName .
+                    $doctorData->LastName .
                     ' has been scheduled successfully , Date: ' .
                     $request['Schedule'] .
                     ' Venue: ' .
                     $request['Location'];
-
             //  $sms->sendSMS($patData[0]->MobilePhone, $msg);
-
                 $appointment->link = 'null';
             }
-
              $appointment->save();
-
-
-
             if ($appointment) {
                 return response()->json(
                     [
                         'message' =>
-                            $typeApp[0]->name .
+                            $typeApp->name .
                             ' Appointment of ' .
-                            $patData[0]->FirstName .
+                            $patData->FirstName .
                             ' ' .
-                            $patData[0]->LastName .
+                            $patData->LastName .
                             ' has been created Successfully ',
                     ],
                     201
@@ -1032,7 +1025,7 @@ class AdminController extends Controller
             return response()->json(
                 [
                     'data' => Appointment::orderBy('ScheduledTime', 'asc')
-                        ->where('Hospital_Id', '=', Auth::user()->Hospital_Id)
+                        // ->where('Hospital_Id', '=', Auth::user()->Hospital_Id)
                         ->where('id', '=', $appointmentId)
                         ->with([
                             'doctor:id,email,telephone,Title,FirstName,LastName',
@@ -1483,14 +1476,30 @@ public function fetcharchivesessions(){
 
 
 public function fetchonesessionbyid($sessionId){
-    // if (
-    //     Auth::user()->roles->first()->name ==
-    //     ('Admin' || 'Clinician'||'superAdmin')
-    // ) {
-
-        return Session::where('id','=',$sessionId)->with(['patient','doneby','insurance','doctor'])->get();
-    // }
-    // return response()->json(['message' => 'UnAuthorized User'],401);
+    if (
+        Auth::user()->roles->first()->name ==
+        ('Admin' || 'Clinician'||'superAdmin' || 'Patient')
+    ) {
+$session = Session::where('id','=',$sessionId)->first();
+$session->patient = Patient::where('id',$session->Patient_Id)->first();
+$session->insurance = Insurance::where('id',$session->Insurance_Id)->first();
+$session->doctor = User::where('id',$session->Doctor_Id)->first();
+$session->doneby = $session->doneby()->first();
+// $session->notes = Note::where();
+$session->Contactnote = Contactnote::where('Session_Id',$sessionId)->first();
+$session->Consulationnote =Consulationnote::where('Session_Id',$sessionId)->first();
+$session->Pintakenote =Pintakenote::where('Session_Id',$sessionId)->first();
+$session->PtreatmentPlan = PtreatmentPlan::where('Session_Id',$sessionId)->first();
+$session->Terminationnote =Terminationnote::where('Session_Id',$sessionId)->first();
+$session->Missedappointmentnote = Missedappointmentnote::where('Session_Id',$sessionId)->first();
+$session->Miscnote = Miscnote::where('Session_Id',$sessionId)->first();
+$session->Processnote= Processnote::where('Session_Id',$sessionId)->first();
+$session->Progresssnote = Progresssnote::where('Session_Id',$sessionId)->first();
+// fetchonesessionbyid
+return response()->json($session);
+        // return Session::where('id','=',$sessionId)->with(['patient','doneby','insurance','doctor'])->get();
+    }
+    return response()->json(['message' => 'UnAuthorized User'],401);
 
 
 

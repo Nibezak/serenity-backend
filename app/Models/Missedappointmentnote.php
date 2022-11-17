@@ -22,6 +22,7 @@ class Missedappointmentnote extends Model
         'Doctor_id',
         'Reason',
         'comments',
+        'Session_Id'
 
     ];
 

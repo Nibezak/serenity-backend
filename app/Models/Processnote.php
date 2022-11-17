@@ -23,6 +23,7 @@ class Processnote extends Model
     'CreatedBy_Id',
     'Appointment_Id',
     'ProcessNote',
+    'Session_Id'
 
     ];
 

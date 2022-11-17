@@ -26,7 +26,7 @@ class Contactnote extends Model
     'Visibility',
     'Status',
     'CreatedBy_Id',
-
+    'Session_Id'
 
     ];
 
@@ -36,7 +36,6 @@ class Contactnote extends Model
         return $this->belongsTo('App\Models\Hospital','Hospital_Id');
     }
 
-   
     public function doctor()
     {
         return $this->belongsTo('App\Models\User','Doctor_Id');

@@ -24,7 +24,8 @@ class Consulationnote extends Model
         'Diagnsosis_Id',
         'diagnostic_justification',
         'Note_Content',
-        'Signator_Id'
+        'Signator_Id',
+        'Session_Id'
 
     ];
 

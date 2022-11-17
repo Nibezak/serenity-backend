@@ -28,7 +28,8 @@ class PtreatmentPlan extends Model
         'Date',
         'Time',
         'Doctor_id',
-        'Treatmentstrategy_Id'
+        'Treatmentstrategy_Id',
+        'Session_Id'
 
 
         ];
