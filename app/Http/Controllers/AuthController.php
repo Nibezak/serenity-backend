@@ -948,4 +948,60 @@ public function getProfile(){
             'profile'=>$user,
         ],200);
 }
+// update profile
+public function updateProfile(Request $request){
+
+    $user = User::find(auth::user()->id);
+
+    if ($request->hasFile('profile_image')) {
+        $image = $request->file('profile_image');
+        $name = time().'.'.$image->getClientOriginalExtension();
+        $destinationPath = public_path('/images');
+        $image->move($destinationPath, $name);
+        $user->ProfileImageUrl = 'images/'.$name;
+
+    }
+// var_dump($user);
+$user->FirstName = $request["FirstName"];
+$user->LastName= $request["LastName"];
+// $user->Email= $request[""];
+$user->Telephone= $request["Telephone"];
+$user->gender= $request["gender"];
+$user->Address= $request["Address"];
+$user->save();
+
+return response()->json(
+    [
+        'message'=>"successfully updated",
+    ],200);
+
+}
+// reset password
+public function resetPin(Request $request){
+    $validator = Validator::make($request->all(), [
+        'Telephone' => 'required|exists:users,Telephone',
+        'password' => 'required|confirmed|min:6'
+    ]);
+    if ($validator->fails()) {
+        return response()->json(
+            ['errors' => implode($validator->errors()->all())],
+            422
+        );
+    }
+    $user = User::find(Auth::user()->id);
+    $user->password = bcrypt($request["password"]);
+    $user->save();
+    $message =
+    'Hello  ' .
+    $user->FirstName.
+    ' - Your ' .
+    'password was updated successfully';
+$sms = new TransferSms();
+$sms->sendSMS($request['Telephone'], $message);
+
+return response()->json(
+    [
+        'message'=>"your PIN is successfully updated",
+    ],200);
+}
 }

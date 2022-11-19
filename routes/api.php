@@ -76,6 +76,9 @@ Route::group(
     // Route::get('create_appointment',[AdminController::class,'createappointment']);
     Route::post('Hospital/create-appointment', [AdminController::class,'createappointment']);
 
+    Route::post('update_profile',[AuthController::class, 'updateProfile']);
+    Route::post('reset_pin',[AuthController::class, 'resetPin']);
+
 // );
 
 
