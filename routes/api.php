@@ -344,6 +344,12 @@ Route::group(
             'getallintakenotes',
         ]);
 
+        //document file upload
+        Route::post('/Patient/documentUpload', [
+            NoteController::class,
+            'documentUpload',
+        ]);
+
 
 
 

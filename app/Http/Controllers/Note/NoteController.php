@@ -1692,4 +1692,42 @@ class NoteController extends Controller
 
         return response()->json(['message' => 'Unauthorized user'], 401);
     }
+
+     public function documentUpload(Request $request)
+     {
+         $var = Auth::user()->roles->first()->name;
+         if ($var == 'Admin' || $var == 'Clinician' || $var == 'superAdmin'){
+            $validator = Validator::make($request->all(), [
+                'patientId' => 'required',
+                 'file' => 'required|max:10000|mimes:pdf,docx,doc',
+                 'Session_Id' => 'required|exists:session,id',
+            ]);
+}
+            if ($validator->fails()) {
+                return response()->json(
+                    ['errors' => implode($validator->errors()->all())],
+                    422
+                );
+            }
+          $assignedDr = Patient::select('AssignedDoctor_Id')
+                ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
+                ->where('id', '=', $request['Patient_Id'])
+                ->value('AssignedDoctor_Id');
+
+                $document = new Document();
+                $document->file = $request['file'];
+                $document->Patient_Id = $request['Patient_id'];
+                $document->Hospital_Id = auth()->user()->Hospital_id;
+                $document->CreatedBy_Id = auth()->user()->id;
+                $document->save();
+
+                     return response()->json(
+                [
+                    'message' =>
+                        'Successfully Created new Psychotherapy Treatment Plan',
+                ],
+                201
+            );
+                      return response()->json(['message' => 'Unauthorized user'], 401);
+     }
 }

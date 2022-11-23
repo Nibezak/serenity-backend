@@ -38,5 +38,4 @@ class Hospital extends Model
     ];
 
 
-
 }
