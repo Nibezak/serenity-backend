@@ -54,7 +54,7 @@ class AuthController extends Controller
             'TypeOrganization' => 'required',
             'PracticeName' => 'required|string|unique:hospital',
             'BusinessPhone' => 'required|string|between:2,20',
-            'BusinessEmail' => 'required|string|between:2,20|unique:hospital',
+            'BusinessEmail' => 'required|string|between:2,255|unique:hospital',
             'FirstName' => 'required|string|between:2,20',
             'LastName' => 'required|string|between:2,20',
             'Telephone' => 'required|string|between:9,14',
