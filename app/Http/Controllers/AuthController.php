@@ -85,11 +85,11 @@ class AuthController extends Controller
         $hospital->logo = 'null';
         $hospital->save();
 
-        $role = Role::find('110');
+        $role = Role::find(1);
 
         if ($role) {
             $user = new User();
-            $user->Role_id = '110';
+            $user->Role_id = 1;
             $user->hospital_id = $hospital->id;
             $user->FirstName = $request['FirstName'];
             $user->LastName = $request['LastName'];
@@ -149,7 +149,7 @@ class AuthController extends Controller
             'info' => 'Laravel & Python Devloper',
         ];
 
-        Mail::to('mugisha172741@gmail.com')->send(
+        Mail::to('kevin.nibeza@gmail.com')->send(
             new \App\Mail\ForgotPasswordMail()
         );
 
@@ -283,7 +283,7 @@ class AuthController extends Controller
             return response()->json(['errors' => 'Invalid Credentials'], 401);
         }
 
-        //  return $this->createNewToken($token);
+         return $this->createNewToken($token);
     }
 
     /**
@@ -808,11 +808,11 @@ if ($checkauth) {
             );
         }
 
-        $role = Role::find('117');
+        $role = Role::find(1);
         $defaultManagerPswd = Str::random(10);
         if ($role) {
             $user = new User();
-            $user->Role_id = '117';
+            $user->Role_id = 1;
             // $user->hospital_id = $hospital->id;
             $user->FirstName = $request['firstName'];
             $user->LastName = $request['lastName'];

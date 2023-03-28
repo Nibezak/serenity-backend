@@ -28,6 +28,15 @@ class CreateSessionsTable extends Migration
             ->on('users')
             ->onDelete('cascade');
 
+            
+
+            $table
+            ->foreign('Hospital_Id')
+            ->references('id')
+            ->on('hospital')
+            ->onDelete('cascade');
+
+            
             $table
             ->foreign('Patient_Id')
             ->references('id')
@@ -36,12 +45,6 @@ class CreateSessionsTable extends Migration
 
 
 
-
-            $table
-            ->foreign('Hospital_Id')
-            ->references('id')
-            ->on('hospital')
-            ->onDelete('cascade');
 
             $table
             ->foreign('Insurance_Id')
