@@ -1,38 +1,44 @@
 <?php
 
-
 namespace App;
 
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class TransferSms
 {
-    public function sendSMS($phone,$message){
+    protected $host       = null;
+    protected $segment    = null;
+    protected $username   = null;
+    protected $password   = null;
+    protected $type       = null;
+    protected $dlr        = null;
+    protected $sender     = null;
 
-        $data = array(
-            "sender"=>'serenity',
-            "recipients"=>'+25'.$phone,
-            "message"=>$message
-        ,);
-        $url = "http://rslr.connectbind.com:8080/bulksms/bulksms";
-        $data = http_build_query($data);
-        $username="mtec-goldgate";
-        $password="Admin@21";
+    public function __construct() {
+        $this->host       = 'http://rslr.connectbind.com:8080';
+        $this->segment    = '/bulksms/bulksms';
+        $this->username   = 'mtec-goldgate';
+        $this->password   = 'Admin@21';
+        $this->type       = '0';
+        $this->dlr        = '1';
+        $this->sender     = 'Serenity';
+    }
 
-        $ch = curl_init();
-        curl_setopt($ch,CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_USERPWD, $username . ":" . $password);
-        curl_setopt($ch,CURLOPT_POST,true);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER,1);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
-        curl_setopt($ch,CURLOPT_POSTFIELDS, $data);
-        $result = curl_exec($ch);
-        $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
-        if ($result) {
-            return true;
-        }else{
-            return false;
-        }
+    public function sendSMS($phone, $message)
+    {
+        $response = Http::get($this->host.$this->segment, [
+            "username"      => $this->username, 
+            "password"      => $this->password, 
+            "type"          => $this->type, 
+            "dlr"           => $this->dlr, 
+            "source"        => $this->sender, 
+            "destination"   => '+25'.$phone,
+            "message"       => $message,
+        ])->body();
 
+        Log::info($response);
+
+        return true;
     }
 }
