@@ -120,7 +120,7 @@ class AdminController extends Controller
 
                 $user->save();
 
-                $user->attachRole($role);
+                $user->roles()->attach($role);
             }
 
             $hospitalname = Hospital::select('PracticeName')
@@ -275,9 +275,9 @@ class AdminController extends Controller
                 'MobilePhone' => 'required|between:9,14',
                 'Email' => 'required|string|unique:patients',
                 'Marital_Status' => 'required',
+                'gender' => 'required',
                 'Employment' => 'required',
                 'Languages' => 'required',
-                'gender' => 'required',
             ]);
             if ($validator->fails()) {
                 // return response()->json($validator->errors()->toJson(), 400);
@@ -307,8 +307,14 @@ class AdminController extends Controller
             $patient->PatientCode = 'P-' . Str::random(8);
             $patient->gender = $request['gender'];
             $patient->Createdby_Id = auth()->user()->id;
-            $patient->Guardian_Name=$request['Guardian_Name'];
-            $patient->Guardian_Phone=$request['GuardianPhone'];
+            if($request->has('Guardian_Name')){
+                $patient->Guardian_Name=$request['Guardian_Name'];
+                $patient->Guardian_Phone=$request['GuardianPhone'];
+            }
+            else {
+                $patient->Guardian_Name= 'not defined';
+                $patient->Guardian_Phone='not defined';
+            }
             $patient->save();
             if ($request->has('insurance')) {
 
@@ -874,33 +880,33 @@ class AdminController extends Controller
             $appointment->calendarGridType=$request['calendarGridType'];
             $appointment->Session_Id=$sess->id;
 
-            // if ($request['sessionType'] == 'followUp') {
-            //         $dr=new Assigneddocotor();
-            //         $dr->Hospital_Id=auth()->user()->Hospital_Id;
-            //         $dr->Doctor_Id=$request['Doctor_Id'];
-            //         $dr->Patient_Id=$request['Patient_Id'];
-            //         $dr->AssignedBy_Id=auth()->user()->id;
-            //         $dr->Date=Carbon::now()->toDateTimeString();
-            //         $dr->Status='Follow up Session';
-            //         $dr->save();
+            if ($request['sessionType'] == 'followUp') {
+                    $dr=new Assigneddocotor();
+                    $dr->Hospital_Id=auth()->user()->Hospital_Id;
+                    $dr->Doctor_Id=$request['Doctor_Id'];
+                    $dr->Patient_Id=$request['Patient_Id'];
+                    $dr->AssignedBy_Id=auth()->user()->id;
+                    $dr->Date=Carbon::now()->toDateTimeString();
+                    $dr->Status='Follow up Session';
+                    $dr->save();
 
-            //         DB::Table('patients')
-            //             ->where('id', '=', $request['Patient_Id'])
-            //             ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
-            //             ->update([
-            //                 'AssignedDoctor_Id' => $request['Doctor_Id'],
-            //                 'Status'=>'Active',
-            //             ]);
-            //             DB::Table('sessions')
-            //             ->where('id', '=', $sessionId)
-            //             ->update([
-            //                 'Status' => 'Completed',
-            //             ]);
-            // }
+                    DB::Table('patients')
+                        ->where('id', '=', $request['Patient_Id'])
+                        ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
+                        ->update([
+                            'AssignedDoctor_Id' => $request['Doctor_Id'],
+                            'Status'=>'Active',
+                        ]);
+                        DB::Table('sessions')
+                        ->where('id', '=', $sessionId)
+                        ->update([
+                            'Status' => 'Completed',
+                        ]);
+            }
 
             $sms = new TransferSms();
             if ($request['Location'] == 'online') {
-                $link = 'https://meet.letsreason.co/EMR-Session-test/'.MD5($sess->id);
+                $link = 'https://meet.Serenity.co/EMR-Session-test/'.MD5($sess->id);
                 $appointment->link = $link;
                 $message =
                     'Hello ' .
@@ -924,7 +930,7 @@ class AdminController extends Controller
                     ' and Video Link is:  ' .
                     $link;
 
-                // $sms->sendSMS($patData[0]->MobilePhone, $message);
+                $sms->sendSMS($patData[0]->MobilePhone, $message);
             } else {
                 $msg =
                     'Hello ' .

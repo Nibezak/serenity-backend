@@ -4,7 +4,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <title>EMR for Mental Health || Letsreason </title>
+        <title>Serenity|| Health </title>
 
         <!-- Fonts -->
         <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
@@ -133,7 +133,7 @@
         <h1> Set of APIs are under development, Please wait !!! Do not rush  hhhhhhhhh  !!!!!! </h1>
 <br>
 
-<h3>EMR For Mental Health ---<a href="https://letsreason.co" target=”_blank”>Letsreason.co</a></h3>
+<h3><a href="http://localhost:3000/" target=”_blank”>Serenity</a></h3>
 </center>
     </body>
 </html>

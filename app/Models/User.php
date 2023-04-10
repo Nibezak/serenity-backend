@@ -85,8 +85,5 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->belongsTo('App\Models\Hospital','Hospital_Id');
     }
-    // public function Role()
-    // {
-    //     return $this->belongsTo('App\Models\Role','Role_Id');
-    // }
+
 }

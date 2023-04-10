@@ -114,11 +114,11 @@ class MAuthController extends Controller
             );
         }
 
-        $role = Role::find(117);
+        $role = Role::find(6);
 
         if ($role) {
             $user = new User();
-            $user->Role_id = 117;
+            $user->Role_id = $role;
             $user->FirstName = $request['firstName'];
             $user->LastName = $request['lastName'];
             $user->Email = $request['email'];

@@ -89,7 +89,7 @@ class AuthController extends Controller
 
         if ($role) {
             $user = new User();
-            $user->Role_id = 1;
+            $user->Role_id = $role->id;
             $user->hospital_id = $hospital->id;
             $user->FirstName = $request['FirstName'];
             $user->LastName = $request['LastName'];
@@ -108,10 +108,9 @@ class AuthController extends Controller
             $user->IsAccountNonExpired = '1';
             $user->IsAccountNonLocked = '1';
             $user->IsCredentialsNonExpired = '1';
-            $user->session = 'null';
             $user->save();
 
-            $user->attachRole($role);
+            $user->roles()->attach($role);
         }
 
         $message =
@@ -201,12 +200,12 @@ class AuthController extends Controller
                     //Get messsage receiver telephone
                     $receiverPhone = User::select('telephone')
                         ->where('email', '=', $request['email'])
-                        ->value('telephone');
+                        ->value('telephone'); 
 
                     //Generate Random OTP CODE & send it to the user
 
                     $otp_code = mt_rand(100000, 999999);
-                    $message = 'Your LetsReason Login OTP is ' . $otp_code;
+                    $message = 'Your Serenity square Login OTP is ' . $otp_code;
                     $sms = new TransferSms();
                     $sms->sendSMS($receiverPhone, $message);
 
@@ -222,14 +221,14 @@ class AuthController extends Controller
                         'email' => $request['email'],
                     ]);
 
-                    if ((Auth::user()->roles->first()->name == ('Admin' || 'superAdmin' )) && (Auth::user()->ConstantsIsCreated ==false)) {
+                    if ((Auth::user()->roles->first()->name == ('Admin' || 'superAdmin' )) && (Auth::user()->ConstantsIsCreated === false)) {
 
 
                     DB::Table('users')
                     ->where('email', '=', auth()->user()->email)
                     ->where('Hospital_Id', '=', auth()->user()->Hospital_Id)
                     ->update([
-                        'ConstantsIsCreated' => false,
+                        'ConstantsIsCreated' => true,
                     ]);
                     }
 
@@ -246,7 +245,7 @@ class AuthController extends Controller
 
                 $MinuteCounter = 60 - date('i', time());
 
-                if ($MinuteCounter == 0) {
+                if ($MinuteCounter === 0) {
                     DB::Table('users')
                         ->where('email', '=', $request['email'])
                         ->update([
@@ -631,7 +630,7 @@ class AuthController extends Controller
                 //Generate Random OTP CODE & send it to the user for verification
 
                 $otp_code = mt_rand(100000, 999999);
-                $message = 'Your LetsReason Login OTP is ' . $otp_code;
+                $message = 'Your Serenity Login OTP is ' . $otp_code;
                 $sms = new TransferSms();
                 $sms->sendSMS($receiverPhone, $message);
 
@@ -650,7 +649,7 @@ class AuthController extends Controller
                 return response()->json(
                     [
                         'message' =>
-                            'Please check your phone inbox for Letsreason Login OTP !!! ' .
+                            'Please check your phone inbox for Your Serenity Login OTP !!! ' .
                             $otp_code,
                     ],
                     201
@@ -707,7 +706,7 @@ if ($checkauth) {
             //Generate Random OTP CODE & send it to the user
 
             $otp_code = mt_rand(100000, 999999);
-            $message = 'Your LetsReason Login OTP is ' . $otp_code;
+            $message = 'Your Serenity Login OTP is ' . $otp_code;
             $sms = new TransferSms();
             $sms->sendSMS($receiverPhone, $message);
 
@@ -835,7 +834,7 @@ if ($checkauth) {
             $user->created_from = 'mobile';
             $user->save();
 
-            $user->attachRole($role);
+            $user->roles()->attach($role);
 
             $patient = new Patient();
             $patient->FirstName = $request['firstName'];

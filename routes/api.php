@@ -350,7 +350,7 @@ Route::group(
     }
 );
 
-//Routes for Super Admin Letsreason
+//Routes for Super Admin Serenity
 Route::group(
     [
         'middleware' => 'api',

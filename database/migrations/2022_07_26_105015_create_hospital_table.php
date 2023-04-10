@@ -24,8 +24,8 @@ class CreateHospitalTable extends Migration
             $table->string('Sector');
             $table->string('Cell');
             $table->string('Village');
-            $table->string('TinNumber');
-            $table->string('logo');
+            $table->string('TinNumber')->nullable();
+            $table->string('logo')->nullable();;
             $table->timestamps();
             
         });
