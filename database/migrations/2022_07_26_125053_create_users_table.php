@@ -34,6 +34,7 @@ class CreateUsersTable extends Migration
             $table->string('IsAccountNonExpired')->nullable();
             $table->string('IsCredentialsNonExpired')->nullable();
             $table->string('IsAccountNonLocked')->nullable();
+            $table->string('session')->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->rememberToken();
             $table->timestamps();

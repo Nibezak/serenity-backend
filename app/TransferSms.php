@@ -9,13 +9,13 @@ class TransferSms
     public function sendSMS($phone,$message){
 
         $data = array(
-            "sender"=>'letsreason',
+            "sender"=>'serenity',
             "recipients"=>'+25'.$phone,
             "message"=>$message
         ,);
-        $url = "https://www.intouchsms.co.rw/api/sendsms/.json";
+        // $url = "https://www.intouchsms.co.rw/api/sendsms/.json";
         $data = http_build_query($data);
-        $username="mugishajc@Dev";
+        $username="nibeza@Dev";
         $password="kamana123456@";
 
         $ch = curl_init();

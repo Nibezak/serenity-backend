@@ -29,11 +29,11 @@ class ForgotPasswordMail extends Mailable
     public function build()
     {
         return $this->markdown('emails.Forgotpassword')
-        ->from('mugisha-dev@letsreason.co')
+        ->from('code.404.initiative@gmail.com')
         ->subject('Forgot Password')
         ->with([
-            'name' => 'New Letsreason User',
-            'link' => 'https://letsreason.co/'
+            'name' => 'New Serenity User',
+            'link' => 'http://localhost:3000/'
         ]);
          ;
     }
