@@ -13,10 +13,10 @@ class TransferSms
             "recipients"=>'+25'.$phone,
             "message"=>$message
         ,);
-        // $url = "https://www.intouchsms.co.rw/api/sendsms/.json";
+        $url = "http://rslr.connectbind.com:8080/bulksms/bulksms";
         $data = http_build_query($data);
-        $username="nibeza@Dev";
-        $password="kamana123456@";
+        $username="mtec-goldgate";
+        $password="Admin@21";
 
         $ch = curl_init();
         curl_setopt($ch,CURLOPT_URL, $url);
