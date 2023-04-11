@@ -14,6 +14,9 @@ class CreatePatientsTable extends Migration
     public function up()
     {
         Schema::create('patients', function (Blueprint $table) {
+            $table
+            ->string('profileimageUrl')
+            ->default('https://i.imgur.com/BKB2EQi.png');
             $table->id();
             $table->string('FirstName');
             $table->string('LastName');
@@ -41,11 +44,30 @@ class CreatePatientsTable extends Migration
             $table->string('Sector');
             $table->string('Cell');
             $table->string('Village');
+            $table->string('Guardian_Name')->nullable();
+            $table->string('Guardian_Phone')->nullable();
             $table->string('StreetCode')->nullable();
             $table->string('Status')->default('InActive');
             $table->unsignedBigInteger('Hospital_Id')->nullable();
             $table->unsignedBigInteger('AssignedDoctor_Id')->nullable();
+            $table->string('gender')->nullable();
+            $table->unsignedBigInteger('lastappoint')->nullable();
+            $table->unsignedBigInteger('nextappoint')->nullable();
             $table->timestamps();
+
+            
+            $table
+            ->foreign('nextappoint')
+            ->references('id')
+            ->on('appointments')
+            ->onDelete('cascade');
+
+
+            $table
+            ->foreign('lastappoint')
+            ->references('id')
+            ->on('appointments')
+            ->onDelete('cascade');
 
             $table
                 ->foreign('Hospital_Id')

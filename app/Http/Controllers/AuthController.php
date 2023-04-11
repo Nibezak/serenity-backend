@@ -85,7 +85,7 @@ class AuthController extends Controller
         $hospital->logo = 'null';
         $hospital->save();
 
-        $role = Role::find(1);
+        $role = Role::find(5);
 
         if ($role) {
             $user = new User();
@@ -144,8 +144,8 @@ class AuthController extends Controller
     public function checkmail()
     {
         $user = [
-            'name' => 'Tango mambo',
-            'info' => 'Laravel & Python Devloper',
+            'name' => 'Serenity Square',
+            'info' => 'Tailored to your needs',
         ];
 
         Mail::to('kevin.nibeza@gmail.com')->send(
@@ -205,7 +205,7 @@ class AuthController extends Controller
                     //Generate Random OTP CODE & send it to the user
 
                     $otp_code = mt_rand(100000, 999999);
-                    $message = 'Your Serenity square Login OTP is ' . $otp_code;
+                    $message = 'Your Login OTP is ' . $otp_code. ' Thank you for choosing Serenity :)';
                     $sms = new TransferSms();
                     $sms->sendSMS($receiverPhone, $message);
 
@@ -853,7 +853,7 @@ if ($checkauth) {
             $patient->save();
         }
 
-        // Route::post('/patient/register', [MAuthController::class, 'savepatient']);
+        Route::post('/patient/register', [MAuthController::class, 'savepatient']);
 
         $message =
             'Hello  ' .

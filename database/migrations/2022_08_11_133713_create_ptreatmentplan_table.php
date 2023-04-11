@@ -32,8 +32,17 @@ class CreatePtreatmentplanTable extends Migration
             $table->string('Date');
             $table->string('Time');
 
+            $table->unsignedBigInteger('Session_Id')->nullable();
+
             $table->timestamps();
 
+            
+            $table
+            ->foreign('Session_Id')
+            ->references('id')
+            ->on('sessions')
+            ->onDelete('cascade');
+            
             $table
             ->foreign('Patient_Id')
             ->references('id')

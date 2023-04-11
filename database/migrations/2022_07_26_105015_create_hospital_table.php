@@ -25,10 +25,16 @@ class CreateHospitalTable extends Migration
             $table->string('Cell');
             $table->string('Village');
             $table->string('TinNumber')->nullable();
-            $table->string('logo')->nullable();;
+            $table->string('logo')->nullable();
+            $table->unsignedBigInteger('IsClinician')->nullable()->default(0);
+            $table->unsignedBigInteger('IsReceptionist')->nullable()->default(0);
+            $table->unsignedBigInteger('IsFinance')->nullable()->default(0);
+            $table->unsignedBigInteger('Doneby')->nullable();
             $table->timestamps();
             
         });
+
+        
     }
 
     /**
