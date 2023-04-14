@@ -99,44 +99,56 @@ Route::group(
         Route::post('/new-user', [AdminController::class, 'createNewUser']);
         Route::get('/our-staff', [AdminController::class, 'fetchourstaff']);
 
-        Route::post('/patient/register', [
-            AdminController::class,
-            'createnewpatient',
-        ]);
+    
 
 
         Route::post('/roles/get-hospital-roles', [
             AdminController::class,
             'savehospitalroles',
         ]);
+        
+        //create new patient
 
+        Route::post('/patient/register', [
+            AdminController::class,
+            'createnewpatient',
+        ]);
 
+        // Edit the Patient
 
         Route::post('/patient/edit-profile/{PatientId}', [
             AdminController::class,
             'editpatientprofile',
         ]);
 
+        // Fetch Active Patient
+
         Route::get('/patient/our-patient', [
             AdminController::class,
             'fetchourActivepatients',
         ]);
 
+        // View all the patients
+
         Route::get('/Admin/all-patient', [
             AdminController::class,
             'fetchourAllpatients',
         ]);
+        // View one patient
 
         Route::get('/patient/view/{id}', [
             AdminController::class,
             'fetchonepatient',
         ]);
 
+        // View a doctor 
 
         Route::get('/doctor/view/{id}', [
             AdminController::class,
             'fetchonedoctor',
         ]);
+
+        // Assign a user to a Doctor
 
         Route::post('/patient/Assign-Doctor', [
             AdminController::class,

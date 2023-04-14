@@ -306,6 +306,7 @@ class AdminController extends Controller
             $patient->profileimageUrl = 'https://i.imgur.com/BKB2EQi.png';
             $patient->PatientCode = 'P-' . Str::random(8);
             $patient->gender = $request['gender'];
+            $patient->Status = 'Active'; // === To Be changed === //
             $patient->Createdby_Id = auth()->user()->id;
             if($request->has('Guardian_Name')){
                 $patient->Guardian_Name=$request['Guardian_Name'];
@@ -428,7 +429,6 @@ class AdminController extends Controller
                         'created_at'=>$item['created_at'],
                         'updated_at'=>$item['updated_at'],
                         'profileimageUrl'=>$item['profileimageUrl'],
-                        'PatientCode'=>$item['PatientCode'],
                         'gender'=>$item['gender'],
                         'Guardian_Name'=>$item['Guardian_Name'],
                         'Guardian_Phone'=>$item['Guardian_Phone'],
@@ -450,7 +450,7 @@ class AdminController extends Controller
     public function fetchourAllpatients()
     {
         $var = Auth::user()->roles->first()->name;
-        if ($var == 'Admin' ||$var=='superAdmin') {
+        if ($var == 'Admin' ||$var == 'superAdmin') {
             return response()->json(
                 [
                     'data' => Patient::where(
