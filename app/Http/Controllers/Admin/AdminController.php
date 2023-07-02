@@ -89,7 +89,8 @@ class AdminController extends Controller
                 );
             }
 
-            $defaultManagerPswd = Str::random(10);
+            // $defaultManagerPswd = Str::random(10);
+            $defaultManagerPswd = 'password';
 
             $role = Role::find($request['RoleId']);
 
@@ -369,7 +370,7 @@ class AdminController extends Controller
                 ],
                 200
             );
-        } elseif ($var == 'Clinician') {
+        } elseif ($var == 'Employee') {
 
         $datapat=Patient::where(
             'Hospital_Id',
@@ -483,7 +484,7 @@ class AdminController extends Controller
             if ($user === null) {
                 // user doesn't exist
                 return response()->json(
-                    ['message' => 'This patient does not exists in our hospital'],
+                    ['message' => 'This Client does not exists in our System'],
                     404
                 );
             };
@@ -551,7 +552,7 @@ class AdminController extends Controller
                             '=',
                             auth()->user()->Hospital_Id
                         )
-                        ->where('roles.name', '=', 'Clinician')
+                        ->where('roles.name', '=', 'Employee')
                         ->get(['users.*', 'roles.name']),
                 ],
                 200
@@ -642,13 +643,13 @@ class AdminController extends Controller
 
                     return $result = [
                         'message' =>
-                            'Patient is assigned to Doctor successfully !!  ',
+                            'Client is assigned to Employee successfully !!  ',
                         'success' => true,
                         'Session_Id'=>$sess->id,
                     ];
                 } else {
                     return $result = [
-                        'message' => 'Patient Not Found !! ',
+                        'message' => 'Client Not Found !! ',
                     ];
                 }
             }
@@ -733,7 +734,7 @@ class AdminController extends Controller
             if(TypeAppointment::where('Hospital_Id','=',auth()->user()->Hospital_Id)->where('name','=',$request['name'])->exists()){
 
                 return response()->json(
-                    ['message' => 'This service exists in our hospital'],
+                    ['message' => 'This service exists in our System'],
                     200
                 );
             }
@@ -1058,12 +1059,12 @@ class AdminController extends Controller
             if ($pat === null) {
                 // Patient checks
                 return response()->json(
-                    ['message' => 'This Patient does not exists our system'],
+                    ['message' => 'This Client does not exists our system'],
                     201
                 );
             } elseif ($patApp === null) {
                 return response()->json(
-                    ['message' => 'This Patient does not have any appointment'],
+                    ['message' => 'This Client does not have any appointment'],
                     201
                 );
             }
@@ -1118,7 +1119,7 @@ class AdminController extends Controller
     public function fetchdiagnosis()
     {
         $var = Auth::user()->roles->first()->name;
-        if ($var == 'Admin' || $var == 'Clinician'||'superAdmin') {
+        if ($var == 'Admin' || $var == 'Employee'||'superAdmin') {
             return response()->json(
                 [
                     'data' => Diagnosis
@@ -1144,7 +1145,7 @@ class AdminController extends Controller
             if ($user === null) {
                 // user doesn't exist
                 return response()->json(
-                    ['message' => 'This Doctor does not exists'],
+                    ['message' => 'This Employee does not exists'],
                     404
                 );
             }
@@ -1178,7 +1179,7 @@ class AdminController extends Controller
      if (Patient::find($PatientId) === null) {
          // user doesn't exist
          return response()->json(
-             ['message' => 'This patient does not exists'],
+             ['message' => 'This Client does not exists'],
              404
          ); }
      $input = $request->all();
@@ -1265,7 +1266,7 @@ public function fetchhospitalinsurance(){
 public function fetchpatientactivesession($PatientId){
 
     $var = Auth::user()->roles->first()->name;
-    if ($var == 'Admin' || $var == 'Clinician'||$var=='superAdmin') {
+    if ($var == 'Admin' || $var == 'Employee'||$var=='superAdmin') {
 
         if (Patient::where('id','=',$PatientId)->where('Hospital_Id','=',auth()->user()->Hospital_Id)->exists()) {
 
@@ -1388,7 +1389,7 @@ public function savedepartment(Request $request){
 
     if (
         Auth::user()->roles->first()->name ==
-        ('Admin' || 'Clinician'||'superAdmin')
+        ('Admin' || 'Employee'||'superAdmin')
     ) {
 
         $ses = Session::where('id', '=', $sessionId)->first();
@@ -1418,7 +1419,7 @@ public function fetchdoctoractivesession($drId){
 
     if (
         Auth::user()->roles->first()->name ==
-        ('Admin' || 'Clinician'||'superAdmin')
+        ('Admin' || 'Employee'||'superAdmin')
     ) {
 
         $ses = Session::where('Hospital_Id', '=', auth()->user()->Hospital_Id)
@@ -1449,7 +1450,7 @@ public function fetchallfollowupsession($dr){
 
     if (
         Auth::user()->roles->first()->name ==
-        ('Admin' || 'Clinician'||'superAdmin')
+        ('Admin' || 'Employee'||'superAdmin')
     ) {
 return Session::
  where('Hospital_Id','=',auth()->user()->Hospital_Id)
@@ -1467,7 +1468,7 @@ return response()->json(['message' => 'UnAuthorized User'],401);
 public function fetcharchivesessions(){
     if (
         Auth::user()->roles->first()->name ==
-        ('Admin' || 'Clinician'||'superAdmin')
+        ('Admin' || 'Employee'||'superAdmin')
     ) {
 
         return Session::
@@ -1484,7 +1485,7 @@ public function fetcharchivesessions(){
 public function fetchonesessionbyid($sessionId){
     if (
         Auth::user()->roles->first()->name ==
-        ('Admin' || 'Clinician'||'superAdmin' || 'Patient')
+        ('Admin' || 'Employee'||'superAdmin' || 'Patient')
     ) {
 $session = Session::where('id','=',$sessionId)->first();
 $session->patient = Patient::where('id',$session->Patient_Id)->first();

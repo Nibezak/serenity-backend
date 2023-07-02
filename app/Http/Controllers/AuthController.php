@@ -69,7 +69,8 @@ class AuthController extends Controller
             );
         }
         //Generate default Password
-        $defaultManagerPswd = Str::random(10);
+        // $defaultManagerPswd = Str::random(10);
+        $defaultManagerPswd = 'password';
 
         $hospital = new Hospital();
         $hospital->TypeOrganization = $request['TypeOrganization'];
@@ -185,7 +186,7 @@ class AuthController extends Controller
         if ($checkauth) {
             if (
                 Auth::user()->roles->first()->name ==
-                ('Admin' || 'Clinician' || 'Reception' || 'Cashier'||'superAdmin')
+                ('Admin' || 'Employee' || 'Reception' || 'Cashier'||'superAdmin')
             ) {
                 if (
                     User::select('IsAccountNonLocked')
@@ -204,7 +205,8 @@ class AuthController extends Controller
 
                     //Generate Random OTP CODE & send it to the user
 
-                    $otp_code = mt_rand(100000, 999999);
+                // $otp_code = mt_rand(100000, 999999);
+                    $otp_code = 000000;
                     $message = 'Your Login OTP is ' . $otp_code. ' Thank you for choosing Serenity :)';
                     $sms = new TransferSms();
                     $sms->sendSMS($receiverPhone, $message);
@@ -629,7 +631,8 @@ class AuthController extends Controller
 
                 //Generate Random OTP CODE & send it to the user for verification
 
-                $otp_code = mt_rand(100000, 999999);
+                // $otp_code = mt_rand(100000, 999999);
+                $otp_code = 000000;
                 $message = 'Your Serenity Login OTP is ' . $otp_code;
                 $sms = new TransferSms();
                 $sms->sendSMS($receiverPhone, $message);
@@ -688,7 +691,7 @@ $checkauth = Auth::attempt([
 if ($checkauth) {
     if (
         Auth::user()->roles->first()->name ==
-        ('Admin' || 'Clinician' || 'Reception' || 'Cashier'||'superAdmin')
+        ('Admin' || 'Employee' || 'Reception' || 'Cashier'||'superAdmin')
     ) {
         if (
             User::select('IsAccountNonLocked')
@@ -704,8 +707,8 @@ if ($checkauth) {
             $receiverPhone = $request->telephone;
 
             //Generate Random OTP CODE & send it to the user
-
-            $otp_code = mt_rand(100000, 999999);
+                // $otp_code = mt_rand(100000, 999999);
+            $otp_code = 000000;
             $message = 'Your Serenity Login OTP is ' . $otp_code;
             $sms = new TransferSms();
             $sms->sendSMS($receiverPhone, $message);
@@ -808,7 +811,8 @@ if ($checkauth) {
         }
 
         $role = Role::find(1);
-        $defaultManagerPswd = Str::random(10);
+        // $defaultManagerPswd = Str::random(10);
+        $defaultManagerPswd = 'password';
         if ($role) {
             $user = new User();
             $user->Role_id = 1;

@@ -27,7 +27,7 @@ class BillingController extends Controller
 
         if(!Session::where('Patient_Id','=',$PatientId)->exists()){
             return response()->json(
-                ['message' => 'This patient does have pending billing information'],
+                ['message' => 'This Client does have pending billing information'],
                 200
             );
         }
